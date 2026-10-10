@@ -3,12 +3,22 @@ import { initialData } from './mockData';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Local storage key for persistent client-side state
-const STORAGE_KEY = 'smart_campus_hub_amrita_state_v2';
+const STORAGE_KEY = 'smart_campus_hub_amrita_state_v6';
 
 function getLocalState() {
   try {
+    // Clean up older legacy cached versions
+    ['smart_campus_hub_amrita_state_v1', 'smart_campus_hub_amrita_state_v2'].forEach(k => {
+      try { localStorage.removeItem(k); } catch (e) {}
+    });
+
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const state = JSON.parse(saved);
+      // Ensure campusLocations always stays strictly synced with the latest real GPS coordinates
+      state.campusLocations = initialData.campusLocations;
+      return state;
+    }
   } catch (e) {
     console.warn('LocalStorage read error:', e);
   }

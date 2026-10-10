@@ -22,6 +22,7 @@ import {
   Lock
 } from 'lucide-react';
 import { api } from '../api';
+import { initialData } from '../mockData';
 
 // Tile Layer Configurations for Real Map
 const TILE_LAYERS = {
@@ -76,7 +77,7 @@ const AMRITA_COMPOUND_PERIMETER = [
 const AMRITA_MAIN_GATE = [10.8980, 76.9003];
 
 export function CampusMapView({ onNavigateToCanteen }) {
-  const [locations, setLocations] = useState([]);
+  const [locations, setLocations] = useState(initialData.campusLocations || []);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -161,6 +162,20 @@ export function CampusMapView({ onNavigateToCanteen }) {
         className: 'bg-slate-900 text-purple-300 font-bold text-xs p-2 rounded-lg border border-purple-500/40 shadow-xl'
       }
     );
+
+    // Click handler to inspect any point on campus
+    map.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+      L.popup()
+        .setLatLng(e.latlng)
+        .setContent(`
+          <div style="font-family: inherit; font-size: 11px; padding: 2px;">
+            <div style="font-weight: bold; color: #7c3aed;">📍 Clicked Campus Point</div>
+            <div style="color: #334155; margin-top: 3px;">Lat: <b>${lat.toFixed(5)}</b>, Lng: <b>${lng.toFixed(5)}</b></div>
+          </div>
+        `)
+        .openOn(map);
+    });
 
     mapInstanceRef.current = map;
 
