@@ -9,6 +9,7 @@ import { StaffPanelView } from './components/StaffPanelView';
 import { AdminPanelView } from './components/AdminPanelView';
 import { WalletModal } from './components/WalletModal';
 import { VoiceGuidanceModal } from './components/VoiceGuidanceModal';
+import { OrderReceiptScreen } from './components/OrderReceiptScreen';
 import { api } from './api';
 
 export function App() {
@@ -25,6 +26,7 @@ export function App() {
   // Modals
   const [isWalletOpen, setIsWalletOpen] = useState(false);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+  const [receiptOrder, setReceiptOrder] = useState(null);
 
   const fetchGlobalData = async () => {
     try {
@@ -60,8 +62,8 @@ export function App() {
 
   const handleOrderCreated = (order) => {
     fetchGlobalData();
-    // Switch smoothly to the Live Queue tab to track the new token
-    setActiveTab('queue');
+    // Show full-screen order receipt with token and QR code
+    setReceiptOrder(order);
   };
 
   const handleNavigateToCanteen = (canteenLocId) => {
@@ -207,6 +209,18 @@ export function App() {
         onNavigate={(tab) => {
           setActiveTab(tab);
           setIsVoiceOpen(false);
+        }}
+      />
+
+      <OrderReceiptScreen
+        order={receiptOrder}
+        onGoToQueue={() => {
+          setReceiptOrder(null);
+          setActiveTab('queue');
+        }}
+        onDismiss={() => {
+          setReceiptOrder(null);
+          setActiveTab('canteen');
         }}
       />
 

@@ -315,11 +315,13 @@ export const api = {
         body: JSON.stringify(orderData),
       }).then(handleResponse),
       (state) => {
-        const canteenCode = orderData.canteenId === 'canteen-2' ? 'C2' : 'C1';
+        const canteen = state.canteens.find((c) => c.id === orderData.canteenId);
+        const canteenCode = canteen?.code || (orderData.canteenId === 'canteen-2' ? 'C2' : 'C1');
         const num = Math.floor(100 + Math.random() * 900);
         const newOrder = {
           id: `ord-${Date.now()}`,
           token: `${canteenCode}-${num}`,
+          canteenName: orderData.canteenName || (canteen ? canteen.name : 'Campus Canteen'),
           status: 'cooking',
           createdAt: new Date().toISOString(),
           isCurrentUser: true,

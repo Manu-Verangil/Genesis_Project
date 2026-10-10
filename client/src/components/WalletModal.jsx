@@ -1,6 +1,52 @@
 import React, { useState } from 'react';
-import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, X, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, X, CheckCircle, ShieldCheck, Smartphone } from 'lucide-react';
 import { api } from '../api';
+
+const TOPUP_UPI_VPA = 'amritacampushub@upi';
+
+function TopupQr({ amount, size = 140 }) {
+  const value = `upi://pay?pa=${TOPUP_UPI_VPA}&pn=Amrita+Campus+Hub&am=${amount}&cu=INR&tn=Wallet+Top-up`;
+  const modules = 21;
+  const cell = Math.floor(size / modules);
+  const actualSize = cell * modules;
+
+  const grid = React.useMemo(() => {
+    let hash = 0;
+    for (let i = 0; i < value.length; i++) {
+      hash = (Math.imul(31, hash) + value.charCodeAt(i)) | 0;
+    }
+    const result = [];
+    for (let row = 0; row < modules; row++) {
+      const rowArr = [];
+      for (let col = 0; col < modules; col++) {
+        const inFinder = (row < 7 && col < 7) || (row < 7 && col >= modules - 7) || (row >= modules - 7 && col < 7);
+        if (inFinder) {
+          const er = row < 7 ? row : row - (modules - 7);
+          const ec = col < 7 ? col : col - (modules - 7);
+          const isOuter = er === 0 || er === 6 || ec === 0 || ec === 6;
+          const isCenter = er >= 2 && er <= 4 && ec >= 2 && ec <= 4;
+          rowArr.push(isOuter || isCenter ? 1 : 0);
+        } else {
+          hash = (Math.imul(hash, 1664525) + 1013904223) | 0;
+          rowArr.push((hash >>> 31) ^ ((row + col) % 3 === 0 ? 1 : 0) ? 1 : 0);
+        }
+      }
+      result.push(rowArr);
+    }
+    return result;
+  }, [value]);
+
+  return (
+    <svg width={actualSize} height={actualSize} viewBox={`0 0 ${actualSize} ${actualSize}`} style={{ display: 'block' }}>
+      <rect width={actualSize} height={actualSize} fill="white" />
+      {grid.map((row, ri) =>
+        row.map((on, ci) =>
+          on ? <rect key={`${ri}-${ci}`} x={ci * cell} y={ri * cell} width={cell} height={cell} fill="#111" /> : null
+        )
+      )}
+    </svg>
+  );
+}
 
 export function WalletModal({ isOpen, onClose, wallet, onWalletUpdated }) {
   const [topUpAmount, setTopUpAmount] = useState('200');
@@ -134,6 +180,33 @@ export function WalletModal({ isOpen, onClose, wallet, onWalletUpdated }) {
               RuPay / NetBanking
             </button>
           </div>
+
+          {/* UPI QR — shown when UPI mode is selected */}
+          {paymentMode === 'upi' && topUpAmount && parseFloat(topUpAmount) > 0 && (
+            <div className="flex flex-col items-center gap-2 py-2">
+              <p className="text-[11px] text-slate-500 font-semibold">
+                Scan to add <strong className="text-[#A41034]">₹{topUpAmount}</strong> to wallet
+              </p>
+              <div className="p-2.5 bg-white border-2 border-slate-200 rounded-xl shadow-inner inline-block">
+                <TopupQr amount={topUpAmount} size={140} />
+              </div>
+              <p className="text-[10px] text-slate-400 font-mono">{TOPUP_UPI_VPA}</p>
+              <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                {['GPay', 'PhonePe', 'Paytm', 'BHIM'].map((n) => (
+                  <span key={n} className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 font-medium">
+                    {n}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {paymentMode === 'card' && (
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 text-center">
+              <Smartphone className="w-5 h-5 mx-auto mb-1 text-slate-400" />
+              NetBanking / RuPay redirect will open in the bank's secure portal.
+            </div>
+          )}
 
           <button
             type="submit"
