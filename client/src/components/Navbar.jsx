@@ -52,15 +52,15 @@ export function Navbar({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                <span className="font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r from-white via-purple-100 to-indigo-200 bg-clip-text text-transparent">
                   Smart Campus Hub
                 </span>
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  ● Live Sync
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                  Amrita Ettimadai
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 hidden sm:block">
-                Canteen • Navigation • Lost Belongings • Issue Resolution
+                Amrita Vishwa Vidyapeetham, Coimbatore • Food, Navigation & Issues
               </p>
             </div>
           </div>

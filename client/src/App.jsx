@@ -154,12 +154,12 @@ export function App() {
       <footer className="border-t border-slate-900 bg-slate-950 py-6 mt-12 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-400">Smart Campus Hub</span>
+            <span className="font-bold text-slate-300">Smart Campus Hub</span>
             <span>•</span>
-            <span>One platform for canteen, navigation, lost items & campus issues</span>
+            <span className="text-purple-400 font-medium">Amrita Vishwa Vidyapeetham, Ettimadai Campus, Coimbatore</span>
           </div>
           <div className="text-[11px] text-slate-500">
-            Based on <span className="text-slate-400">Smart_Campus_Hub_Combined.pptx</span>
+            Smart Campus Hub • Genesis Project
           </div>
         </div>
       </footer>
