@@ -1,0 +1,30 @@
+{
+  "name": "smart-campus-hub",
+  "version": "1.0.0",
+  "description": "Smart Campus Hub - One platform for campus canteen, navigation, lost belongings, and campus issues",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "server": "node server/index.js",
+    "client": "npm --prefix client run dev",
+    "dev": "concurrently -k -n \"server,client\" -c \"cyan,magenta\" \"npm run server\" \"npm run client\"",
+    "build": "npm --prefix client run build",
+    "start": "node server/index.js"
+  },
+  "keywords": [
+    "smart-campus",
+    "canteen-management",
+    "token-system",
+    "campus-navigation",
+    "lost-and-found",
+    "issue-tracking"
+  ],
+  "author": "Smart Campus Hub Team",
+  "license": "MIT",
+  "dependencies": {
+    "concurrently": "^9.1.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

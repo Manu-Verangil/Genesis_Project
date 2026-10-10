@@ -1,0 +1,730 @@
+import express from "express";
+import cors from "cors";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { initialData } from "./data/seedData.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(cors());
+app.use(express.json({ limit: "10mb" }));
+
+// In-memory data store initialized from seed data
+let db = JSON.parse(JSON.stringify(initialData));
+
+// Helper: Calculate wait time for an order based on queue ahead
+function calculateWaitTime(canteenId, orderItems = []) {
+  const canteen = db.canteens.find((c) => c.id === canteenId);
+  const rushFactor = canteen?.crowdLevel === "Rush Hour" ? 1.5 : canteen?.crowdLevel === "Busy" ? 1.25 : 1.0;
+  
+  // Pending orders in this canteen (cooking or received)
+  const pendingOrders = db.orders.filter(
+    (o) => o.canteenId === canteenId && ["received", "cooking"].includes(o.status)
+  );
+
+  let totalPrepTimeAhead = 0;
+  pendingOrders.forEach((o) => {
+    const orderPrep = o.items.reduce((acc, item) => Math.max(acc, item.prepTimeMinutes || 3), 0);
+    totalPrepTimeAhead += orderPrep;
+  });
+
+  const currentOrderPrep = orderItems.reduce((acc, item) => Math.max(acc, item.prepTimeMinutes || 3), 0);
+  const estimatedMinutes = Math.max(3, Math.round((totalPrepTimeAhead * 0.6 + currentOrderPrep) * rushFactor));
+  return {
+    estimatedMinutes,
+    ordersAhead: pendingOrders.length,
+    crowdLevel: canteen?.crowdLevel || "Moderate"
+  };
+}
+
+// ----------------- CANTEENS & MENU -----------------
+app.get("/api/canteens", (req, res) => {
+  res.json({ success: true, data: db.canteens });
+});
+
+app.put("/api/canteens/:id/crowd", (req, res) => {
+  const { id } = req.params;
+  const { crowdLevel } = req.body;
+  const canteen = db.canteens.find((c) => c.id === id);
+  if (!canteen) return res.status(404).json({ success: false, message: "Canteen not found" });
+
+  canteen.crowdLevel = crowdLevel;
+  if (crowdLevel === "Low") canteen.avgWaitTimeMinutes = 5;
+  else if (crowdLevel === "Moderate") canteen.avgWaitTimeMinutes = 10;
+  else if (crowdLevel === "Busy") canteen.avgWaitTimeMinutes = 18;
+  else if (crowdLevel === "Rush Hour") canteen.avgWaitTimeMinutes = 25;
+
+  res.json({ success: true, data: canteen });
+});
+
+app.get("/api/menu", (req, res) => {
+  const { canteenId, category, search } = req.query;
+  let items = [...db.menuItems];
+  if (canteenId) items = items.filter((i) => i.canteenId === canteenId);
+  if (category && category !== "All") items = items.filter((i) => i.category.toLowerCase() === category.toLowerCase());
+  if (search) {
+    const q = search.toLowerCase();
+    items = items.filter((i) => i.name.toLowerCase().includes(q) || i.description.toLowerCase().includes(q));
+  }
+  res.json({ success: true, data: items });
+});
+
+app.post("/api/menu", (req, res) => {
+  const newItem = {
+    id: `m_${Date.now()}`,
+    ...req.body,
+    stock: parseInt(req.body.stock || 10, 10),
+    price: parseFloat(req.body.price || 50),
+    prepTimeMinutes: parseInt(req.body.prepTimeMinutes || 5, 10)
+  };
+  db.menuItems.unshift(newItem);
+  res.json({ success: true, data: newItem });
+});
+
+app.put("/api/menu/:id", (req, res) => {
+  const { id } = req.params;
+  const itemIndex = db.menuItems.findIndex((i) => i.id === id);
+  if (itemIndex === -1) return res.status(404).json({ success: false, message: "Item not found" });
+
+  const oldStock = db.menuItems[itemIndex].stock;
+  const updatedItem = { ...db.menuItems[itemIndex], ...req.body };
+  db.menuItems[itemIndex] = updatedItem;
+
+  // Trigger "Notify Me" notifications if item was restocked from 0!
+  if (oldStock === 0 && updatedItem.stock > 0) {
+    const subs = db.stockNotifications.filter((s) => s.itemId === id && !s.notified);
+    subs.forEach((sub) => {
+      sub.notified = true;
+      db.notifications.unshift({
+        id: `nt_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+        title: "Back in Stock Alert!",
+        message: `Good news! "${updatedItem.name}" is back in stock at ${updatedItem.canteenId === "canteen-1" ? "Canteen 1" : "Canteen 2"} with ${updatedItem.stock} available.`,
+        type: "stock",
+        timestamp: new Date().toISOString(),
+        read: false
+      });
+    });
+  }
+
+  res.json({ success: true, data: updatedItem });
+});
+
+// "Notify Me" subscription when an item is out of stock (Slide 4)
+app.post("/api/menu/:id/notify-me", (req, res) => {
+  const { id } = req.params;
+  const item = db.menuItems.find((i) => i.id === id);
+  if (!item) return res.status(404).json({ success: false, message: "Item not found" });
+
+  const existing = db.stockNotifications.find((s) => s.itemId === id && s.studentId === "student-current" && !s.notified);
+  if (!existing) {
+    db.stockNotifications.push({
+      id: `sn_${Date.now()}`,
+      itemId: id,
+      itemName: item.name,
+      studentId: "student-current",
+      createdAt: new Date().toISOString(),
+      notified: false
+    });
+  }
+
+  res.json({ success: true, message: `You will be alerted when "${item.name}" is back in stock!` });
+});
+
+// ----------------- ORDERS & LIVE QUEUE -----------------
+app.get("/api/orders", (req, res) => {
+  const { canteenId, studentOnly } = req.query;
+  let orders = [...db.orders];
+  if (canteenId) orders = orders.filter((o) => o.canteenId === canteenId);
+  if (studentOnly === "true") orders = orders.filter((o) => o.isCurrentUser);
+  // Sort latest first
+  orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  res.json({ success: true, data: orders });
+});
+
+// Live Queue Board (Slide 8)
+app.get("/api/queue/:canteenId", (req, res) => {
+  const { canteenId } = req.params;
+  const canteen = db.canteens.find((c) => c.id === canteenId);
+  const activeOrders = db.orders.filter(
+    (o) => o.canteenId === canteenId && ["serving", "ready", "cooking", "received"].includes(o.status)
+  );
+
+  // Group by status
+  const serving = activeOrders.filter((o) => o.status === "serving");
+  const ready = activeOrders.filter((o) => o.status === "ready");
+  const cooking = activeOrders.filter((o) => ["cooking", "received"].includes(o.status));
+
+  // Current user order if any
+  const myOrder = activeOrders.find((o) => o.isCurrentUser);
+  let ordersAhead = 0;
+  let estimatedWait = 0;
+
+  if (myOrder) {
+    const idx = cooking.findIndex((o) => o.id === myOrder.id);
+    ordersAhead = ready.length + (idx > 0 ? idx : 0);
+    estimatedWait = myOrder.estimatedWaitMinutes;
+  }
+
+  res.json({
+    success: true,
+    data: {
+      canteen,
+      serving,
+      ready,
+      cooking,
+      myOrder,
+      ordersAhead,
+      estimatedWait
+    }
+  });
+});
+
+// Create Order (Slide 7: Stock reserved at payment, single-use token generated)
+app.post("/api/orders", (req, res) => {
+  const { canteenId, items, paymentMethod } = req.body;
+  if (!items || items.length === 0) {
+    return res.status(400).json({ success: false, message: "Cart cannot be empty" });
+  }
+
+  const canteen = db.canteens.find((c) => c.id === canteenId);
+  if (!canteen) return res.status(404).json({ success: false, message: "Invalid canteen" });
+
+  // 1. Verify stock availability
+  for (const cartItem of items) {
+    const menuItem = db.menuItems.find((m) => m.id === cartItem.id);
+    if (!menuItem) {
+      return res.status(400).json({ success: false, message: `Item "${cartItem.name}" not found` });
+    }
+    if (menuItem.stock < cartItem.quantity) {
+      return res.status(400).json({
+        success: false,
+        message: `Sorry, "${menuItem.name}" only has ${menuItem.stock} portions left.`
+      });
+    }
+  }
+
+  // 2. Compute total amount
+  const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  // 3. Process payment via Wallet or Mock UPI
+  if (paymentMethod === "Wallet") {
+    if (db.wallet.balance < totalAmount) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient wallet balance (₹${db.wallet.balance}). Please top up or pay via UPI.`
+      });
+    }
+    db.wallet.balance -= totalAmount;
+    db.wallet.transactions.unshift({
+      id: `tx_${Date.now()}`,
+      type: "debit",
+      amount: totalAmount,
+      description: `Prepaid Order at ${canteen.name}`,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // 4. Reserve stock instantly
+  items.forEach((cartItem) => {
+    const menuItem = db.menuItems.find((m) => m.id === cartItem.id);
+    if (menuItem) menuItem.stock = Math.max(0, menuItem.stock - cartItem.quantity);
+  });
+
+  // 5. Generate unique single-use token (e.g. C1-048)
+  const canteenPrefix = canteen.code || (canteenId === "canteen-1" ? "C1" : "C2");
+  const existingTokens = db.orders
+    .filter((o) => o.canteenId === canteenId)
+    .map((o) => {
+      const match = o.token.match(/\d+$/);
+      return match ? parseInt(match[0], 10) : 0;
+    });
+  const nextNum = Math.max(42, ...(existingTokens.length ? existingTokens : [42])) + 1;
+  const token = `${canteenPrefix}-${String(nextNum).padStart(3, "0")}`;
+
+  // 6. Dynamic wait-time calculation (Slide 8)
+  const waitInfo = calculateWaitTime(canteenId, items);
+
+  const newOrder = {
+    id: `ord_${Date.now()}`,
+    token,
+    canteenId,
+    canteenName: canteen.name,
+    studentName: "You (Karthik)",
+    studentRoll: "CS24B001",
+    isCurrentUser: true,
+    items,
+    totalAmount,
+    paymentMethod: paymentMethod || "Wallet",
+    paymentStatus: "paid",
+    status: "cooking",
+    estimatedWaitMinutes: waitInfo.estimatedMinutes,
+    createdAt: new Date().toISOString(),
+    qrCodeData: `CAMPUS_HUB_${token}_SECRET_${Date.now()}`
+  };
+
+  db.orders.unshift(newOrder);
+
+  // In-app notification
+  db.notifications.unshift({
+    id: `nt_${Date.now()}`,
+    title: "Order Placed Successfully",
+    message: `Order #${token} confirmed. Your token is ready! Estimated wait: ~${waitInfo.estimatedMinutes} min.`,
+    type: "order",
+    timestamp: new Date().toISOString(),
+    read: false
+  });
+
+  res.json({
+    success: true,
+    data: newOrder,
+    message: `Order confirmed! Pickup token: ${token}`
+  });
+});
+
+// Update order status (Staff Panel)
+app.put("/api/orders/:id/status", (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const order = db.orders.find((o) => o.id === id);
+  if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+
+  order.status = status;
+  if (status === "ready") {
+    order.estimatedWaitMinutes = 0;
+    db.notifications.unshift({
+      id: `nt_${Date.now()}`,
+      title: "Food Ready for Pickup! 🍽️",
+      message: `Token #${order.token} is ready at ${order.canteenName} counter. Please collect!`,
+      type: "order",
+      timestamp: new Date().toISOString(),
+      read: false
+    });
+  } else if (status === "serving") {
+    order.estimatedWaitMinutes = 0;
+  } else if (status === "collected") {
+    order.collectedAt = new Date().toISOString();
+  } else if (status === "cancelled") {
+    // Auto-refund to wallet (Slide 7)
+    db.wallet.balance += order.totalAmount;
+    db.wallet.transactions.unshift({
+      id: `tx_ref_${Date.now()}`,
+      type: "credit",
+      amount: order.totalAmount,
+      description: `Auto-refund for cancelled order #${order.token}`,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  res.json({ success: true, data: order });
+});
+
+// Verify single-use token at pickup counter (Slide 6, 7)
+app.post("/api/orders/verify-token", (req, res) => {
+  const { token, canteenId } = req.body;
+  if (!token) return res.status(400).json({ success: false, message: "Token is required" });
+
+  const cleanToken = token.trim().toUpperCase();
+  const order = db.orders.find((o) => o.token.toUpperCase() === cleanToken);
+
+  if (!order) {
+    return res.status(404).json({ success: false, message: `Token "${cleanToken}" not found in system` });
+  }
+
+  if (canteenId && order.canteenId !== canteenId) {
+    return res.status(400).json({
+      success: false,
+      message: `Token #${cleanToken} belongs to ${order.canteenName}, not this counter!`
+    });
+  }
+
+  if (order.status === "collected") {
+    return res.status(400).json({
+      success: false,
+      message: `Token #${cleanToken} has ALREADY been collected on ${new Date(order.collectedAt).toLocaleTimeString()}. Single-use token prevents queue-jumping.`
+    });
+  }
+
+  if (order.status === "cancelled") {
+    return res.status(400).json({ success: false, message: `Token #${cleanToken} was cancelled and refunded.` });
+  }
+
+  // Mark as collected
+  order.status = "collected";
+  order.collectedAt = new Date().toISOString();
+
+  db.notifications.unshift({
+    id: `nt_${Date.now()}`,
+    title: "Order Collected! Enjoy your meal 🎉",
+    message: `Order #${order.token} verified and collected. Thank you for using Smart Campus Hub!`,
+    type: "order",
+    timestamp: new Date().toISOString(),
+    read: false
+  });
+
+  res.json({
+    success: true,
+    data: order,
+    message: `Verified successfully! Token #${cleanToken} marked as collected.`
+  });
+});
+
+// ----------------- WALLET -----------------
+app.get("/api/wallet", (req, res) => {
+  res.json({ success: true, data: db.wallet });
+});
+
+app.post("/api/wallet/topup", (req, res) => {
+  const { amount } = req.body;
+  const numAmount = parseFloat(amount);
+  if (isNaN(numAmount) || numAmount <= 0) {
+    return res.status(400).json({ success: false, message: "Invalid amount" });
+  }
+
+  db.wallet.balance += numAmount;
+  db.wallet.transactions.unshift({
+    id: `tx_${Date.now()}`,
+    type: "credit",
+    amount: numAmount,
+    description: "Wallet Top-up via Fast UPI",
+    timestamp: new Date().toISOString()
+  });
+
+  res.json({
+    success: true,
+    data: db.wallet,
+    message: `₹${numAmount} successfully added to your campus wallet!`
+  });
+});
+
+// ----------------- CAMPUS MAP & STORES -----------------
+app.get("/api/map", (req, res) => {
+  const { category, search } = req.query;
+  let locations = [...db.campusLocations];
+  if (category && category !== "All") {
+    locations = locations.filter((l) => l.category.toLowerCase() === category.toLowerCase());
+  }
+  if (search) {
+    const q = search.toLowerCase();
+    locations = locations.filter(
+      (l) => l.name.toLowerCase().includes(q) || l.description.toLowerCase().includes(q) || l.building.toLowerCase().includes(q)
+    );
+  }
+  res.json({ success: true, data: locations });
+});
+
+app.post("/api/map", (req, res) => {
+  const newLocation = {
+    id: `loc_${Date.now()}`,
+    ...req.body,
+    coordinates: req.body.coordinates || { x: 50, y: 50 }
+  };
+  db.campusLocations.push(newLocation);
+  res.json({ success: true, data: newLocation });
+});
+
+app.put("/api/map/:id", (req, res) => {
+  const { id } = req.params;
+  const idx = db.campusLocations.findIndex((l) => l.id === id);
+  if (idx === -1) return res.status(404).json({ success: false, message: "Location not found" });
+
+  db.campusLocations[idx] = { ...db.campusLocations[idx], ...req.body };
+  res.json({ success: true, data: db.campusLocations[idx] });
+});
+
+// ----------------- LOST & FOUND -----------------
+app.get("/api/lost-found", (req, res) => {
+  const { type, category, status, search } = req.query;
+  let items = [...db.lostAndFound];
+  if (type) items = items.filter((i) => i.type === type);
+  if (category && category !== "All") items = items.filter((i) => i.category.toLowerCase() === category.toLowerCase());
+  if (status && status !== "All") items = items.filter((i) => i.status === status);
+  if (search) {
+    const q = search.toLowerCase();
+    items = items.filter((i) => i.title.toLowerCase().includes(q) || i.description.toLowerCase().includes(q) || i.location.toLowerCase().includes(q));
+  }
+  res.json({ success: true, data: items });
+});
+
+app.post("/api/lost-found", (req, res) => {
+  const newItem = {
+    id: `lf_${Date.now()}`,
+    title: req.body.title,
+    type: req.body.type || "found",
+    category: req.body.category || "General",
+    location: req.body.location,
+    date: req.body.date || new Date().toISOString(),
+    description: req.body.description,
+    reportedBy: req.body.reportedBy || "Student (Karthik)",
+    contactInfo: req.body.contactInfo || "student@campus.edu",
+    status: "open",
+    imageUrl: req.body.imageUrl || "https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=500&auto=format&fit=crop&q=80",
+    claims: []
+  };
+  db.lostAndFound.unshift(newItem);
+  res.json({ success: true, data: newItem, message: "Item reported successfully to the Lost & Found portal!" });
+});
+
+app.post("/api/lost-found/:id/claim", (req, res) => {
+  const { id } = req.params;
+  const { claimantName, claimantRoll, claimantPhone, proofDetails } = req.body;
+  const item = db.lostAndFound.find((i) => i.id === id);
+  if (!item) return res.status(404).json({ success: false, message: "Item not found" });
+
+  const claim = {
+    id: `claim_${Date.now()}`,
+    claimantName: claimantName || "Karthik",
+    claimantRoll: claimantRoll || "CS24B001",
+    claimantPhone: claimantPhone || "9876543210",
+    proofDetails: proofDetails || "Claim submitted via Smart Campus Hub",
+    date: new Date().toISOString(),
+    status: "pending"
+  };
+
+  item.claims.push(claim);
+  item.status = "claimed";
+
+  res.json({ success: true, data: claim, message: "Claim request submitted for verification!" });
+});
+
+app.put("/api/lost-found/:id/claim/:claimId", (req, res) => {
+  const { id, claimId } = req.params;
+  const { action } = req.body; // "approve" or "reject"
+  const item = db.lostAndFound.find((i) => i.id === id);
+  if (!item) return res.status(404).json({ success: false, message: "Item not found" });
+
+  const claim = item.claims.find((c) => c.id === claimId);
+  if (!claim) return res.status(404).json({ success: false, message: "Claim not found" });
+
+  if (action === "approve") {
+    claim.status = "approved";
+    item.status = "verified_returned";
+  } else {
+    claim.status = "rejected";
+    if (item.claims.every((c) => c.status === "rejected")) {
+      item.status = "open";
+    }
+  }
+
+  res.json({ success: true, data: item });
+});
+
+// ----------------- CAMPUS ISSUE REPORTING (Slide 5) -----------------
+// 5-Stage Life Cycle: 1. Report -> 2. Route -> 3. Act -> 4. Notify -> 5. Resolve
+app.get("/api/issues", (req, res) => {
+  const { category, status, search } = req.query;
+  let issues = [...db.campusIssues];
+  if (category && category !== "All") issues = issues.filter((i) => i.category.toLowerCase() === category.toLowerCase());
+  if (status && status !== "All") issues = issues.filter((i) => i.status === status);
+  if (search) {
+    const q = search.toLowerCase();
+    issues = issues.filter((i) => i.title.toLowerCase().includes(q) || i.description.toLowerCase().includes(q) || i.location.toLowerCase().includes(q));
+  }
+  issues.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  res.json({ success: true, data: issues });
+});
+
+app.post("/api/issues", (req, res) => {
+  const { title, category, location, description, priority, photoUrl } = req.body;
+  if (!title || !description || !location) {
+    return res.status(400).json({ success: false, message: "Title, location and description are required" });
+  }
+
+  const count = db.campusIssues.length + 45;
+  const ticketNumber = `ISS-2026-${String(count).padStart(3, "0")}`;
+
+  // Department auto-routing based on category
+  let department = "Campus Estate Management";
+  if (category?.toLowerCase().includes("wifi") || category?.toLowerCase().includes("it")) {
+    department = "Campus IT Network Services";
+  } else if (category?.toLowerCase().includes("water") || category?.toLowerCase().includes("plumbing")) {
+    department = "Estate & Plumbing Facilities";
+  } else if (category?.toLowerCase().includes("electric") || category?.toLowerCase().includes("power")) {
+    department = "Electrical Maintenance Cell";
+  } else if (category?.toLowerCase().includes("sanitation") || category?.toLowerCase().includes("restroom")) {
+    department = "Housekeeping & Campus Hygiene";
+  } else if (category?.toLowerCase().includes("classroom") || category?.toLowerCase().includes("projector")) {
+    department = "Audio-Visual Technical Team";
+  }
+
+  const newIssue = {
+    id: `iss_${Date.now()}`,
+    ticketNumber,
+    title,
+    category: category || "General Facilities",
+    location,
+    description,
+    priority: priority || "Medium",
+    status: "reported", // Stage 1
+    currentStageIndex: 1, // 1: Report, 2: Route, 3: Act, 4: Notify, 5: Resolve
+    reportedBy: "Karthik (CS24B001)",
+    department,
+    assignedStaff: "Pending Route",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    photoUrl: photoUrl || "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500&auto=format&fit=crop&q=80",
+    timeline: [
+      {
+        stage: "Report",
+        status: "reported",
+        message: "Issue reported by student with problem details and location marker.",
+        timestamp: new Date().toISOString(),
+        actor: "Karthik"
+      }
+    ]
+  };
+
+  db.campusIssues.unshift(newIssue);
+
+  db.notifications.unshift({
+    id: `nt_${Date.now()}`,
+    title: `Campus Issue Created (${ticketNumber})`,
+    message: `Your issue "${title}" was logged and queued for administrative routing.`,
+    type: "issue",
+    timestamp: new Date().toISOString(),
+    read: false
+  });
+
+  res.json({
+    success: true,
+    data: newIssue,
+    message: `Issue logged under ticket #${ticketNumber}`
+  });
+});
+
+// Advance stage / Update issue (Slide 5: Report -> Route -> Act -> Notify -> Resolve)
+app.put("/api/issues/:id/stage", (req, res) => {
+  const { id } = req.params;
+  const { targetStage, assignedStaff, note } = req.body;
+  const issue = db.campusIssues.find((i) => i.id === id);
+  if (!issue) return res.status(404).json({ success: false, message: "Issue not found" });
+
+  const now = new Date().toISOString();
+  issue.updatedAt = now;
+
+  if (targetStage === "Route" || targetStage === 2) {
+    issue.currentStageIndex = 2;
+    issue.status = "routed";
+    if (assignedStaff) issue.assignedStaff = assignedStaff;
+    issue.timeline.push({
+      stage: "Route",
+      status: "routed",
+      message: note || `Routed to ${issue.department}. Assigned staff: ${issue.assignedStaff}.`,
+      timestamp: now,
+      actor: "Campus Admin"
+    });
+    db.notifications.unshift({
+      id: `nt_${Date.now()}`,
+      title: `Issue Routed (${issue.ticketNumber})`,
+      message: `Your issue was assigned to ${issue.assignedStaff || issue.department}.`,
+      type: "issue",
+      timestamp: now,
+      read: false
+    });
+  } else if (targetStage === "Act" || targetStage === 3) {
+    issue.currentStageIndex = 3;
+    issue.status = "in_progress";
+    issue.timeline.push({
+      stage: "Act",
+      status: "in_progress",
+      message: note || "Staff actively addressing the issue on-site.",
+      timestamp: now,
+      actor: issue.assignedStaff || "Staff"
+    });
+    db.notifications.unshift({
+      id: `nt_${Date.now()}`,
+      title: `Work in Progress (${issue.ticketNumber})`,
+      message: `Maintenance staff is currently resolving: ${issue.title}`,
+      type: "issue",
+      timestamp: now,
+      read: false
+    });
+  } else if (targetStage === "Notify" || targetStage === 4) {
+    issue.currentStageIndex = 4;
+    issue.timeline.push({
+      stage: "Notify",
+      status: "in_progress",
+      message: note || "Work completed and undergoing validation. Student notified.",
+      timestamp: now,
+      actor: "Operations System"
+    });
+  } else if (targetStage === "Resolve" || targetStage === 5) {
+    issue.currentStageIndex = 5;
+    issue.status = "resolved";
+    issue.timeline.push({
+      stage: "Resolve",
+      status: "resolved",
+      message: note || "Issue verified and resolved. Ticket closed.",
+      timestamp: now,
+      actor: "Campus Admin"
+    });
+    db.notifications.unshift({
+      id: `nt_${Date.now()}`,
+      title: `Issue Resolved! 🎉 (${issue.ticketNumber})`,
+      message: `Your reported issue "${issue.title}" has been marked resolved. Thank you!`,
+      type: "issue",
+      timestamp: now,
+      read: false
+    });
+  }
+
+  res.json({ success: true, data: issue });
+});
+
+// ----------------- NOTIFICATIONS & STATS -----------------
+app.get("/api/notifications", (req, res) => {
+  res.json({ success: true, data: db.notifications });
+});
+
+app.post("/api/notifications/mark-read", (req, res) => {
+  db.notifications.forEach((n) => (n.read = true));
+  res.json({ success: true, message: "All notifications marked as read" });
+});
+
+app.get("/api/stats", (req, res) => {
+  const totalRevenue = db.orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+  const activeOrdersCount = db.orders.filter((o) => ["received", "cooking", "ready", "serving"].includes(o.status)).length;
+  const completedOrdersCount = db.orders.filter((o) => o.status === "collected").length;
+  const openIssuesCount = db.campusIssues.filter((i) => i.status !== "resolved").length;
+  const resolvedIssuesCount = db.campusIssues.filter((i) => i.status === "resolved").length;
+  const openLostFoundCount = db.lostAndFound.filter((i) => i.status !== "verified_returned").length;
+
+  res.json({
+    success: true,
+    data: {
+      totalRevenue,
+      totalOrders: db.orders.length,
+      activeOrdersCount,
+      completedOrdersCount,
+      openIssuesCount,
+      resolvedIssuesCount,
+      openLostFoundCount,
+      canteens: db.canteens.map((c) => ({
+        id: c.id,
+        name: c.name,
+        crowdLevel: c.crowdLevel,
+        avgWaitTime: c.avgWaitTimeMinutes
+      }))
+    }
+  });
+});
+
+// Serve frontend client in production if built
+const clientDist = path.join(__dirname, "../client/dist");
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.use((req, res, next) => {
+    if (req.method === "GET" && !req.path.startsWith("/api/")) {
+      return res.sendFile(path.join(clientDist, "index.html"));
+    }
+    next();
+  });
+}
+
+app.listen(PORT, () => {
+  console.log(`Smart Campus Hub Server running on http://localhost:${PORT}`);
+});
