@@ -3,7 +3,7 @@ import { initialData } from './mockData';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Local storage key for persistent client-side state
-const STORAGE_KEY = 'smart_campus_hub_amrita_state_v10';
+const STORAGE_KEY = 'smart_campus_hub_amrita_state_v11';
 
 function getLocalState() {
   try {
@@ -15,7 +15,8 @@ function getLocalState() {
       'smart_campus_hub_amrita_state_v6',
       'smart_campus_hub_amrita_state_v7',
       'smart_campus_hub_amrita_state_v8',
-      'smart_campus_hub_amrita_state_v9'
+      'smart_campus_hub_amrita_state_v9',
+      'smart_campus_hub_amrita_state_v10'
     ].forEach(k => {
       try { localStorage.removeItem(k); } catch (e) {}
     });
