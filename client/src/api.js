@@ -374,11 +374,20 @@ export const api = {
 
   reportLostFound: (item) => {
     const isFormData = typeof FormData !== 'undefined' && item instanceof FormData;
+    let payload = item;
+    if (isFormData) {
+      payload = {};
+      for (const [key, value] of item.entries()) {
+        if (typeof value === 'string') {
+          payload[key] = value;
+        }
+      }
+    }
     return safeCall(
       fetch(`${API_BASE}/lost-found`, {
         method: 'POST',
-        headers: isFormData ? {} : { 'Content-Type': 'application/json' },
-        body: isFormData ? item : JSON.stringify(item),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       }).then(handleResponse),
       (state) => {
         let title = 'Lost/Found Item';
