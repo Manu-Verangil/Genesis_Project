@@ -84,7 +84,11 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
 
     setIsSubmitting(true);
     try {
-      const res = await api.login({ identifier: identifier.trim(), password: password.trim() });
+      const res = await api.login({
+        identifier: identifier.trim(),
+        password: password.trim(),
+        expectedRole: selectedRole
+      });
       if (res.success && res.user) {
         onLoginSuccess(res.user);
         if (onClose) onClose();

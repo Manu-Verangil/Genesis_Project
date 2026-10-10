@@ -77,6 +77,17 @@ function saveLocalState(state) {
   }
 }
 
+// In-memory access token storage (XSS protected: never stored in localStorage)
+let inMemoryAccessToken = null;
+let isRefreshing = false;
+let refreshQueue = [];
+
+export const setAccessToken = (token) => {
+  inMemoryAccessToken = token;
+};
+
+export const getAccessToken = () => inMemoryAccessToken;
+
 const handleResponse = async (r) => {
   const contentType = r.headers.get('content-type') || '';
   if (!r.ok) {
@@ -91,7 +102,9 @@ const handleResponse = async (r) => {
         if (cleanText) errorMessage = cleanText.substring(0, 200);
       }
     }
-    throw new Error(errorMessage);
+    const err = new Error(errorMessage);
+    err.status = r.status;
+    throw err;
   }
   if (contentType.includes('application/json')) {
     return r.json();
@@ -103,6 +116,61 @@ const handleResponse = async (r) => {
     return { success: true, data: text };
   }
 };
+
+// Authenticated fetch wrapper with automatic silent token refresh on 401
+async function authFetch(url, options = {}) {
+  const headers = { ...(options.headers || {}) };
+  if (inMemoryAccessToken && !headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${inMemoryAccessToken}`;
+  }
+
+  const fetchOptions = {
+    ...options,
+    headers,
+    credentials: 'include' // Sends/receives HttpOnly refresh cookie
+  };
+
+  try {
+    const res = await fetch(url, fetchOptions);
+    if (res.status === 401 && !url.includes('/auth/login') && !url.includes('/auth/refresh')) {
+      // Trigger silent auto-refresh
+      if (!isRefreshing) {
+        isRefreshing = true;
+        try {
+          const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+            method: 'POST',
+            credentials: 'include'
+          }).then(handleResponse);
+
+          if (refreshRes && refreshRes.accessToken) {
+            setAccessToken(refreshRes.accessToken);
+            refreshQueue.forEach((cb) => cb(refreshRes.accessToken));
+            refreshQueue = [];
+          } else {
+            setAccessToken(null);
+          }
+        } catch (e) {
+          setAccessToken(null);
+          refreshQueue = [];
+        } finally {
+          isRefreshing = false;
+        }
+      } else {
+        // Wait for active refresh to complete
+        await new Promise((resolve) => refreshQueue.push(resolve));
+      }
+
+      // Retry original request with new token if available
+      if (inMemoryAccessToken) {
+        headers['Authorization'] = `Bearer ${inMemoryAccessToken}`;
+        return fetch(url, { ...options, headers, credentials: 'include' });
+      }
+    }
+    return res;
+  } catch (err) {
+    throw err;
+  }
+}
 
 // Safe caller: tries backend API, if it fails or returns 404, falls back to rich client data
 async function safeCall(fetchPromise, fallbackFn) {
@@ -119,28 +187,82 @@ async function safeCall(fetchPromise, fallbackFn) {
 
 export const api = {
   // Authentication
-  login: (credentials) =>
-    fetch(`${API_BASE}/auth/login`, {
+  login: async (credentials) => {
+    const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials),
-    }).then(handleResponse),
+      credentials: 'include',
+      body: JSON.stringify(credentials)
+    }).then(handleResponse);
 
-  logout: () =>
-    fetch(`${API_BASE}/auth/logout`, {
+    if (res && res.accessToken) {
+      setAccessToken(res.accessToken);
+    }
+    return res;
+  },
+
+  register: async (userData) => {
+    const res = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
-    }).then(handleResponse),
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(userData)
+    }).then(handleResponse);
+
+    if (res && res.accessToken) {
+      setAccessToken(res.accessToken);
+    }
+    return res;
+  },
+
+  refreshToken: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include'
+      }).then(handleResponse);
+
+      if (res && res.accessToken) {
+        setAccessToken(res.accessToken);
+      }
+      return res;
+    } catch (e) {
+      setAccessToken(null);
+      throw e;
+    }
+  },
+
+  logout: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      }).then(handleResponse);
+      setAccessToken(null);
+      return res;
+    } catch (e) {
+      setAccessToken(null);
+      return { success: true };
+    }
+  },
 
   getCurrentUser: () =>
-    fetch(`${API_BASE}/auth/me`).then(handleResponse),
+    authFetch(`${API_BASE}/auth/me`).then(handleResponse),
 
-  guestLogin: () =>
-    fetch(`${API_BASE}/auth/guest`, {
+  guestLogin: async () => {
+    const res = await fetch(`${API_BASE}/auth/guest`, {
       method: 'POST',
-    }).then(handleResponse),
+      credentials: 'include'
+    }).then(handleResponse);
+
+    if (res && res.accessToken) {
+      setAccessToken(res.accessToken);
+    }
+    return res;
+  },
 
   getStudentSpending: () =>
-    fetch(`${API_BASE}/student/spending`).then(handleResponse),
+    authFetch(`${API_BASE}/student/spending`).then(handleResponse),
 
   // Canteens & Menu
   getCanteens: () =>
