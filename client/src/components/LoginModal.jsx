@@ -102,6 +102,14 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#8F002E]/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
       <div className="relative w-full max-w-xl bg-white border border-[#E8E3D7] rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8 my-8 text-slate-800">
         
+        {/* Shaded Amrita Emblem in Login Modal Background */}
+        <img
+          src="/amrita-logo.svg"
+          alt=""
+          aria-hidden="true"
+          className="absolute -right-16 -bottom-16 w-80 h-80 opacity-[0.05] pointer-events-none select-none"
+        />
+
         {/* Top Header Bar in Official Amrita Maroon */}
         <div className="bg-[#B0003A] -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 p-6 mb-6 text-white flex items-center justify-between border-b border-[#8F002E]">
           <div className="flex items-center gap-3">

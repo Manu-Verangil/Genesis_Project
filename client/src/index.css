@@ -90,3 +90,27 @@
   animation: pulseGlow 2s infinite ease-in-out;
 }
 
+/* Amrita Official Shaded Watermark Background */
+.amrita-watermark-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+}
+
+.amrita-watermark-overlay img {
+  width: min(850px, 85vw);
+  max-height: 85vh;
+  object-fit: contain;
+  opacity: 0.045;
+  filter: contrast(1.1);
+  transform: translateY(-20px);
+  pointer-events: none;
+  user-select: none;
+}
+

@@ -123,7 +123,15 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F0] text-slate-800 flex flex-col font-sans selection:bg-[#B0003A] selection:text-white">
+    <div className="min-h-screen bg-[#FAF7F0] text-slate-800 flex flex-col font-sans selection:bg-[#B0003A] selection:text-white relative overflow-x-hidden">
+      {/* Global Shaded Amrita Vishwa Vidyapeetham Emblem Background Watermark */}
+      <div className="amrita-watermark-overlay" aria-hidden="true">
+        <img
+          src="/amrita-logo.svg"
+          alt="Amrita Vishwa Vidyapeetham Emblem Watermark"
+        />
+      </div>
+
       {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -142,7 +150,7 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 relative z-10">
         {/* Amrita Campus Portal Official Header & Inspiration Banner (Universal for Student, Staff & Admin) */}
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
@@ -164,9 +172,16 @@ export function App() {
             </div>
           </div>
 
-          {/* Inspiration Quote Card from Amrita Portal */}
-          <div className="mt-3 bg-white border border-[#E8E3D7] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-start gap-3.5">
+          {/* Inspiration Quote Card from Amrita Portal with Shaded Watermark */}
+          <div className="mt-3 bg-white border border-[#E8E3D7] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
+            {/* Shaded Amrita Emblem in Card Corner */}
+            <img
+              src="/amrita-logo.svg"
+              alt=""
+              aria-hidden="true"
+              className="absolute -right-8 -bottom-10 w-56 h-56 opacity-[0.06] pointer-events-none select-none"
+            />
+            <div className="flex items-start gap-3.5 relative z-10">
               <span className="text-3xl sm:text-4xl text-[#D4A017] font-serif leading-none shrink-0 select-none">“</span>
               <div>
                 <p className="text-xs sm:text-[13px] text-slate-700 leading-relaxed font-normal italic">
@@ -178,7 +193,7 @@ export function App() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0 border-t md:border-t-0 md:border-l border-[#E8E3D7] pt-3 md:pt-0 md:pl-4 text-xs">
+            <div className="flex items-center gap-2 shrink-0 border-t md:border-t-0 md:border-l border-[#E8E3D7] pt-3 md:pt-0 md:pl-4 text-xs relative z-10">
               <div className="text-center px-2">
                 <span className="block text-[10px] uppercase font-bold text-slate-400">Portal View</span>
                 <span className="font-extrabold text-[#B0003A] text-xs capitalize">{currentRole}</span>

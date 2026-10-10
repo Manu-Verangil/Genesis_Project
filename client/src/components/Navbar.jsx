@@ -51,8 +51,8 @@ export function Navbar({
         <div className="flex items-center justify-between min-h-[4rem] py-2 gap-3">
           {/* Logo & Platform Title */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/25 p-0.5 shadow-sm flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5 text-[#D4A017]" />
+            <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/25 p-1 shadow-sm flex items-center justify-center shrink-0 overflow-hidden">
+              <img src="/amrita-logo.svg" alt="Amrita Vishwa Vidyapeetham" className="w-8 h-8 object-contain brightness-0 invert" />
             </div>
             <div className="flex flex-col justify-center min-w-0">
               <div className="flex items-center gap-2">
