@@ -714,17 +714,24 @@ app.get("/api/stats", (req, res) => {
 });
 
 // Serve frontend client in production if built
-const clientDist = path.join(__dirname, "../client/dist");
-if (fs.existsSync(clientDist)) {
-  app.use(express.static(clientDist));
+const distPath = fs.existsSync(path.join(__dirname, "../dist"))
+  ? path.join(__dirname, "../dist")
+  : path.join(__dirname, "../client/dist");
+
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
   app.use((req, res, next) => {
     if (req.method === "GET" && !req.path.startsWith("/api/")) {
-      return res.sendFile(path.join(clientDist, "index.html"));
+      return res.sendFile(path.join(distPath, "index.html"));
     }
     next();
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`Smart Campus Hub Server running on http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Smart Campus Hub Server running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
