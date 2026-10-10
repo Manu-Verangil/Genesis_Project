@@ -24,7 +24,9 @@ function getLocalState() {
       const state = JSON.parse(saved);
       // Ensure campusLocations & canteens always stay strictly synced with the latest real GPS coordinates
       state.campusLocations = initialData.campusLocations;
-      state.canteens = initialData.canteens;
+      if (!state.canteens || state.canteens.length < initialData.canteens.length) {
+        state.canteens = initialData.canteens;
+      }
       if (!state.menuItems || state.menuItems.length < initialData.menuItems.length) {
         state.menuItems = initialData.menuItems;
       }
@@ -94,6 +96,33 @@ export const api = {
       (state) => state.canteens
     ),
 
+  addCanteen: (canteenData) =>
+    safeCall(
+      fetch(`${API_BASE}/canteens`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(canteenData),
+      }).then(handleResponse),
+      (state) => {
+        const newCanteen = {
+          id: canteenData.id || `canteen-${Date.now()}`,
+          name: canteenData.name,
+          code: canteenData.code || `C${(state.canteens || []).length + 1}`,
+          location: canteenData.location || 'Campus Amenities Block',
+          timings: canteenData.timings || '08:00 AM - 10:00 PM',
+          status: 'open',
+          crowdLevel: canteenData.crowdLevel || 'Low',
+          avgWaitTimeMinutes: Number(canteenData.avgWaitTimeMinutes) || 5,
+          activeOrdersCount: 0,
+          counterSpeed: canteenData.counterSpeed || 'Fast',
+          ...canteenData,
+        };
+        state.canteens.push(newCanteen);
+        saveLocalState(state);
+        return newCanteen;
+      }
+    ),
+
   updateCrowdLevel: (canteenId, crowdLevel) =>
     safeCall(
       fetch(`${API_BASE}/canteens/${canteenId}/crowd`, {
@@ -150,6 +179,18 @@ export const api = {
         if (item) Object.assign(item, updates);
         saveLocalState(state);
         return item;
+      }
+    ),
+
+  deleteMenuItem: (id) =>
+    safeCall(
+      fetch(`${API_BASE}/menu/${id}`, {
+        method: 'DELETE',
+      }).then(handleResponse),
+      (state) => {
+        state.menuItems = (state.menuItems || []).filter((m) => m.id !== id);
+        saveLocalState(state);
+        return { success: true, id };
       }
     ),
 
