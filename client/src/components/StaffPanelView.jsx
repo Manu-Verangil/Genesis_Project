@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   ChefHat,
   CheckCircle,
@@ -28,7 +28,10 @@ import {
   X,
   Save,
   Tag,
-  DollarSign
+  DollarSign,
+  Upload,
+  Link,
+  Image as ImageIcon
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -52,6 +55,9 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
   // Modals for Staff Menu Editing & Creation
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [imageSourceMode, setImageSourceMode] = useState('upload'); // 'upload' or 'url'
+  const addFileInputRef = useRef(null);
+  const editFileInputRef = useRef(null);
 
   // Form states
   const [itemForm, setItemForm] = useState({
@@ -176,9 +182,30 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
     }
   };
 
+  // Handle image file upload from local system
+  const handleImageFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload a valid image file (PNG, JPG, JPEG, WEBP).');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image file size exceeds 5MB. Please choose a smaller image.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (loadEvent) => {
+      setItemForm((prev) => ({ ...prev, imageUrl: loadEvent.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Open Edit Modal for an item
   const openEditModal = (item) => {
     setEditingItem(item);
+    const isUploadedData = item.imageUrl && item.imageUrl.startsWith('data:');
+    setImageSourceMode(isUploadedData ? 'upload' : (item.imageUrl ? 'url' : 'upload'));
     setItemForm({
       name: item.name,
       category: item.category || 'Main Course',
@@ -194,6 +221,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
   // Open Add Modal
   const openAddModal = () => {
     setEditingItem(null);
+    setImageSourceMode('upload');
     setItemForm({
       name: '',
       category: 'Main Course',
@@ -202,7 +230,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       stock: 20,
       isVeg: true,
       description: '',
-      imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80'
+      imageUrl: ''
     });
     setIsAddModalOpen(true);
   };
@@ -212,8 +240,12 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
     e.preventDefault();
     if (!itemForm.name.trim()) return alert('Please enter a dish name');
     try {
+      const defaultFallback = itemForm.isVeg
+        ? 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80'
+        : 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500&auto=format&fit=crop&q=80';
       const payload = {
         ...itemForm,
+        imageUrl: itemForm.imageUrl?.trim() || defaultFallback,
         canteenId: selectedCanteenId,
         price: Number(itemForm.price),
         stock: Number(itemForm.stock),
@@ -236,6 +268,9 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
     e.preventDefault();
     if (!editingItem) return;
     try {
+      const defaultFallback = itemForm.isVeg
+        ? 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80'
+        : 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500&auto=format&fit=crop&q=80';
       const updates = {
         name: itemForm.name,
         category: itemForm.category,
@@ -244,7 +279,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
         prepTimeMinutes: Number(itemForm.prepTimeMinutes),
         isVeg: itemForm.isVeg,
         description: itemForm.description,
-        imageUrl: itemForm.imageUrl
+        imageUrl: itemForm.imageUrl?.trim() || defaultFallback
       };
       const res = await api.updateMenuItem(editingItem.id, updates);
       if (res.success) {
@@ -1235,15 +1270,131 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-300 font-bold mb-1.5">Image URL</label>
-                <input
-                  type="text"
-                  placeholder="https://..."
-                  value={itemForm.imageUrl}
-                  onChange={(e) => setItemForm({ ...itemForm, imageUrl: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
-                />
+              {/* Dish Photo: Upload from System OR Web URL */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-slate-300 font-bold">Dish Image</label>
+                  <div className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setImageSourceMode('upload')}
+                      className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
+                        imageSourceMode === 'upload'
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Upload className="w-3 h-3" />
+                      <span>Upload from System</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageSourceMode('url')}
+                      className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
+                        imageSourceMode === 'url'
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Link className="w-3 h-3" />
+                      <span>Image URL</span>
+                    </button>
+                  </div>
+                </div>
+
+                {imageSourceMode === 'upload' ? (
+                  <div>
+                    <input
+                      ref={addFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileUpload}
+                      className="hidden"
+                    />
+                    <div
+                      onClick={() => addFileInputRef.current?.click()}
+                      className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 group ${
+                        itemForm.imageUrl
+                          ? 'border-emerald-500/40 bg-emerald-950/20 hover:bg-emerald-950/30'
+                          : 'border-slate-800 bg-slate-950/70 hover:border-emerald-500/50 hover:bg-slate-950'
+                      }`}
+                    >
+                      {itemForm.imageUrl ? (
+                        <div className="flex items-center gap-3.5 w-full">
+                          <img
+                            src={itemForm.imageUrl}
+                            alt="Selected"
+                            className="w-16 h-16 rounded-xl object-cover border border-emerald-500/40 shrink-0 shadow-md"
+                          />
+                          <div className="text-left flex-1 min-w-0">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 block">
+                              ✓ Image Loaded From System
+                            </span>
+                            <span className="text-xs text-slate-200 truncate block mt-0.5 font-medium">
+                              Click to choose another photo
+                            </span>
+                            <span className="text-[10px] text-slate-500 block">
+                              PNG, JPG, WEBP (Max 5MB)
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setItemForm((prev) => ({ ...prev, imageUrl: '' }));
+                            }}
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 transition"
+                            title="Remove uploaded image"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition duration-200">
+                            <Upload className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-slate-200 text-xs block">
+                              Upload photo from your system / device
+                            </span>
+                            <span className="text-[11px] text-slate-500 block mt-0.5">
+                              Click here to browse files (PNG, JPG, WEBP up to 5MB)
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          placeholder="Paste web image link: https://..."
+                          value={itemForm.imageUrl}
+                          onChange={(e) => setItemForm({ ...itemForm, imageUrl: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 font-mono text-[11px]"
+                        />
+                      </div>
+                      {itemForm.imageUrl && (
+                        <img
+                          src={itemForm.imageUrl}
+                          alt="Preview"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80';
+                          }}
+                          className="w-10 h-10 rounded-xl object-cover border border-slate-800 shrink-0"
+                        />
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-500">
+                      Paste a direct web URL to an image file.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -1397,14 +1548,131 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-300 font-bold mb-1.5">Image URL</label>
-                <input
-                  type="text"
-                  value={itemForm.imageUrl}
-                  onChange={(e) => setItemForm({ ...itemForm, imageUrl: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 font-mono text-[11px]"
-                />
+              {/* Dish Photo: Upload from System OR Web URL */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-slate-300 font-bold">Dish Image</label>
+                  <div className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setImageSourceMode('upload')}
+                      className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
+                        imageSourceMode === 'upload'
+                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Upload className="w-3 h-3" />
+                      <span>Upload from System</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageSourceMode('url')}
+                      className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
+                        imageSourceMode === 'url'
+                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Link className="w-3 h-3" />
+                      <span>Image URL</span>
+                    </button>
+                  </div>
+                </div>
+
+                {imageSourceMode === 'upload' ? (
+                  <div>
+                    <input
+                      ref={editFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileUpload}
+                      className="hidden"
+                    />
+                    <div
+                      onClick={() => editFileInputRef.current?.click()}
+                      className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 group ${
+                        itemForm.imageUrl
+                          ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30'
+                          : 'border-slate-800 bg-slate-950/70 hover:border-cyan-500/50 hover:bg-slate-950'
+                      }`}
+                    >
+                      {itemForm.imageUrl ? (
+                        <div className="flex items-center gap-3.5 w-full">
+                          <img
+                            src={itemForm.imageUrl}
+                            alt="Selected"
+                            className="w-16 h-16 rounded-xl object-cover border border-cyan-500/40 shrink-0 shadow-md"
+                          />
+                          <div className="text-left flex-1 min-w-0">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-cyan-400 block">
+                              ✓ Dish Photo Selected
+                            </span>
+                            <span className="text-xs text-slate-200 truncate block mt-0.5 font-medium">
+                              Click to choose another photo
+                            </span>
+                            <span className="text-[10px] text-slate-500 block">
+                              PNG, JPG, WEBP (Max 5MB)
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setItemForm((prev) => ({ ...prev, imageUrl: '' }));
+                            }}
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 transition"
+                            title="Remove uploaded image"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-400 group-hover:scale-110 transition duration-200">
+                            <Upload className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-slate-200 text-xs block">
+                              Upload new photo from your system / device
+                            </span>
+                            <span className="text-[11px] text-slate-500 block mt-0.5">
+                              Click here to browse files (PNG, JPG, WEBP up to 5MB)
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          placeholder="Paste web image link: https://..."
+                          value={itemForm.imageUrl}
+                          onChange={(e) => setItemForm({ ...itemForm, imageUrl: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 font-mono text-[11px]"
+                        />
+                      </div>
+                      {itemForm.imageUrl && (
+                        <img
+                          src={itemForm.imageUrl}
+                          alt="Preview"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80';
+                          }}
+                          className="w-10 h-10 rounded-xl object-cover border border-slate-800 shrink-0"
+                        />
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-500">
+                      Paste a direct web URL to an image file.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
