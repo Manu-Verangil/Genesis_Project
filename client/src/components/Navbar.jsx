@@ -100,14 +100,7 @@ export function Navbar({
             <button
               onClick={onOpenVoice}
               title="Voice Guidance Assistant"
-            <button
-              onClick={onOpenVoice}
-              title="Voice Guidance Assistant"
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700 hover:border-blue-500/40 text-xs font-semibold whitespace-nowrap transition group"
-            >
-              <Mic className="w-3.5 h-3.5 text-blue-400 group-hover:scale-110 transition shrink-0" />
-              <span className="hidden sm:inline">Voice Guide</span>
-            </button>
             >
               <Mic className="w-3.5 h-3.5 text-blue-400 group-hover:scale-110 transition shrink-0" />
               <span className="hidden sm:inline">Voice Guide</span>
