@@ -37,6 +37,8 @@ export function LostAndFoundView() {
     contactInfo: 'student@campus.edu',
     imageUrl: ''
   });
+  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   // Claim Form State
   const [claimForm, setClaimForm] = useState({
@@ -79,22 +81,58 @@ export function LostAndFoundView() {
     return true;
   });
 
+  const resetReportForm = () => {
+    setReportForm({
+      title: '',
+      type: 'found',
+      category: 'Electronics',
+      location: '',
+      description: '',
+      contactInfo: 'student@campus.edu',
+      imageUrl: ''
+    });
+    setImagePreview(null);
+    setSelectedFile(null);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReportForm((prev) => ({ ...prev, imageUrl: reader.result }));
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setSelectedFile(null);
+      setReportForm((prev) => ({ ...prev, imageUrl: '' }));
+      setImagePreview(null);
+    }
+  };
+
   const handleReportSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.reportLostFound(reportForm);
+      let payload = reportForm;
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('title', reportForm.title);
+        formData.append('type', reportForm.type);
+        formData.append('category', reportForm.category);
+        formData.append('location', reportForm.location);
+        formData.append('description', reportForm.description);
+        formData.append('contactInfo', reportForm.contactInfo);
+        formData.append('imageUrl', reportForm.imageUrl);
+        formData.append('image', selectedFile);
+        payload = formData;
+      }
+      const res = await api.reportLostFound(payload);
       if (res.success) {
         alert(res.message || 'Item reported successfully!');
         setIsReportModalOpen(false);
-        setReportForm({
-          title: '',
-          type: 'found',
-          category: 'Electronics',
-          location: '',
-          description: '',
-          contactInfo: 'student@campus.edu',
-          imageUrl: ''
-        });
+        resetReportForm();
         fetchItems();
       }
     } catch (err) {
@@ -398,14 +436,30 @@ export function LostAndFoundView() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Photo Image URL (Optional)</label>
+                <label className="block text-slate-300 font-semibold mb-1">Upload Item Photo</label>
                 <input
-                  type="url"
-                  placeholder="https://... (or leave empty for default placeholder)"
-                  value={reportForm.imageUrl}
-                  onChange={(e) => setReportForm({ ...reportForm, imageUrl: e.target.value })}
-                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer focus:outline-none"
                 />
+                {imagePreview && (
+                  <div className="mt-2 relative w-full h-36 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImagePreview(null);
+                        setSelectedFile(null);
+                        setReportForm((prev) => ({ ...prev, imageUrl: '' }));
+                      }}
+                      className="absolute top-2 right-2 p-1.5 bg-slate-900/80 hover:bg-rose-600 text-white rounded-lg transition"
+                      title="Remove image"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="pt-2">
