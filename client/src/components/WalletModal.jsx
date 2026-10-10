@@ -33,39 +33,39 @@ export function WalletModal({ isOpen, onClose, wallet, onWalletUpdated }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-      <div className="relative w-full max-w-md bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl p-6 overflow-hidden">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in">
+      <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 overflow-hidden text-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <div className="p-2.5 rounded-xl bg-rose-50 text-[#A41034] border border-rose-200">
               <Wallet className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-slate-100">Smart Campus Wallet</h3>
-              <p className="text-xs text-slate-400">Prepaid orders & zero cash queues</p>
+              <h3 className="font-bold text-lg text-slate-900">Smart Campus Wallet</h3>
+              <p className="text-xs text-slate-500">Prepaid orders & zero cash queues</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Balance Card */}
-        <div className="my-5 p-5 rounded-2xl bg-gradient-to-br from-emerald-600/30 via-slate-800 to-slate-900 border border-emerald-500/40 relative overflow-hidden">
+        <div className="my-5 p-5 rounded-2xl bg-[#A41034] text-white shadow-sm relative overflow-hidden">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-xs uppercase tracking-wider font-semibold text-emerald-400">
+              <span className="text-xs uppercase tracking-wider font-semibold text-rose-200">
                 Available Student Balance
               </span>
-              <div className="text-3xl font-extrabold text-white mt-1">
+              <div className="text-3xl font-extrabold text-white mt-1 font-mono">
                 ₹{wallet.balance.toFixed(2)}
               </div>
-              <p className="text-xs text-slate-300 mt-1">{wallet.studentName}</p>
+              <p className="text-xs text-rose-100 mt-1">{wallet.studentName}</p>
             </div>
-            <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30 flex items-center gap-1">
+            <span className="px-2.5 py-1 rounded-full bg-white/20 text-white text-xs font-semibold border border-white/30 flex items-center gap-1 backdrop-blur-xs">
               <ShieldCheck className="w-3.5 h-3.5" /> Instant Pay
             </span>
           </div>
@@ -74,7 +74,7 @@ export function WalletModal({ isOpen, onClose, wallet, onWalletUpdated }) {
         {/* Top Up Form */}
         <form onSubmit={handleTopUp} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
               Instant Top-up Amount (₹)
             </label>
             <div className="relative">
@@ -86,7 +86,7 @@ export function WalletModal({ isOpen, onClose, wallet, onWalletUpdated }) {
                 min="10"
                 step="10"
                 required
-                className="w-full pl-8 pr-4 py-2.5 bg-slate-800/90 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-[#A41034] shadow-xs"
               />
             </div>
           </div>
@@ -100,8 +100,8 @@ export function WalletModal({ isOpen, onClose, wallet, onWalletUpdated }) {
                 onClick={() => setTopUpAmount(amt)}
                 className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition ${
                   topUpAmount === amt
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/60 font-semibold'
-                    : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'
+                    ? 'bg-rose-50 text-[#A41034] border-[#A41034] font-bold shadow-xs'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
                 +₹{amt}
@@ -116,8 +116,8 @@ export function WalletModal({ isOpen, onClose, wallet, onWalletUpdated }) {
               onClick={() => setPaymentMode('upi')}
               className={`flex-1 py-2 text-xs rounded-xl border flex items-center justify-center gap-1.5 transition ${
                 paymentMode === 'upi'
-                  ? 'bg-blue-600/20 border-blue-500 text-blue-300 font-semibold'
-                  : 'bg-slate-800 border-slate-700 text-slate-400'
+                  ? 'bg-rose-50 border-[#A41034] text-[#A41034] font-bold'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900'
               }`}
             >
               UPI Auto-Debit
@@ -127,8 +127,8 @@ export function WalletModal({ isOpen, onClose, wallet, onWalletUpdated }) {
               onClick={() => setPaymentMode('card')}
               className={`flex-1 py-2 text-xs rounded-xl border flex items-center justify-center gap-1.5 transition ${
                 paymentMode === 'card'
-                  ? 'bg-blue-600/20 border-blue-500 text-blue-300 font-semibold'
-                  : 'bg-slate-800 border-slate-700 text-slate-400'
+                  ? 'bg-rose-50 border-[#A41034] text-[#A41034] font-bold'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900'
               }`}
             >
               RuPay / NetBanking
@@ -138,36 +138,36 @@ export function WalletModal({ isOpen, onClose, wallet, onWalletUpdated }) {
           <button
             type="submit"
             disabled={isProcessing}
-            className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-2.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-bold text-sm transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isProcessing ? 'Processing Transaction...' : <><Plus className="w-4 h-4" /> Add Money to Wallet</>}
           </button>
 
           {successMessage && (
-            <div className="p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2 animate-in fade-in">
-              <CheckCircle className="w-4 h-4 shrink-0" />
+            <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 animate-in fade-in font-medium">
+              <CheckCircle className="w-4 h-4 shrink-0 text-emerald-600" />
               <span>{successMessage}</span>
             </div>
           )}
         </form>
 
         {/* Recent Transactions */}
-        <div className="mt-5 pt-4 border-t border-slate-800">
-          <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5">
+        <div className="mt-5 pt-4 border-t border-slate-100">
+          <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2.5">
             Recent Wallet History
           </h4>
           <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
             {wallet.transactions?.map((tx) => (
               <div
                 key={tx.id}
-                className="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-700/30 text-xs"
+                className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs"
               >
                 <div className="flex items-center gap-2">
                   <div
                     className={`p-1 rounded-md ${
                       tx.type === 'credit'
-                        ? 'bg-emerald-500/20 text-emerald-400'
-                        : 'bg-rose-500/20 text-rose-400'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-rose-100 text-[#A41034]'
                     }`}
                   >
                     {tx.type === 'credit' ? (
@@ -177,15 +177,15 @@ export function WalletModal({ isOpen, onClose, wallet, onWalletUpdated }) {
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-slate-200">{tx.description}</p>
+                    <p className="font-medium text-slate-800">{tx.description}</p>
                     <p className="text-[10px] text-slate-400">
                       {new Date(tx.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
                 <span
-                  className={`font-semibold ${
-                    tx.type === 'credit' ? 'text-emerald-400' : 'text-slate-300'
+                  className={`font-semibold font-mono ${
+                    tx.type === 'credit' ? 'text-emerald-700' : 'text-slate-700'
                   }`}
                 >
                   {tx.type === 'credit' ? '+' : '-'}₹{tx.amount}

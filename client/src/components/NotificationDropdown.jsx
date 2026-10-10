@@ -15,22 +15,22 @@ export function NotificationDropdown({ isOpen, onClose, notifications, onNotific
   };
 
   return (
-    <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl p-4 animate-in fade-in slide-in-from-top-2">
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+    <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 animate-in fade-in slide-in-from-top-2 text-slate-800">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-blue-400" />
-          <h4 className="font-bold text-sm text-white">Campus Live Alerts</h4>
+          <Bell className="w-4 h-4 text-[#A41034]" />
+          <h4 className="font-bold text-sm text-slate-900">Campus Live Alerts</h4>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleMarkAllRead}
-            className="text-[11px] text-blue-400 hover:text-blue-300 font-medium transition"
+            className="text-[11px] text-[#A41034] hover:text-[#880E2D] font-semibold transition"
           >
             Mark all read
           </button>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-200 transition"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -39,7 +39,7 @@ export function NotificationDropdown({ isOpen, onClose, notifications, onNotific
 
       <div className="mt-3 space-y-2.5 max-h-80 overflow-y-auto pr-1">
         {notifications.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-400">
+          <div className="py-8 text-center text-xs text-slate-500">
             No active notifications right now.
           </div>
         ) : (
@@ -53,18 +53,18 @@ export function NotificationDropdown({ isOpen, onClose, notifications, onNotific
                 key={n.id}
                 className={`p-3 rounded-xl border text-xs transition ${
                   n.read
-                    ? 'bg-slate-800/40 border-slate-800 text-slate-300'
-                    : 'bg-slate-800 border-blue-500/40 text-white shadow-sm'
+                    ? 'bg-slate-50 border-slate-200 text-slate-600'
+                    : 'bg-rose-50/50 border-rose-200 text-slate-900 shadow-xs'
                 }`}
               >
                 <div className="flex items-start gap-2.5">
                   <div
                     className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${
                       isStock
-                        ? 'bg-emerald-500/20 text-emerald-400'
+                        ? 'bg-emerald-100 text-emerald-700'
                         : isOrder
-                        ? 'bg-amber-500/20 text-amber-400'
-                        : 'bg-rose-500/20 text-rose-400'
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-rose-100 text-[#A41034]'
                     }`}
                   >
                     {isStock ? (
@@ -77,12 +77,12 @@ export function NotificationDropdown({ isOpen, onClose, notifications, onNotific
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-100">{n.title}</span>
+                      <span className="font-semibold text-slate-900">{n.title}</span>
                       <span className="text-[10px] text-slate-400">
                         {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <p className="text-slate-300 mt-1 leading-relaxed text-[11px]">{n.message}</p>
+                    <p className="text-slate-600 mt-1 leading-relaxed text-[11px]">{n.message}</p>
                   </div>
                 </div>
               </div>
