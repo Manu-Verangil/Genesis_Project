@@ -29,11 +29,11 @@ function calculateWaitTime(canteenId, orderItems = []) {
 
   let totalPrepTimeAhead = 0;
   pendingOrders.forEach((o) => {
-    const orderPrep = o.items.reduce((acc, item) => Math.max(acc, item.prepTimeMinutes || 3), 0);
+    const orderPrep = (o.items || []).reduce((acc, item) => Math.max(acc, item?.prepTimeMinutes || 3), 0);
     totalPrepTimeAhead += orderPrep;
   });
 
-  const currentOrderPrep = orderItems.reduce((acc, item) => Math.max(acc, item.prepTimeMinutes || 3), 0);
+  const currentOrderPrep = (orderItems || []).reduce((acc, item) => Math.max(acc, item?.prepTimeMinutes || 3), 0);
   const estimatedMinutes = Math.max(3, Math.round((totalPrepTimeAhead * 0.6 + currentOrderPrep) * rushFactor));
   return {
     estimatedMinutes,
