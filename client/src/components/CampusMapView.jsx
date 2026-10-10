@@ -46,31 +46,34 @@ const TILE_LAYERS = {
 // AMRITA VISHWA VIDYAPEETHAM, ETTIMADAI, COIMBATORE
 // Exact Campus Coordinates & Compound Boundary Lockdown
 // ========================================================
-const AMRITA_CAMPUS_CENTER = [10.9007, 76.8835];
+const AMRITA_CAMPUS_CENTER = [10.9036, 76.8997];
 
 // Strict Campus Compound Bounds: [South-West, North-East]
-// Map will be stiffly locked within this 400-acre perimeter
+// Exact bounds enclosing the 400-acre Amrita Vishwa Vidyapeetham Ettimadai campus
 const AMRITA_CAMPUS_BOUNDS = [
-  [10.8910, 76.8745], // South-West (Ettimadai railway/highway approach)
-  [10.9095, 76.8935]  // North-East (Foothills of Western Ghats / Ashram border)
+  [10.8950, 76.8900], // South-West
+  [10.9120, 76.9090]  // North-East
 ];
 
-// Official 400-Acre Campus Perimeter Polygon (Compound Boundary)
+// Official 400-Acre Campus Perimeter Polygon from OpenStreetMap (Way 128964693)
 const AMRITA_COMPOUND_PERIMETER = [
-  [10.8945, 76.8845], // Main Entrance Arch / Highway checkpoint
-  [10.8942, 76.8872], // South-East perimeter near cricket grounds
-  [10.8975, 76.8890], // East perimeter road
-  [10.9020, 76.8880], // Academic Block 2 East Boundary
-  [10.9060, 76.8860], // North-East foothill junction
-  [10.9070, 76.8830], // North perimeter near Hostels & Water Tank
-  [10.9060, 76.8795], // North-West Athletic boundary
-  [10.9030, 76.8775], // West Hostels compound
-  [10.8980, 76.8785], // West Staff Quarters & Health Clinic
-  [10.8950, 76.8815], // South-West boundary avenue
-  [10.8945, 76.8845]  // Back to Main Entrance Arch
+  [10.906129, 76.894420], [10.905300, 76.893011], [10.904382, 76.893025], [10.903148, 76.893068],
+  [10.903569, 76.894786], [10.903232, 76.894829], [10.902853, 76.894870], [10.901947, 76.894988],
+  [10.901841, 76.894484], [10.901701, 76.893970], [10.901536, 76.893944], [10.901507, 76.893580],
+  [10.900577, 76.893677], [10.900565, 76.894008], [10.900774, 76.894014], [10.900746, 76.894559],
+  [10.900725, 76.895160], [10.901330, 76.895175], [10.901511, 76.898169], [10.899146, 76.898170],
+  [10.899123, 76.898636], [10.899105, 76.900004], [10.897593, 76.900049], [10.897631, 76.900610],
+  [10.899155, 76.900579], [10.899293, 76.903765], [10.899397, 76.904119], [10.899661, 76.904462],
+  [10.899977, 76.904784], [10.900314, 76.905063], [10.900640, 76.905295], [10.902166, 76.906381],
+  [10.902376, 76.906310], [10.903759, 76.906264], [10.903717, 76.904548], [10.905692, 76.904296],
+  [10.905950, 76.904228], [10.906709, 76.904571], [10.907446, 76.904593], [10.908710, 76.904550],
+  [10.909616, 76.904163], [10.909384, 76.902039], [10.909290, 76.901007], [10.909237, 76.900621],
+  [10.909216, 76.900342], [10.909195, 76.900194], [10.908984, 76.897576], [10.907277, 76.897638],
+  [10.907246, 76.897059], [10.907204, 76.896239], [10.906988, 76.895873], [10.906764, 76.895493],
+  [10.906455, 76.894972], [10.906129, 76.894420]
 ];
 
-const AMRITA_MAIN_GATE = [10.8950, 76.8850];
+const AMRITA_MAIN_GATE = [10.8980, 76.9003];
 
 export function CampusMapView({ onNavigateToCanteen }) {
   const [locations, setLocations] = useState([]);
@@ -273,8 +276,8 @@ export function CampusMapView({ onNavigateToCanteen }) {
       : AMRITA_MAIN_GATE;
 
     const destPoint = [
-      targetLoc.lat || targetLoc.coordinates?.lat || 10.9005,
-      targetLoc.lng || targetLoc.coordinates?.lng || 76.8842
+      targetLoc.lat || targetLoc.coordinates?.lat || 10.9026,
+      targetLoc.lng || targetLoc.coordinates?.lng || 76.8994
     ];
 
     // Generate realistic campus road pathway waypoints along Amrita black-topped avenues
@@ -362,7 +365,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
       },
       (err) => {
         // Fallback: Center on Central Amenities Complex
-        const fallback = { lat: 10.9005, lng: 76.8842 };
+        const fallback = { lat: 10.9026, lng: 76.8994 };
         setUserLocation(fallback);
         if (mapInstanceRef.current) {
           mapInstanceRef.current.flyTo([fallback.lat, fallback.lng], 17);
