@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import {
   Shield,
   TrendingUp,
@@ -24,6 +26,7 @@ import {
   Filter,
   Eye,
   X,
+  Edit,
   Edit2,
   Trash2,
   PlusCircle,
@@ -35,9 +38,57 @@ import {
   Flame,
   DollarSign,
   Tag,
-  RefreshCw
+  RefreshCw,
+  Phone,
+  Crosshair,
+  Activity,
+  Compass,
+  ChevronRight,
+  Info,
+  ChefHat
 } from 'lucide-react';
 import { api } from '../api';
+
+const AMRITA_CAMPUS_CENTER = [10.9036, 76.8997];
+const AMRITA_CAMPUS_BOUNDS = [
+  [10.8950, 76.8900],
+  [10.9120, 76.9090]
+];
+
+// Official 400-Acre Campus Perimeter Polygon from OpenStreetMap (Way 128964693)
+const AMRITA_COMPOUND_PERIMETER = [
+  [10.906129, 76.894420], [10.905300, 76.893011], [10.904382, 76.893025], [10.903148, 76.893068],
+  [10.903569, 76.894786], [10.903232, 76.894829], [10.902853, 76.894870], [10.901947, 76.894988],
+  [10.901841, 76.894484], [10.901701, 76.893970], [10.901536, 76.893944], [10.901507, 76.893580],
+  [10.900577, 76.893677], [10.900565, 76.894008], [10.900774, 76.894014], [10.900746, 76.894559],
+  [10.900725, 76.895160], [10.901330, 76.895175], [10.901511, 76.898169], [10.899146, 76.898170],
+  [10.899123, 76.898636], [10.899105, 76.900004], [10.897593, 76.900049], [10.897631, 76.900610],
+  [10.899155, 76.900579], [10.899293, 76.903765], [10.899397, 76.904119], [10.899661, 76.904462],
+  [10.899977, 76.904784], [10.900314, 76.905063], [10.900640, 76.905295], [10.902166, 76.906381],
+  [10.902376, 76.906310], [10.903759, 76.906264], [10.903717, 76.904548], [10.905692, 76.904296],
+  [10.905950, 76.904228], [10.906709, 76.904571], [10.907446, 76.904593], [10.908710, 76.904550],
+  [10.909616, 76.904163], [10.909384, 76.902039], [10.909290, 76.901007], [10.909237, 76.900621],
+  [10.909216, 76.900342], [10.909195, 76.900194], [10.908984, 76.897576], [10.907277, 76.897638],
+  [10.907246, 76.897059], [10.907204, 76.896239], [10.906988, 76.895873], [10.906764, 76.895493],
+  [10.906455, 76.894972], [10.906129, 76.894420]
+];
+
+const AMRITA_GPS_PRESETS = [
+  { label: 'Central Plaza', lat: 10.9036, lng: 76.8997 },
+  { label: 'School of Engg (AB-1)', lat: 10.9005, lng: 76.9029 },
+  { label: 'ECE & Sci (AB-2)', lat: 10.9043, lng: 76.8986 },
+  { label: 'CSE & Law (AB-3)', lat: 10.9063, lng: 76.8978 },
+  { label: 'AI Center (AB-4)', lat: 10.9056, lng: 76.8974 },
+  { label: 'Main Canteen 1', lat: 10.9001, lng: 76.9037 },
+  { label: 'IT Canteen (AB-3)', lat: 10.9049, lng: 76.8981 },
+  { label: 'Girls Hostels', lat: 10.9030, lng: 76.8998 },
+  { label: 'Boys Hostels', lat: 10.9025, lng: 76.8962 },
+  { label: 'Central Library', lat: 10.9039, lng: 76.8992 },
+  { label: 'Olympic Pool', lat: 10.9063, lng: 76.8989 },
+  { label: 'Health Clinic', lat: 10.9012, lng: 76.8972 },
+  { label: 'Shopping & Xerox', lat: 10.9021, lng: 76.8986 },
+  { label: 'Main Entrance Gate', lat: 10.8980, lng: 76.9003 }
+];
 
 export function AdminPanelView({ canteens, onDataUpdated }) {
   const [stats, setStats] = useState(null);
@@ -46,6 +97,18 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
   const [lostFoundItems, setLostFoundItems] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [mapLocations, setMapLocations] = useState([]);
+
+  // Map & Establishment Editor State
+  const [editingMapLoc, setEditingMapLoc] = useState(null);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [searchMapQuery, setSearchMapQuery] = useState('');
+  const [selectedMapCategory, setSelectedMapCategory] = useState('All');
+  const [clickedMapCoord, setClickedMapCoord] = useState(null);
+  const [isAddingNewLoc, setIsAddingNewLoc] = useState(false);
+
+  const adminMapContainerRef = useRef(null);
+  const adminMapInstanceRef = useRef(null);
+  const adminMarkersGroupRef = useRef(null);
 
   // Issue Filtering & Lightbox States
   const [issueSearch, setIssueSearch] = useState('');
@@ -104,16 +167,18 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
   // New Map Location Form
   const [newMapLoc, setNewMapLoc] = useState({
     name: '',
-    category: 'Academic Store',
+    category: 'Food & Dining',
     building: '',
     floor: 'Ground Floor',
-    zone: 'Central Zone',
-    timings: '08:30 AM - 06:30 PM',
-    contact: 'store@campus.edu',
+    zone: 'Central Campus',
+    timings: '08:00 AM - 09:30 PM',
+    contact: 'Extension 2401',
     description: '',
-    lat: 13.0110,
-    lng: 80.2340,
-    image: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=500&auto=format&fit=crop&q=80'
+    lat: 10.9036,
+    lng: 76.8997,
+    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80',
+    relatedCanteenId: '',
+    createCanteen: true
   });
 
   const fetchAdminData = async () => {
@@ -389,43 +454,263 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
     });
   }, [menuItems, adminCanteenFilter, adminCategoryFilter, adminMenuSearch]);
 
-  // Add new map location (Slide 6: Add stores and canteens to map)
-  const handleAddMapLoc = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await api.addMapLocation({
-        ...newMapLoc,
-        lat: parseFloat(newMapLoc.lat),
-        lng: parseFloat(newMapLoc.lng),
-        coordinates: {
-          x: 50,
-          y: 50,
-          lat: parseFloat(newMapLoc.lat),
-          lng: parseFloat(newMapLoc.lng)
-        }
-      });
-      if (res.success) {
-        alert('New location successfully pinned to the real campus map!');
-        setNewMapLoc({
-          name: '',
-          category: 'Academic Store',
-          building: '',
-          floor: 'Ground Floor',
-          zone: 'Central Zone',
-          timings: '08:30 AM - 06:30 PM',
-          contact: 'store@campus.edu',
-          description: '',
-          lat: 13.0110,
-          lng: 80.2340,
-          image: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=500&auto=format&fit=crop&q=80'
-        });
-        fetchAdminData();
-        onDataUpdated();
-      }
-    } catch (err) {
-      alert('Error adding location: ' + err.message);
+  // Helper to create category marker divIcon
+  const createAdminMarkerIcon = (loc) => {
+    let iconChar = '🏛️';
+    let bgClass = 'bg-slate-700 text-white';
+
+    if (loc.category === 'Food & Dining') {
+      iconChar = '🍽️';
+      bgClass = 'bg-amber-500 text-slate-950 font-bold';
+    } else if (loc.category === 'Medical & Health') {
+      iconChar = '🏥';
+      bgClass = 'bg-rose-500 text-white font-bold';
+    } else if (loc.category === 'Academic Store' || loc.category === 'Retail Store') {
+      iconChar = '📚';
+      bgClass = 'bg-teal-500 text-white font-bold';
+    } else if (loc.category === 'Academic & Labs') {
+      iconChar = '🎓';
+      bgClass = 'bg-cyan-500 text-white font-bold';
+    } else if (loc.category === 'Hostels & Living') {
+      iconChar = '🛏️';
+      bgClass = 'bg-indigo-500 text-white font-bold';
+    } else if (loc.category === 'Sports & Recreation') {
+      iconChar = '🏊';
+      bgClass = 'bg-emerald-500 text-white font-bold';
+    }
+
+    const html = `
+      <div class="relative group cursor-pointer flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full border-2 border-slate-900 shadow-xl flex items-center justify-center text-xs transition duration-200 ${bgClass} hover:scale-125">
+          <span>${iconChar}</span>
+        </div>
+        <div class="mt-1 px-2 py-0.5 rounded bg-slate-950/95 text-white text-[9px] font-bold border border-slate-700 whitespace-nowrap shadow-md pointer-events-none max-w-[130px] truncate">
+          ${loc.name.split('(')[0].trim()}
+        </div>
+      </div>
+    `;
+
+    return L.divIcon({
+      className: 'admin-campus-marker',
+      html,
+      iconSize: [32, 48],
+      iconAnchor: [16, 24],
+      popupAnchor: [0, -24]
+    });
+  };
+
+  const handleOpenEditModal = (loc) => {
+    const lat = loc.lat || loc.coordinates?.lat || AMRITA_CAMPUS_CENTER[0];
+    const lng = loc.lng || loc.coordinates?.lng || AMRITA_CAMPUS_CENTER[1];
+    setEditingMapLoc({
+      ...loc,
+      lat,
+      lng,
+      relatedCanteenId: loc.relatedCanteenId || (loc.id === 'loc-1' ? 'canteen-1' : loc.id === 'loc-2' ? 'canteen-2' : loc.id === 'loc-3' ? 'canteen-3' : loc.id === 'loc-it' ? 'canteen-it' : '')
+    });
+    setIsAddingNewLoc(false);
+    setIsMapModalOpen(true);
+    if (adminMapInstanceRef.current) {
+      adminMapInstanceRef.current.flyTo([lat, lng], 17.5, { duration: 0.8 });
     }
   };
+
+  const handleOpenAddModal = (presetCoord = null) => {
+    const defaultLat = presetCoord ? presetCoord.lat : (clickedMapCoord ? clickedMapCoord.lat : AMRITA_CAMPUS_CENTER[0]);
+    const defaultLng = presetCoord ? presetCoord.lng : (clickedMapCoord ? clickedMapCoord.lng : AMRITA_CAMPUS_CENTER[1]);
+    setEditingMapLoc({
+      id: `loc_${Date.now()}`,
+      name: '',
+      category: 'Food & Dining',
+      building: '',
+      floor: 'Ground Floor',
+      zone: 'Central Campus',
+      timings: '08:00 AM - 09:30 PM',
+      contact: 'Extension 2401',
+      description: '',
+      lat: defaultLat,
+      lng: defaultLng,
+      image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80',
+      relatedCanteenId: '',
+      createCanteen: true
+    });
+    setIsAddingNewLoc(true);
+    setIsMapModalOpen(true);
+  };
+
+  const handleSaveMapLoc = async (e) => {
+    e.preventDefault();
+    if (!editingMapLoc) return;
+
+    try {
+      const lat = parseFloat(editingMapLoc.lat);
+      const lng = parseFloat(editingMapLoc.lng);
+
+      if (isNaN(lat) || isNaN(lng)) {
+        alert('Please enter valid numeric latitude and longitude coordinates.');
+        return;
+      }
+
+      const payload = {
+        ...editingMapLoc,
+        lat,
+        lng,
+        coordinates: {
+          x: editingMapLoc.coordinates?.x || 50,
+          y: editingMapLoc.coordinates?.y || 50,
+          lat,
+          lng
+        }
+      };
+
+      if (isAddingNewLoc) {
+        const res = await api.addMapLocation(payload);
+        if (res.success) {
+          alert(`Successfully pinned "${payload.name}" to the campus map!`);
+          setIsMapModalOpen(false);
+          setEditingMapLoc(null);
+          await fetchAdminData();
+          if (onDataUpdated) onDataUpdated();
+        } else {
+          alert('Failed to add establishment: ' + (res.message || 'Unknown error'));
+        }
+      } else {
+        const res = await api.updateMapLocation(editingMapLoc.id, payload);
+        if (res.success) {
+          const isDining = payload.category === 'Food & Dining' || payload.relatedCanteenId;
+          alert(
+            `Establishment "${payload.name}" successfully updated!` +
+            (isDining ? '\n⚡ Synchronized with Staff Operations and Student Canteen views.' : '')
+          );
+          setIsMapModalOpen(false);
+          setEditingMapLoc(null);
+          await fetchAdminData();
+          if (onDataUpdated) onDataUpdated();
+        } else {
+          alert('Failed to update establishment: ' + (res.message || 'Unknown error'));
+        }
+      }
+    } catch (err) {
+      alert('Error saving establishment: ' + err.message);
+    }
+  };
+
+  const handleDeleteMapLoc = async (loc) => {
+    if (!window.confirm(`Are you sure you want to delete "${loc.name}" from the campus map?`)) {
+      return;
+    }
+    try {
+      const res = await api.deleteMapLocation(loc.id);
+      if (res.success) {
+        alert(`"${loc.name}" removed from the campus map.`);
+        await fetchAdminData();
+        if (onDataUpdated) onDataUpdated();
+      } else {
+        alert('Failed to delete establishment: ' + (res.message || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Error deleting establishment: ' + err.message);
+    }
+  };
+
+  // Initialize Admin Leaflet Map
+  useEffect(() => {
+    if (activeTab !== 'map' || !adminMapContainerRef.current) return;
+
+    if (adminMapInstanceRef.current) {
+      adminMapInstanceRef.current.remove();
+      adminMapInstanceRef.current = null;
+    }
+
+    const map = L.map(adminMapContainerRef.current, {
+      center: AMRITA_CAMPUS_CENTER,
+      zoom: 16.5,
+      minZoom: 15.2,
+      maxZoom: 19,
+      maxBounds: AMRITA_CAMPUS_BOUNDS,
+      maxBoundsViscosity: 1.0,
+      zoomControl: false
+    });
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; CARTO &copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Draw Official Amrita Compound Boundary Perimeter
+    L.polygon(AMRITA_COMPOUND_PERIMETER, {
+      color: '#8b5cf6',
+      weight: 3,
+      opacity: 0.85,
+      fillColor: '#8b5cf6',
+      fillOpacity: 0.06,
+      dashArray: '8, 6'
+    }).addTo(map);
+
+    // Map Click to capture or update coordinates
+    map.on('click', (e) => {
+      const lat = parseFloat(e.latlng.lat.toFixed(6));
+      const lng = parseFloat(e.latlng.lng.toFixed(6));
+      setClickedMapCoord({ lat, lng });
+    });
+
+    const markersGroup = L.featureGroup().addTo(map);
+    adminMarkersGroupRef.current = markersGroup;
+    adminMapInstanceRef.current = map;
+
+    return () => {
+      if (adminMapInstanceRef.current) {
+        adminMapInstanceRef.current.remove();
+        adminMapInstanceRef.current = null;
+      }
+    };
+  }, [activeTab]);
+
+  // Re-render markers when locations or filters change
+  useEffect(() => {
+    if (!adminMapInstanceRef.current || !adminMarkersGroupRef.current) return;
+
+    adminMarkersGroupRef.current.clearLayers();
+
+    const filtered = mapLocations.filter((loc) => {
+      if (selectedMapCategory !== 'All' && loc.category !== selectedMapCategory) {
+        return false;
+      }
+      if (searchMapQuery) {
+        const q = searchMapQuery.toLowerCase();
+        if (
+          !loc.name.toLowerCase().includes(q) &&
+          !loc.building?.toLowerCase().includes(q) &&
+          !loc.description?.toLowerCase().includes(q)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    filtered.forEach((loc) => {
+      const lat = loc.lat || loc.coordinates?.lat || AMRITA_CAMPUS_CENTER[0];
+      const lng = loc.lng || loc.coordinates?.lng || AMRITA_CAMPUS_CENTER[1];
+
+      const marker = L.marker([lat, lng], {
+        icon: createAdminMarkerIcon(loc)
+      });
+
+      marker.on('click', () => {
+        handleOpenEditModal(loc);
+      });
+
+      marker.bindTooltip(
+        `<div style="font-size:11px; font-weight:bold; color:#f8fafc;">${loc.name}</div><div style="font-size:10px; color:#818cf8;">${loc.category} • ${loc.building}</div><div style="font-size:9px; color:#38bdf8; margin-top:2px;">Click to Edit Establishment</div>`,
+        { direction: 'top', offset: [0, -20] }
+      );
+
+      marker.addTo(adminMarkersGroupRef.current);
+    });
+  }, [activeTab, mapLocations, selectedMapCategory, searchMapQuery]);
 
   return (
     <div className="space-y-6">
@@ -1484,178 +1769,611 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
         </div>
       )}
 
-      {/* TAB 5: CAMPUS MAP HUBS MANAGEMENT (Slide 6 & 10) */}
+      {/* TAB 5: CAMPUS MAP & ESTABLISHMENTS STUDIO (Slide 6 & 10) */}
       {activeTab === 'map' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-            <h4 className="font-bold text-sm text-white mb-1">Add Location to Campus Map</h4>
-            <p className="text-[11px] text-slate-400 mb-4">
-              Pin new canteens, stationery stores, or labs with real GPS coordinates.
-            </p>
-
-            <form onSubmit={handleAddMapLoc} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Hub Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Mechanical Lab 3D Printing Hub"
-                  value={newMapLoc.name}
-                  onChange={(e) => setNewMapLoc({ ...newMapLoc, name: e.target.value })}
-                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
-                />
+        <div className="space-y-6">
+          {/* Header & Filter Bar */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Compass className="w-5 h-5 text-indigo-400" />
+                <h4 className="font-extrabold text-base text-white">Campus Map & Establishment Management</h4>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  Live Relational Sync
+                </span>
               </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Edit, relocate, or establish stores, clinics, canteens, academic blocks, and hostels across the 400-acre Amrita Ettimadai campus compound.
+              </p>
+            </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Category</label>
-                  <select
-                    value={newMapLoc.category}
-                    onChange={(e) => setNewMapLoc({ ...newMapLoc, category: e.target.value })}
-                    className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
-                  >
-                    <option value="Food & Dining">Food & Dining</option>
-                    <option value="Academic Store">Academic Store</option>
-                    <option value="Retail Store">Retail Store</option>
-                    <option value="Facilities">Facilities</option>
-                    <option value="Medical & Health">Medical & Health</option>
-                    <option value="Sports & Recreation">Sports & Recreation</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Zone</label>
-                  <select
-                    value={newMapLoc.zone}
-                    onChange={(e) => setNewMapLoc({ ...newMapLoc, zone: e.target.value })}
-                    className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
-                  >
-                    <option value="Central Zone">Central Zone</option>
-                    <option value="North Zone">North Zone</option>
-                    <option value="West Zone">West Zone</option>
-                    <option value="East Zone">East Zone</option>
-                    <option value="South Zone">South Zone</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Building</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Science Block C"
-                    value={newMapLoc.building}
-                    onChange={(e) => setNewMapLoc({ ...newMapLoc, building: e.target.value })}
-                    className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Floor</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. 2nd Floor"
-                    value={newMapLoc.floor}
-                    onChange={(e) => setNewMapLoc({ ...newMapLoc, floor: e.target.value })}
-                    className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Latitude (GPS)</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    required
-                    value={newMapLoc.lat}
-                    onChange={(e) => setNewMapLoc({ ...newMapLoc, lat: e.target.value })}
-                    className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Longitude (GPS)</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    required
-                    value={newMapLoc.lng}
-                    onChange={(e) => setNewMapLoc({ ...newMapLoc, lng: e.target.value })}
-                    className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Operating Hours</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="08:30 AM - 06:30 PM"
-                  value={newMapLoc.timings}
-                  onChange={(e) => setNewMapLoc({ ...newMapLoc, timings: e.target.value })}
-                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Description</label>
-                <textarea
-                  rows="2"
-                  placeholder="Services offered, equipment, entry rules..."
-                  value={newMapLoc.description}
-                  onChange={(e) => setNewMapLoc({ ...newMapLoc, description: e.target.value })}
-                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
-                />
-              </div>
-
+            <div className="flex items-center gap-3">
               <button
-                type="submit"
-                className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition shadow-lg shadow-indigo-600/30"
+                onClick={() => handleOpenAddModal()}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition transform active:scale-95"
               >
-                Pin Hub on Real Map
+                <Plus className="w-4 h-4" />
+                <span>Pin New Establishment</span>
               </button>
-            </form>
+            </div>
           </div>
 
-          <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-            <h4 className="font-bold text-sm text-white mb-1">Pinned Campus Facilities ({mapLocations.length})</h4>
-            <p className="text-[11px] text-slate-400 mb-4">
-              All live POIs visible on the interactive GPS map with walking navigation.
-            </p>
-
-            <div className="space-y-2.5 max-h-[520px] overflow-y-auto pr-1">
-              {mapLocations.map((loc) => (
-                <div
-                  key={loc.id}
-                  className="p-3.5 rounded-xl bg-slate-800/50 border border-slate-700/40 flex items-center justify-between text-xs"
+          {/* Search & Category Filter Chips */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
+            <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+              {[
+                { id: 'All', label: 'All Establishments' },
+                { id: 'Food & Dining', label: '🍽️ Food & Dining' },
+                { id: 'Medical & Health', label: '🏥 Medical & Health' },
+                { id: 'Academic Store', label: '📚 Stores & Xerox' },
+                { id: 'Academic & Labs', label: '🎓 Academic & Labs' },
+                { id: 'Hostels & Living', label: '🛏️ Hostels' },
+                { id: 'Sports & Recreation', label: '🏊 Sports' },
+                { id: 'Facilities', label: '🏛️ Facilities' }
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedMapCategory(cat.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
+                    selectedMapCategory === cat.id
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700/80 border border-slate-700/60'
+                  }`}
                 >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="relative w-full sm:w-64">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search establishments..."
+                value={searchMapQuery}
+                onChange={(e) => setSearchMapQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          {/* Split View: Interactive Map & Establishments List */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left: Interactive Compound Leaflet Map */}
+            <div className="lg:col-span-7 space-y-3">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+                <div className="flex items-center justify-between mb-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-emerald-400" />
+                    <span className="font-bold text-white">Interactive Amrita Compound Map</span>
+                    <span className="text-[10px] text-slate-400 font-mono">(Locked to 400-Acre Perimeter)</span>
+                  </div>
+                  <span className="text-[10px] text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                    Click pin to edit
+                  </span>
+                </div>
+
+                {/* Leaflet Container */}
+                <div
+                  ref={adminMapContainerRef}
+                  className="w-full h-[480px] rounded-xl overflow-hidden border border-slate-800 shadow-inner relative z-0"
+                />
+
+                {/* Map Bottom Bar: Click capture or hint */}
+                <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
+                  {clickedMapCoord ? (
+                    <div className="flex items-center gap-2 text-cyan-300 font-mono text-[11px]">
+                      <Crosshair className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                      <span>
+                        Map Pin Picked: {clickedMapCoord.lat}, {clickedMapCoord.lng}
+                      </span>
+                      <button
+                        onClick={() => handleOpenAddModal(clickedMapCoord)}
+                        className="ml-2 px-2.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 border border-cyan-500/40 text-[10px] font-bold"
+                      >
+                        + Pin Here
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                      <Info className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Click anywhere inside the purple Amrita compound to capture coordinates or click any marker to edit.</span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      if (adminMapInstanceRef.current) {
+                        adminMapInstanceRef.current.flyTo(AMRITA_CAMPUS_CENTER, 16.5, { duration: 0.8 });
+                      }
+                    }}
+                    className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    Reset Campus View
+                  </button>
+                </div>
+
+                {/* Quick Landmark Preset Jumps */}
+                <div className="mt-3 pt-2 border-t border-slate-800/60">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1.5">
+                    Quick Landmark Navigator:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto pr-1">
+                    {AMRITA_GPS_PRESETS.map((p) => (
+                      <button
+                        key={p.label}
+                        onClick={() => {
+                          if (adminMapInstanceRef.current) {
+                            adminMapInstanceRef.current.flyTo([p.lat, p.lng], 18, { duration: 0.8 });
+                          }
+                        }}
+                        className="px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-[10px] text-slate-300 hover:text-white border border-slate-700/60 transition"
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Pinned Campus Establishments Cards */}
+            <div className="lg:col-span-5 space-y-3">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h4 className="font-bold text-sm text-white">Campus Establishments</h4>
+                    <p className="text-[11px] text-slate-400">
+                      Showing {
+                        mapLocations.filter((loc) => {
+                          if (selectedMapCategory !== 'All' && loc.category !== selectedMapCategory) return false;
+                          if (searchMapQuery) {
+                            const q = searchMapQuery.toLowerCase();
+                            return (
+                              loc.name.toLowerCase().includes(q) ||
+                              loc.building?.toLowerCase().includes(q) ||
+                              loc.description?.toLowerCase().includes(q)
+                            );
+                          }
+                          return true;
+                        }).length
+                      } establishments on campus
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 max-h-[580px] overflow-y-auto pr-1">
+                  {mapLocations
+                    .filter((loc) => {
+                      if (selectedMapCategory !== 'All' && loc.category !== selectedMapCategory) return false;
+                      if (searchMapQuery) {
+                        const q = searchMapQuery.toLowerCase();
+                        return (
+                          loc.name.toLowerCase().includes(q) ||
+                          loc.building?.toLowerCase().includes(q) ||
+                          loc.description?.toLowerCase().includes(q)
+                        );
+                      }
+                      return true;
+                    })
+                    .map((loc) => {
+                      const isDining = loc.category === 'Food & Dining' || loc.relatedCanteenId;
+                      const isMedical = loc.category === 'Medical & Health';
+                      const isStore = loc.category === 'Academic Store' || loc.category === 'Retail Store';
+                      const isAcademic = loc.category === 'Academic & Labs';
+                      const isHostel = loc.category === 'Hostels & Living';
+
+                      let badgeColor = 'bg-slate-800 text-slate-300 border-slate-700';
+                      if (isDining) badgeColor = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
+                      else if (isMedical) badgeColor = 'bg-rose-500/10 text-rose-300 border-rose-500/30';
+                      else if (isStore) badgeColor = 'bg-teal-500/10 text-teal-300 border-teal-500/30';
+                      else if (isAcademic) badgeColor = 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30';
+                      else if (isHostel) badgeColor = 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30';
+
+                      return (
+                        <div
+                          key={loc.id}
+                          className="p-3.5 rounded-2xl bg-slate-800/40 border border-slate-700/60 hover:border-slate-600 transition space-y-2 text-xs"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-3">
+                              <img
+                                src={loc.image}
+                                alt={loc.name}
+                                className="w-12 h-12 rounded-xl object-cover border border-slate-700/80 shrink-0"
+                              />
+                              <div>
+                                <h5 className="font-bold text-white text-sm line-clamp-1">{loc.name}</h5>
+                                <div className="flex items-center gap-1.5 mt-1">
+                                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
+                                    {loc.category}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400">
+                                    {loc.building} ({loc.floor})
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Relational Canteen Link Indicator */}
+                          {isDining && (
+                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[10px]">
+                              <Utensils className="w-3 h-3 text-amber-400 shrink-0" />
+                              <span>
+                                Relational Sync: Staff Kitchen Active ({loc.relatedCanteenId || 'Canteen'})
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Timings and Contact info */}
+                          <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400 pt-1 border-t border-slate-800/60">
+                            <div className="flex items-center gap-1 truncate">
+                              <Clock className="w-3 h-3 text-slate-500 shrink-0" />
+                              <span className="truncate">{loc.timings || '08:00 AM - 09:30 PM'}</span>
+                            </div>
+                            <div className="flex items-center gap-1 truncate">
+                              <Phone className="w-3 h-3 text-slate-500 shrink-0" />
+                              <span className="truncate">{loc.contact || 'Campus Ext'}</span>
+                            </div>
+                          </div>
+
+                          {/* Monospace GPS Coordinates */}
+                          <div className="text-[10px] font-mono text-cyan-400 bg-slate-900/80 px-2 py-1 rounded border border-slate-800 flex items-center justify-between">
+                            <span>GPS: {loc.lat || loc.coordinates?.lat}, {loc.lng || loc.coordinates?.lng}</span>
+                            <span className="text-slate-500 font-sans">{loc.zone}</span>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center justify-end gap-2 pt-1">
+                            <button
+                              onClick={() => {
+                                const lat = loc.lat || loc.coordinates?.lat;
+                                const lng = loc.lng || loc.coordinates?.lng;
+                                if (adminMapInstanceRef.current && lat && lng) {
+                                  adminMapInstanceRef.current.flyTo([lat, lng], 18, { duration: 0.8 });
+                                }
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] flex items-center gap-1 border border-slate-700/60 transition"
+                            >
+                              <Crosshair className="w-3 h-3 text-cyan-400" />
+                              <span>Locate</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleOpenEditModal(loc)}
+                              className="px-3 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 text-[11px] font-bold flex items-center gap-1 transition"
+                            >
+                              <Edit className="w-3 h-3" />
+                              <span>Edit Details</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteMapLoc(loc)}
+                              className="px-2 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[11px] transition"
+                              title="Delete establishment"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* EDIT & PIN ESTABLISHMENT MODAL (Slide 6 Relational Updates) */}
+          {isMapModalOpen && editingMapLoc && (
+            <div className="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
+              <div className="max-w-2xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                   <div className="flex items-center gap-3">
-                    <img
-                      src={loc.image}
-                      alt={loc.name}
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
+                    <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                      {isAddingNewLoc ? <Plus className="w-5 h-5" /> : <Edit className="w-5 h-5" />}
+                    </div>
                     <div>
-                      <div className="font-bold text-white text-sm">{loc.name}</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
-                        {loc.building} ({loc.floor}) • {loc.category}
+                      <h4 className="font-extrabold text-base text-white">
+                        {isAddingNewLoc ? 'Pin New Campus Establishment' : 'Edit Establishment Details'}
+                      </h4>
+                      <p className="text-xs text-slate-400">
+                        Configuring location, hours, and relational options across campus systems
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsMapModalOpen(false);
+                      setEditingMapLoc(null);
+                    }}
+                    className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveMapLoc} className="space-y-4 text-xs">
+                  {/* Name */}
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1">
+                      Establishment Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Main Canteen 1 or Health Clinic & Dispensary"
+                      value={editingMapLoc.name || ''}
+                      onChange={(e) => setEditingMapLoc({ ...editingMapLoc, name: e.target.value })}
+                      className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  {/* Category & Zone */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-300 font-semibold mb-1">Category *</label>
+                      <select
+                        value={editingMapLoc.category || 'Food & Dining'}
+                        onChange={(e) => setEditingMapLoc({ ...editingMapLoc, category: e.target.value })}
+                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                      >
+                        <option value="Food & Dining">Food & Dining (Canteens & Cafes)</option>
+                        <option value="Medical & Health">Medical & Health (Clinic & Dispensary)</option>
+                        <option value="Academic Store">Academic Store (Books & Xerox)</option>
+                        <option value="Retail Store">Retail Store (Supermarket & General)</option>
+                        <option value="Academic & Labs">Academic & Labs (AB1, AB2, AB3, AB4)</option>
+                        <option value="Hostels & Living">Hostels & Living (Boys & Girls)</option>
+                        <option value="Sports & Recreation">Sports & Recreation (Pool, Gym, Grounds)</option>
+                        <option value="Facilities">Facilities (Library, ATM, Security)</option>
+                        <option value="Administration">Administration (Dean Office, Admissions)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 font-semibold mb-1">Campus Zone *</label>
+                      <select
+                        value={editingMapLoc.zone || 'Central Campus'}
+                        onChange={(e) => setEditingMapLoc({ ...editingMapLoc, zone: e.target.value })}
+                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                      >
+                        <option value="Central Campus">Central Campus</option>
+                        <option value="North Campus">North Campus</option>
+                        <option value="South-Central Campus">South-Central Campus</option>
+                        <option value="East Academic">East Academic</option>
+                        <option value="North-West Academic">North-West Academic</option>
+                        <option value="Hostel Zone">Hostel Zone</option>
+                        <option value="Main Gate Area">Main Gate Area</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Building & Floor */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-300 font-semibold mb-1">Building *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Academic Block 3 or North Sports Pavilion"
+                        value={editingMapLoc.building || ''}
+                        onChange={(e) => setEditingMapLoc({ ...editingMapLoc, building: e.target.value })}
+                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 font-semibold mb-1">Floor *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Ground Floor or Floors 1 to 4"
+                        value={editingMapLoc.floor || ''}
+                        onChange={(e) => setEditingMapLoc({ ...editingMapLoc, floor: e.target.value })}
+                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Timings & Contact */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-300 font-semibold mb-1">Operating Hours *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. 08:00 AM - 09:30 PM"
+                        value={editingMapLoc.timings || ''}
+                        onChange={(e) => setEditingMapLoc({ ...editingMapLoc, timings: e.target.value })}
+                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 font-semibold mb-1">Contact Details</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Extension 2401 or clinic@campus.edu"
+                        value={editingMapLoc.contact || ''}
+                        onChange={(e) => setEditingMapLoc({ ...editingMapLoc, contact: e.target.value })}
+                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* RELATIONAL CANTEEN SYNC SECTION */}
+                  {(editingMapLoc.category === 'Food & Dining' || editingMapLoc.relatedCanteenId) && (
+                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 space-y-2.5">
+                      <div className="flex items-center gap-2 font-bold text-xs">
+                        <Utensils className="w-4 h-4 text-amber-400" />
+                        <span>⚡ Relational Canteen & Staff Operations Synchronization</span>
                       </div>
-                      <div className="text-[10px] text-cyan-400 font-mono mt-0.5">
-                        GPS: {loc.lat || loc.coordinates?.lat}, {loc.lng || loc.coordinates?.lng}
+                      <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                        Renaming this establishment or updating its location/timings will automatically propagate to:
+                        <br />• <strong>Staff Kitchen Panel</strong>: Active canteen dropdown selector & kitchen queues
+                        <br />• <strong>Student Canteen View</strong>: Canteen tab switcher, header banner & active order tokens
+                      </p>
+                      <div>
+                        <label className="block text-slate-300 font-semibold mb-1 text-[11px]">
+                          Relational Canteen Mapping
+                        </label>
+                        <select
+                          value={editingMapLoc.relatedCanteenId || ''}
+                          onChange={(e) => setEditingMapLoc({ ...editingMapLoc, relatedCanteenId: e.target.value })}
+                          className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-500"
+                        >
+                          <option value="">-- Standalone / Unlinked Dining Hub --</option>
+                          {canteens.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name} ({c.id})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* MEDICAL & HEALTH INFO */}
+                  {editingMapLoc.category === 'Medical & Health' && (
+                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>
+                        Campus Clinic entries are highlighted with 24/7 emergency response beacons on student maps.
+                      </span>
+                    </div>
+                  )}
+
+                  {/* STORE INFO */}
+                  {(editingMapLoc.category === 'Academic Store' || editingMapLoc.category === 'Retail Store') && (
+                    <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs flex items-center gap-2">
+                      <Store className="w-4 h-4 text-teal-400 shrink-0" />
+                      <span>
+                        Stationery, xerox & textbook stores are searchable by academic materials on student map search.
+                      </span>
+                    </div>
+                  )}
+
+                  {/* GPS COORDINATES & PRESETS */}
+                  <div className="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white text-xs flex items-center gap-1.5">
+                        <Crosshair className="w-4 h-4 text-cyan-400" />
+                        <span>Precise GPS Coordinates</span>
+                      </span>
+                      {clickedMapCoord && (
+                        <button
+                          type="button"
+                          onClick={() => setEditingMapLoc({
+                            ...editingMapLoc,
+                            lat: clickedMapCoord.lat,
+                            lng: clickedMapCoord.lng
+                          })}
+                          className="text-[10px] text-cyan-400 hover:text-cyan-300 font-bold underline flex items-center gap-1"
+                        >
+                          Use Map Clicked ({clickedMapCoord.lat}, {clickedMapCoord.lng})
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-slate-300 font-semibold mb-1 text-[11px]">Latitude (GPS)</label>
+                        <input
+                          type="number"
+                          step="0.000001"
+                          required
+                          value={editingMapLoc.lat || ''}
+                          onChange={(e) => setEditingMapLoc({ ...editingMapLoc, lat: e.target.value })}
+                          className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-300 font-semibold mb-1 text-[11px]">Longitude (GPS)</label>
+                        <input
+                          type="number"
+                          step="0.000001"
+                          required
+                          value={editingMapLoc.lng || ''}
+                          onChange={(e) => setEditingMapLoc({ ...editingMapLoc, lng: e.target.value })}
+                          className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick Landmark Preset Buttons */}
+                    <div className="pt-2 border-t border-slate-700/60">
+                      <span className="text-[10px] text-slate-400 font-bold block mb-1">
+                        One-Click Coordinate Snapping:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                        {AMRITA_GPS_PRESETS.map((p) => (
+                          <button
+                            key={p.label}
+                            type="button"
+                            onClick={() => setEditingMapLoc({
+                              ...editingMapLoc,
+                              lat: p.lat,
+                              lng: p.lng
+                            })}
+                            className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 border border-slate-700 transition"
+                          >
+                            {p.label}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   </div>
 
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-slate-700 text-slate-300">
-                    {loc.zone}
-                  </span>
-                </div>
-              ))}
+                  {/* Description */}
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1">Description & Services</label>
+                    <textarea
+                      rows="2"
+                      placeholder="Services offered, specialties, student access details..."
+                      value={editingMapLoc.description || ''}
+                      onChange={(e) => setEditingMapLoc({ ...editingMapLoc, description: e.target.value })}
+                      className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  {/* Image URL */}
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1">Image URL</label>
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      value={editingMapLoc.image || ''}
+                      onChange={(e) => setEditingMapLoc({ ...editingMapLoc, image: e.target.value })}
+                      className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  {/* Modal Actions */}
+                  <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMapModalOpen(false);
+                        setEditingMapLoc(null);
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold transition shadow-lg shadow-indigo-600/30 flex items-center gap-2"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>{isAddingNewLoc ? 'Pin Establishment to Map' : 'Save & Synchronize Changes'}</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 

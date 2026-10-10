@@ -4658,6 +4658,7 @@ export const initialData = {
   campusLocations: [
     {
       id: "loc-1",
+      relatedCanteenId: "canteen-1",
       name: "Main Canteen 1 (Central Dining Hall)",
       category: "Food & Dining",
       zone: "Central Campus",
@@ -4675,6 +4676,7 @@ export const initialData = {
     },
     {
       id: "loc-it",
+      relatedCanteenId: "canteen-it",
       name: "IT Canteen (AB-3 Food Court)",
       category: "Food & Dining",
       zone: "North Academic Quad",
@@ -4692,6 +4694,7 @@ export const initialData = {
     },
     {
       id: "loc-2",
+      relatedCanteenId: "canteen-2",
       name: "Canteen 2 (North Hostel & Sports Cafeteria)",
       category: "Food & Dining",
       zone: "North Campus",
@@ -4706,6 +4709,24 @@ export const initialData = {
       popularTimes: "Peak crowd post 5:00 PM sports sessions and evening study breaks",
       contact: "Extension 2402",
       image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=80"
+    },
+    {
+      id: "loc-3",
+      relatedCanteenId: "canteen-3",
+      name: "Canteen 3 (Amrita Courtyard & Executive Diner)",
+      category: "Food & Dining",
+      zone: "South-Central Campus",
+      building: "South Academic Quadrangle & PG Block",
+      floor: "Ground Floor",
+      timings: "08:00 AM - 10:00 PM",
+      description: "Modern campus diner offering North Indian combo meals, sizzlers, freshly brewed coffee, pasta, and courtyard outdoor seating.",
+      lat: 10.9015000,
+      lng: 76.9018000,
+      address: "South Academic Quadrangle, Amrita Nagar, Ettimadai",
+      coordinates: { x: 47, y: 62, lat: 10.9015000, lng: 76.9018000 },
+      popularTimes: "Evening diner hours 06:30 PM - 09:30 PM",
+      contact: "Extension 2408",
+      image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80"
     },
     {
       id: "loc-mba",

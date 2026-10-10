@@ -389,7 +389,35 @@ export const api = {
         body: JSON.stringify(loc),
       }).then(handleResponse),
       (state) => {
-        const newLoc = { id: `loc-${Date.now()}`, ...loc };
+        const lat = Number(loc.lat) || 10.9036;
+        const lng = Number(loc.lng) || 76.8997;
+        const newLoc = {
+          id: loc.id || `loc-${Date.now()}`,
+          ...loc,
+          lat,
+          lng,
+          coordinates: { x: 50, y: 50, lat, lng }
+        };
+
+        if (loc.createCanteen || loc.category === 'Food & Dining') {
+          const canteenId = loc.relatedCanteenId || `canteen-${Date.now()}`;
+          newLoc.relatedCanteenId = canteenId;
+          if (!state.canteens.some(c => c.id === canteenId)) {
+            state.canteens.push({
+              id: canteenId,
+              name: loc.name,
+              code: loc.code || loc.name.substring(0, 3).toUpperCase(),
+              location: loc.address || `${loc.building || 'Campus'}, Amrita Ettimadai`,
+              timings: loc.timings || "08:00 AM - 09:30 PM",
+              status: "open",
+              crowdLevel: "Low",
+              avgWaitTimeMinutes: 5,
+              activeOrdersCount: 0,
+              counterSpeed: "Normal"
+            });
+          }
+        }
+
         state.campusLocations.push(newLoc);
         saveLocalState(state);
         return newLoc;
@@ -405,9 +433,51 @@ export const api = {
       }).then(handleResponse),
       (state) => {
         const loc = state.campusLocations.find((l) => l.id === id);
-        if (loc) Object.assign(loc, updates);
+        if (loc) {
+          Object.assign(loc, updates);
+          if (updates.lat) loc.lat = Number(updates.lat);
+          if (updates.lng) loc.lng = Number(updates.lng);
+          if (loc.coordinates) {
+            if (updates.lat) loc.coordinates.lat = Number(updates.lat);
+            if (updates.lng) loc.coordinates.lng = Number(updates.lng);
+          }
+
+          // Relational update for Canteens, Staff view, and Orders
+          const relatedCanteenId = loc.relatedCanteenId || (id === 'loc-1' ? 'canteen-1' : id === 'loc-2' ? 'canteen-2' : id === 'loc-3' ? 'canteen-3' : id === 'loc-it' ? 'canteen-it' : null);
+          if (relatedCanteenId) {
+            const canteen = state.canteens.find(c => c.id === relatedCanteenId);
+            if (canteen) {
+              if (updates.name) canteen.name = updates.name;
+              if (updates.timings) canteen.timings = updates.timings;
+              if (updates.address || updates.building) {
+                canteen.location = updates.address || `${updates.building}, Amrita Ettimadai`;
+              }
+            }
+            if (updates.name && state.orders) {
+              state.orders.forEach(o => {
+                if (o.canteenId === relatedCanteenId) o.canteenName = updates.name;
+              });
+            }
+          }
+        }
         saveLocalState(state);
         return loc;
+      }
+    ),
+
+  deleteMapLocation: (id) =>
+    safeCall(
+      fetch(`${API_BASE}/map/${id}`, {
+        method: 'DELETE',
+      }).then(handleResponse),
+      (state) => {
+        const idx = state.campusLocations.findIndex((l) => l.id === id);
+        if (idx !== -1) {
+          const removed = state.campusLocations.splice(idx, 1)[0];
+          saveLocalState(state);
+          return removed;
+        }
+        return { success: true };
       }
     ),
 

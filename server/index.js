@@ -442,13 +442,43 @@ app.get("/api/map", (req, res) => {
 });
 
 app.post("/api/map", (req, res) => {
+  const lat = Number(req.body.lat) || 10.9036;
+  const lng = Number(req.body.lng) || 76.8997;
   const newLocation = {
-    id: `loc_${Date.now()}`,
+    id: req.body.id || `loc_${Date.now()}`,
     ...req.body,
-    coordinates: req.body.coordinates || { x: 50, y: 50 }
+    lat,
+    lng,
+    coordinates: {
+      x: req.body.coordinates?.x || 50,
+      y: req.body.coordinates?.y || 50,
+      lat,
+      lng
+    }
   };
+
+  // If this establishment is a Canteen or Food & Dining, handle relational Canteen creation / link
+  if (req.body.createCanteen || req.body.category === 'Food & Dining') {
+    const canteenId = req.body.relatedCanteenId || `canteen-${Date.now()}`;
+    newLocation.relatedCanteenId = canteenId;
+    if (!db.canteens.some(c => c.id === canteenId)) {
+      db.canteens.push({
+        id: canteenId,
+        name: req.body.name,
+        code: req.body.code || req.body.name.substring(0, 3).toUpperCase(),
+        location: req.body.address || `${req.body.building || 'Campus'}, Amrita Ettimadai`,
+        timings: req.body.timings || "08:00 AM - 09:30 PM",
+        status: "open",
+        crowdLevel: "Low",
+        avgWaitTimeMinutes: 5,
+        activeOrdersCount: 0,
+        counterSpeed: "Normal"
+      });
+    }
+  }
+
   db.campusLocations.push(newLocation);
-  res.json({ success: true, data: newLocation });
+  res.json({ success: true, data: newLocation, canteens: db.canteens });
 });
 
 app.put("/api/map/:id", (req, res) => {
@@ -456,8 +486,55 @@ app.put("/api/map/:id", (req, res) => {
   const idx = db.campusLocations.findIndex((l) => l.id === id);
   if (idx === -1) return res.status(404).json({ success: false, message: "Location not found" });
 
-  db.campusLocations[idx] = { ...db.campusLocations[idx], ...req.body };
-  res.json({ success: true, data: db.campusLocations[idx] });
+  const oldLoc = db.campusLocations[idx];
+  const lat = req.body.lat !== undefined ? Number(req.body.lat) : oldLoc.lat;
+  const lng = req.body.lng !== undefined ? Number(req.body.lng) : oldLoc.lng;
+
+  const updatedLoc = {
+    ...oldLoc,
+    ...req.body,
+    lat,
+    lng,
+    coordinates: {
+      ...(oldLoc.coordinates || {}),
+      ...(req.body.coordinates || {}),
+      lat,
+      lng
+    }
+  };
+
+  db.campusLocations[idx] = updatedLoc;
+
+  // Relational update: If this location is linked to a canteen (or named/identified as one), sync with Canteen & Staff view!
+  const relatedCanteenId = updatedLoc.relatedCanteenId || (id === 'loc-1' ? 'canteen-1' : id === 'loc-2' ? 'canteen-2' : id === 'loc-3' ? 'canteen-3' : id === 'loc-it' ? 'canteen-it' : null);
+  
+  if (relatedCanteenId) {
+    const cIdx = db.canteens.findIndex((c) => c.id === relatedCanteenId);
+    if (cIdx !== -1) {
+      if (req.body.name) db.canteens[cIdx].name = req.body.name;
+      if (req.body.timings) db.canteens[cIdx].timings = req.body.timings;
+      if (req.body.address || req.body.building) {
+        db.canteens[cIdx].location = req.body.address || `${req.body.building}, Amrita Ettimadai`;
+      }
+      // Update orders that reference this canteen
+      if (req.body.name && db.orders) {
+        db.orders.forEach(o => {
+          if (o.canteenId === relatedCanteenId) o.canteenName = req.body.name;
+        });
+      }
+    }
+  }
+
+  res.json({ success: true, data: db.campusLocations[idx], canteens: db.canteens });
+});
+
+app.delete("/api/map/:id", (req, res) => {
+  const { id } = req.params;
+  const idx = db.campusLocations.findIndex((l) => l.id === id);
+  if (idx === -1) return res.status(404).json({ success: false, message: "Location not found" });
+
+  const removed = db.campusLocations.splice(idx, 1)[0];
+  res.json({ success: true, data: removed, canteens: db.canteens });
 });
 
 // ----------------- LOST & FOUND -----------------
