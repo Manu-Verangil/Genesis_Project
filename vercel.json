@@ -4,8 +4,16 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/issues/(.*)",
+      "destination": "/api/issues.js"
+    },
+    {
+      "source": "/api/issues",
+      "destination": "/api/issues.js"
+    },
+    {
       "source": "/api/(.*)",
-      "destination": "/api"
+      "destination": "/api/index.js"
     },
     {
       "source": "/((?!api/).*)",
