@@ -53,7 +53,17 @@ export function CanteenView({
     return true;
   });
 
-  const categories = ['All', 'Meals', 'Breakfast', 'Snacks', 'Beverages'];
+  const categories = [
+    'All',
+    'Main Course',
+    'Curries',
+    "Today's Special",
+    'Egg Items',
+    'Bakes & Snacks',
+    'Hot Drinks',
+    'Juices & Milkshakes',
+    'Ice Creams'
+  ];
 
   const addToCart = (item) => {
     if (item.stock <= 0) return;
