@@ -199,9 +199,11 @@ export function CampusMapView({ onNavigateToCanteen }) {
   // Create custom marker icons for Amrita Campus Landmarks
   const createCustomIcon = (loc, isSelected) => {
     const isCanteen = loc.category === 'Food & Dining';
-    const isAcademic = loc.category === 'Academic Store' || loc.category === 'Facilities';
+    const isHostel = loc.category === 'Hostels & Living';
+    const isAcademic = loc.category === 'Academic & Labs';
     const isMedical = loc.category === 'Medical & Health';
     const isSports = loc.category === 'Sports & Recreation';
+    const isStore = loc.category === 'Academic Store' || loc.category === 'Retail Store';
 
     let bgClass = 'bg-blue-600 border-white text-white';
     let iconChar = '🏛️';
@@ -209,14 +211,20 @@ export function CampusMapView({ onNavigateToCanteen }) {
     if (isCanteen) {
       bgClass = 'bg-amber-500 border-amber-200 text-slate-950 font-bold';
       iconChar = '🍽️';
+    } else if (isHostel) {
+      bgClass = 'bg-indigo-600 border-indigo-200 text-white';
+      iconChar = '🛏️';
+    } else if (isAcademic) {
+      bgClass = 'bg-cyan-600 border-cyan-200 text-white';
+      iconChar = '🎓';
     } else if (isMedical) {
       bgClass = 'bg-rose-600 border-rose-200 text-white';
       iconChar = '🏥';
     } else if (isSports) {
       bgClass = 'bg-emerald-600 border-emerald-200 text-white';
       iconChar = '🏊';
-    } else if (isAcademic) {
-      bgClass = 'bg-cyan-600 border-cyan-200 text-white';
+    } else if (isStore) {
+      bgClass = 'bg-teal-600 border-teal-200 text-white';
       iconChar = '📚';
     }
 
@@ -394,11 +402,12 @@ export function CampusMapView({ onNavigateToCanteen }) {
   const categories = [
     'All',
     'Food & Dining',
-    'Academic Store',
-    'Retail Store',
+    'Academic & Labs',
+    'Hostels & Living',
     'Facilities',
-    'Medical & Health',
     'Sports & Recreation',
+    'Academic Store',
+    'Medical & Health',
     'Administration'
   ];
 
@@ -595,7 +604,10 @@ export function CampusMapView({ onNavigateToCanteen }) {
                 <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" /> Academic & Labs
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Swimming Pool & Turf
+                <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" /> Hostels (Boys & Girls)
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Sports & Pool
               </span>
             </div>
             <span className="text-purple-400 font-medium">Locked to Ettimadai Compound Bounds</span>
