@@ -5090,7 +5090,29 @@ export const initialData = {
     }
   ],
   campusIssues: [
-    // 5-Stage Life Cycle from Slide 5: Report -> Route -> Act -> Notify -> Resolve
+    // 5-Stage Life Cycle: Report -> Route -> Act -> Notify -> Resolve
+    {
+      id: "iss-0",
+      ticketNumber: "ISS-2026-045",
+      title: "Large Tree Branch Fallen Across Hostel Pathway",
+      category: "Hostel Maintenance & Grounds",
+      location: "Hostel Block D - Main Entrance Pathway",
+      description: "A heavy tree limb snapped and fell across the walkway near Hostel D entrance after afternoon winds. Pathway is blocked and poses risk for walking students.",
+      priority: "Critical",
+      status: "in_progress",
+      currentStageIndex: 3,
+      reportedBy: "Rahul V. (ME23B041)",
+      department: "Hostel & Grounds Horticulture Cell",
+      assignedStaff: "Senthil & Estate Grounds Crew",
+      createdAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+      updatedAt: new Date(Date.now() - 1 * 3600 * 1000).toISOString(),
+      timeline: [
+        { stage: "Report", status: "reported", message: "Fallen tree hazard reported by student with photo proof.", timestamp: new Date(Date.now() - 3 * 3600 * 1000).toISOString(), actor: "Rahul V." },
+        { stage: "Route", status: "routed", message: "High-priority routing to Grounds & Horticulture emergency dispatch.", timestamp: new Date(Date.now() - 2.5 * 3600 * 1000).toISOString(), actor: "Admin" },
+        { stage: "Act", status: "in_progress", message: "Team deployed with power saw equipment to clear trunk and reopen pathway.", timestamp: new Date(Date.now() - 1 * 3600 * 1000).toISOString(), actor: "Senthil" }
+      ],
+      photoUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600&auto=format&fit=crop&q=80"
+    },
     {
       id: "iss-1",
       ticketNumber: "ISS-2026-042",

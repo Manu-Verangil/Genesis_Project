@@ -520,7 +520,7 @@ app.put("/api/lost-found/:id/claim/:claimId", (req, res) => {
   res.json({ success: true, data: item });
 });
 
-// ----------------- CAMPUS ISSUE REPORTING (Slide 5) -----------------
+// ----------------- CAMPUS ISSUE RESOLUTION SYSTEM -----------------
 // 5-Stage Life Cycle: 1. Report -> 2. Route -> 3. Act -> 4. Notify -> 5. Resolve
 app.get("/api/issues", (req, res) => {
   try {
@@ -562,6 +562,10 @@ app.post("/api/issues", (req, res) => {
       department = "Housekeeping & Campus Hygiene";
     } else if (catLower.includes("classroom") || catLower.includes("projector")) {
       department = "Audio-Visual Technical Team";
+    } else if (catLower.includes("tree") || catLower.includes("ground") || catLower.includes("hostel")) {
+      department = "Hostel & Grounds Horticulture Cell";
+    } else if (catLower.includes("hazard") || catLower.includes("safety")) {
+      department = "Campus Safety & Emergency Cell";
     }
 
     const newIssue = {
@@ -579,12 +583,14 @@ app.post("/api/issues", (req, res) => {
       assignedStaff: "Pending Route",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      photoUrl: photoUrl || "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500&auto=format&fit=crop&q=80",
+      photoUrl: photoUrl && photoUrl.trim() ? photoUrl.trim() : null,
       timeline: [
         {
           stage: "Report",
           status: "reported",
-          message: "Issue reported by student with problem details and location marker.",
+          message: photoUrl
+            ? "Issue reported by student with problem details, location marker, and photo attachment."
+            : "Issue reported by student with problem details and location marker.",
           timestamp: new Date().toISOString(),
           actor: "Karthik"
         }
@@ -612,7 +618,7 @@ app.post("/api/issues", (req, res) => {
   }
 });
 
-// Advance stage / Update issue (Slide 5: Report -> Route -> Act -> Notify -> Resolve)
+// Advance stage / Update issue (5-Stage Lifecycle: Report -> Route -> Act -> Notify -> Resolve)
 app.put("/api/issues/:id/stage", (req, res) => {
   try {
     const { id } = req.params;

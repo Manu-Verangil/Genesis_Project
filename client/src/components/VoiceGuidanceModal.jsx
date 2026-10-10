@@ -138,7 +138,7 @@ export function VoiceGuidanceModal({ isOpen, onClose, onNavigate, onAskStatus })
               <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2">
                 Voice Guidance Assistant
                 <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-medium border border-blue-500/30">
-                  Slide 4 & 9 Extension
+                  Multilingual AI
                 </span>
               </h3>
               <p className="text-xs text-slate-400">Natural voice assistant to navigate food, tokens, maps and issues</p>

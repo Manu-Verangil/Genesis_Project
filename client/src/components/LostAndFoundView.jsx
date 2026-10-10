@@ -171,7 +171,7 @@ export function LostAndFoundView() {
               <Search className="w-5 h-5 text-blue-400" />
               <span>Campus Lost & Found Portal</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                Phase 4 (Slide 10)
+                Verified Custody
               </span>
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">

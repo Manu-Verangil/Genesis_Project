@@ -13,7 +13,16 @@ import {
   Layers,
   Sparkles,
   Users,
-  Check
+  Check,
+  Building,
+  Image as ImageIcon,
+  Camera,
+  Maximize2,
+  ChevronDown,
+  ChevronUp,
+  Filter,
+  Eye,
+  X
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -24,6 +33,13 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
   const [lostFoundItems, setLostFoundItems] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [mapLocations, setMapLocations] = useState([]);
+
+  // Issue Filtering & Lightbox States
+  const [issueSearch, setIssueSearch] = useState('');
+  const [issueStatusFilter, setIssueStatusFilter] = useState('All');
+  const [issuePriorityFilter, setIssuePriorityFilter] = useState('All');
+  const [adminLightboxImage, setAdminLightboxImage] = useState(null);
+  const [expandedIssueHistoryId, setExpandedIssueHistoryId] = useState(null);
 
   // New Menu Item Form
   const [newMenuItem, setNewMenuItem] = useState({
@@ -189,7 +205,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
             <h3 className="font-extrabold text-lg text-white flex items-center gap-2">
               <span>Campus Central Administration & Analytics</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                Slide 6 & 11
+                Administration
               </span>
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -246,7 +262,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
           }`}
         >
-          Campus Impact Overview (Slide 11)
+          Impact Overview & Analytics
         </button>
 
         <button
@@ -294,12 +310,12 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
         </button>
       </div>
 
-      {/* TAB 1: CAMPUS IMPACT OVERVIEW (Slide 11) */}
+      {/* TAB 1: CAMPUS IMPACT OVERVIEW */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
             <h4 className="font-extrabold text-base text-white mb-1">
-              Expected Campus Impact & Return on Investment (Slide 11)
+              Expected Campus Impact & Analytics
             </h4>
             <p className="text-xs text-slate-400 mb-5">
               Measurable outcomes achieved by consolidating food, map, lost items, and issues into Smart Campus Hub:
@@ -362,83 +378,362 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {activeTab === 'issues' && (
         <div className="space-y-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-            <h4 className="font-bold text-sm text-white mb-1">
-              Campus Facilities Dispatch & Issue Resolution (Slide 5 & 6)
-            </h4>
-            <p className="text-xs text-slate-400 mb-4">
-              Advance tickets through the 5-stage lifecycle. Each transition notifies the student in real time.
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+              <div>
+                <h4 className="font-extrabold text-base text-white flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-amber-400" />
+                  <span>Campus Facilities Dispatch & Issue Resolution</span>
+                </h4>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Real-time ticket triage, photo evidence inspection, and 5-stage lifecycle dispatching
+                </p>
+              </div>
 
-            <div className="space-y-4">
-              {issues.map((iss) => (
-                <div
-                  key={iss.id}
-                  className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs"
+              {/* Quick Issue Counts */}
+              <div className="flex items-center gap-2 text-[11px]">
+                <span className="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold">
+                  {issues.filter((i) => i.priority === 'Critical' && i.status !== 'resolved').length} Critical Open
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold">
+                  {issues.filter((i) => i.status !== 'resolved').length} Total Active
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                  {issues.filter((i) => i.status === 'resolved').length} Resolved
+                </span>
+              </div>
+            </div>
+
+            {/* Filter and Search Bar for Admin */}
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 pb-4 border-b border-slate-800">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Search ticket #, student, title, location..."
+                  value={issueSearch}
+                  onChange={(e) => setIssueSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <select
+                  value={issueStatusFilter}
+                  onChange={(e) => setIssueStatusFilter(e.target.value)}
+                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-blue-400">{iss.ticketNumber}</span>
-                      <span className="font-bold text-white text-sm">{iss.title}</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-700 text-slate-300">
-                        {iss.category}
-                      </span>
+                  <option value="All">All Statuses</option>
+                  <option value="open">Active / Unresolved Tickets</option>
+                  <option value="reported">Stage 1: Newly Reported (Pending Route)</option>
+                  <option value="in_progress">Stage 2-4: Routed & In Progress</option>
+                  <option value="resolved">Stage 5: Resolved & Closed</option>
+                </select>
+              </div>
+
+              <div>
+                <select
+                  value={issuePriorityFilter}
+                  onChange={(e) => setIssuePriorityFilter(e.target.value)}
+                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="All">All Priorities</option>
+                  <option value="Critical">Critical Priority (Immediate Hazards)</option>
+                  <option value="High">High Priority</option>
+                  <option value="Medium">Medium Priority</option>
+                  <option value="Low">Low Priority</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Issue List */}
+            <div className="mt-4 space-y-4">
+              {issues
+                .filter((iss) => {
+                  if (issueStatusFilter === 'open' && iss.status === 'resolved') return false;
+                  if (issueStatusFilter === 'resolved' && iss.status !== 'resolved') return false;
+                  if (issueStatusFilter === 'reported' && iss.status !== 'reported') return false;
+                  if (issueStatusFilter === 'in_progress' && !['routed', 'in_progress'].includes(iss.status)) return false;
+                  if (issuePriorityFilter !== 'All' && iss.priority !== issuePriorityFilter) return false;
+                  if (issueSearch.trim()) {
+                    const q = issueSearch.toLowerCase();
+                    if (
+                      !iss.ticketNumber?.toLowerCase().includes(q) &&
+                      !iss.title?.toLowerCase().includes(q) &&
+                      !iss.description?.toLowerCase().includes(q) &&
+                      !iss.location?.toLowerCase().includes(q) &&
+                      !iss.reportedBy?.toLowerCase().includes(q)
+                    ) {
+                      return false;
+                    }
+                  }
+                  return true;
+                })
+                .map((iss) => {
+                  const isResolved = iss.status === 'resolved';
+                  const isTimelineExpanded = expandedIssueHistoryId === iss.id;
+
+                  const getPriorityBadgeClass = (p) => {
+                    switch (p) {
+                      case 'Critical':
+                        return 'bg-rose-500/20 text-rose-300 border-rose-500/40 ring-2 ring-rose-500/20 animate-pulse';
+                      case 'High':
+                        return 'bg-orange-500/20 text-orange-300 border-orange-500/40';
+                      case 'Medium':
+                        return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+                      default:
+                        return 'bg-slate-700 text-slate-300 border-slate-600';
+                    }
+                  };
+
+                  return (
+                    <div
+                      key={iss.id}
+                      className={`p-5 rounded-2xl bg-slate-800/60 border transition-all ${
+                        iss.priority === 'Critical' && !isResolved
+                          ? 'border-rose-500/40 shadow-lg shadow-rose-950/20'
+                          : 'border-slate-700/60'
+                      }`}
+                    >
+                      {/* Top Meta Header */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-700/40 text-xs">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono font-bold text-sm text-blue-400">
+                            {iss.ticketNumber}
+                          </span>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getPriorityBadgeClass(
+                              iss.priority
+                            )}`}
+                          >
+                            {iss.priority} Priority
+                          </span>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-700/80 text-slate-300 border border-slate-600/50">
+                            {iss.category}
+                          </span>
+                          {iss.photoUrl && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                              <ImageIcon className="w-3 h-3" /> Photo Proof
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                          <span className="flex items-center gap-1">
+                            <Users className="w-3.5 h-3.5 text-slate-500" />
+                            {iss.reportedBy}
+                          </span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5 text-slate-500" />
+                            {new Date(iss.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content Grid: Left Details + Right Photo */}
+                      <div className="mt-3.5 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        {/* Left Details (2 cols on lg) */}
+                        <div className="lg:col-span-2 space-y-3">
+                          <div>
+                            <h5 className="font-bold text-white text-base leading-snug">{iss.title}</h5>
+                            <p className="mt-1.5 text-slate-300 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800 leading-relaxed">
+                              {iss.description}
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-300">
+                            <div className="p-2 rounded-lg bg-slate-900/40 border border-slate-800">
+                              <span className="text-[10px] text-slate-400 block font-semibold mb-0.5">Location</span>
+                              <span className="flex items-center gap-1 font-medium">
+                                <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                                <span className="truncate">{iss.location}</span>
+                              </span>
+                            </div>
+
+                            <div className="p-2 rounded-lg bg-slate-900/40 border border-slate-800">
+                              <span className="text-[10px] text-slate-400 block font-semibold mb-0.5">Assigned Department</span>
+                              <span className="flex items-center gap-1 font-medium">
+                                <Building className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                <span className="truncate">{iss.department}</span>
+                              </span>
+                            </div>
+
+                            <div className="p-2 rounded-lg bg-slate-900/40 border border-slate-800">
+                              <span className="text-[10px] text-slate-400 block font-semibold mb-0.5">Responsible Staff</span>
+                              <span className="flex items-center gap-1 font-medium">
+                                <Users className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                <span className="truncate">{iss.assignedStaff}</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* 5-Stage Stepper Progress Tracker */}
+                          <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
+                            <div className="flex items-center justify-between mb-1.5 text-[10px] font-bold">
+                              <span className="text-slate-400">Resolution Progress</span>
+                              <span className={isResolved ? 'text-emerald-400' : 'text-blue-400'}>
+                                Stage {iss.currentStageIndex}/5: {
+                                  ['Reported', 'Routed', 'Work In Progress', 'Notified', 'Resolved'][iss.currentStageIndex - 1] || 'In Progress'
+                                }
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-5 gap-1.5">
+                              {['1. Report', '2. Route', '3. Act', '4. Notify', '5. Resolve'].map((stLabel, sIdx) => {
+                                const stepNum = sIdx + 1;
+                                const isDone = stepNum <= iss.currentStageIndex;
+                                const isCurrent = stepNum === iss.currentStageIndex;
+
+                                return (
+                                  <div
+                                    key={stepNum}
+                                    className={`py-1 text-center rounded text-[10px] font-bold transition ${
+                                      isCurrent
+                                        ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+                                        : isDone
+                                        ? 'bg-emerald-600/80 text-white'
+                                        : 'bg-slate-800 text-slate-500'
+                                    }`}
+                                  >
+                                    {stLabel}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Photo Column */}
+                        <div className="lg:col-span-1 flex flex-col justify-between">
+                          {iss.photoUrl ? (
+                            <div className="relative group rounded-xl overflow-hidden border border-slate-700 bg-slate-950 p-1 flex flex-col h-full justify-between">
+                              <div className="flex items-center justify-between p-1.5 text-[11px] font-bold text-slate-300">
+                                <span className="flex items-center gap-1">
+                                  <Camera className="w-3.5 h-3.5 text-amber-400" />
+                                  <span>Attached Photo</span>
+                                </span>
+                                <span className="text-[10px] text-indigo-400">Click to view</span>
+                              </div>
+                              <div
+                                onClick={() => setAdminLightboxImage(iss.photoUrl)}
+                                className="relative rounded-lg overflow-hidden h-36 bg-slate-900 cursor-pointer"
+                              >
+                                <img
+                                  src={iss.photoUrl}
+                                  alt={iss.title}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                                />
+                                <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                                  <span className="px-2.5 py-1 rounded-lg bg-slate-900/90 text-white text-[11px] font-bold flex items-center gap-1 shadow-md">
+                                    <Maximize2 className="w-3.5 h-3.5" /> Full Photo
+                                  </span>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setAdminLightboxImage(iss.photoUrl)}
+                                className="mt-2 w-full py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold flex items-center justify-center gap-1 transition"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-indigo-400" /> Inspect Evidence Photo
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="h-full rounded-xl border border-dashed border-slate-700/70 p-4 flex flex-col items-center justify-center text-center text-slate-500 text-xs">
+                              <Camera className="w-6 h-6 mb-1 text-slate-600" />
+                              <span className="font-semibold text-slate-400">No Photo Attached</span>
+                              <span className="text-[10px] text-slate-500 mt-0.5">Student submitted text-only report</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action Bar & Timeline Toggle */}
+                      <div className="mt-4 pt-3.5 border-t border-slate-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedIssueHistoryId(isTimelineExpanded ? null : iss.id)}
+                          className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition"
+                        >
+                          {isTimelineExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          <span>{isTimelineExpanded ? 'Hide Timeline History' : `View Full Timeline (${iss.timeline?.length || 1} logged updates)`}</span>
+                        </button>
+
+                        {/* Dispatch Action Buttons */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          {iss.currentStageIndex < 2 && (
+                            <button
+                              onClick={() => handleAdvanceIssue(iss.id, 2, 'Route')}
+                              className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-md shadow-blue-600/30"
+                            >
+                              Dispatch to Route (Stage 2)
+                            </button>
+                          )}
+
+                          {iss.currentStageIndex === 2 && (
+                            <button
+                              onClick={() => handleAdvanceIssue(iss.id, 3, 'Act')}
+                              className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition shadow-md shadow-amber-600/30"
+                            >
+                              Dispatch to Act / In Progress (Stage 3)
+                            </button>
+                          )}
+
+                          {iss.currentStageIndex === 3 && (
+                            <button
+                              onClick={() => handleAdvanceIssue(iss.id, 4, 'Notify')}
+                              className="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition shadow-md shadow-cyan-600/30"
+                            >
+                              Send Progress Alert to Student (Stage 4)
+                            </button>
+                          )}
+
+                          {iss.currentStageIndex >= 3 && iss.status !== 'resolved' && (
+                            <button
+                              onClick={() => handleAdvanceIssue(iss.id, 5, 'Resolve')}
+                              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md shadow-emerald-600/30"
+                            >
+                              ✓ Resolve & Close Ticket (Stage 5)
+                            </button>
+                          )}
+
+                          {iss.status === 'resolved' && (
+                            <span className="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center gap-1">
+                              <CheckCircle className="w-3.5 h-3.5" /> Ticket Resolved & Closed
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Expandable History Drawer */}
+                      {isTimelineExpanded && (
+                        <div className="mt-3 pt-3 border-t border-slate-700/40 space-y-2 animate-in fade-in">
+                          <h6 className="font-bold text-slate-300 text-[11px]">Audit Log & Activity History:</h6>
+                          <div className="space-y-2 border-l-2 border-slate-700 ml-2 pl-3">
+                            {(iss.timeline || []).map((step, idx) => (
+                              <div key={idx} className="relative text-[11px]">
+                                <span className="absolute -left-[17px] top-1 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-slate-800" />
+                                <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
+                                  <div className="flex items-center justify-between text-slate-300 font-semibold">
+                                    <span>Stage: {step.stage} • Logged by: {step.actor}</span>
+                                    <span className="text-[10px] text-slate-400">
+                                      {new Date(step.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                  </div>
+                                  <p className="text-slate-400 mt-0.5 text-[10px]">{step.message}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-slate-300 text-[11px]">{iss.description}</p>
-                    <div className="text-[10px] text-slate-400">
-                      Location: {iss.location} • Dept: {iss.department} • Assigned: {iss.assignedStaff}
-                    </div>
-                  </div>
+                  );
+                })}
 
-                  {/* Stage Advancement Buttons */}
-                  <div className="flex flex-wrap items-center gap-1.5 shrink-0">
-                    <span className="text-[10px] text-slate-400 mr-1">
-                      Current Stage: <strong>{iss.currentStageIndex}/5</strong>
-                    </span>
-
-                    {iss.currentStageIndex < 2 && (
-                      <button
-                        onClick={() => handleAdvanceIssue(iss.id, 2, 'Route')}
-                        className="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[11px]"
-                      >
-                        Advance to Route
-                      </button>
-                    )}
-
-                    {iss.currentStageIndex === 2 && (
-                      <button
-                        onClick={() => handleAdvanceIssue(iss.id, 3, 'Act')}
-                        className="px-2.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-[11px]"
-                      >
-                        Advance to Act (Work In Progress)
-                      </button>
-                    )}
-
-                    {iss.currentStageIndex === 3 && (
-                      <button
-                        onClick={() => handleAdvanceIssue(iss.id, 4, 'Notify')}
-                        className="px-2.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-[11px]"
-                      >
-                        Advance to Notify
-                      </button>
-                    )}
-
-                    {iss.currentStageIndex >= 3 && iss.status !== 'resolved' && (
-                      <button
-                        onClick={() => handleAdvanceIssue(iss.id, 5, 'Resolve')}
-                        className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-[11px]"
-                      >
-                        Resolve & Close Ticket
-                      </button>
-                    )}
-
-                    {iss.status === 'resolved' && (
-                      <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
-                        ✓ Resolved
-                      </span>
-                    )}
-                  </div>
+              {issues.length === 0 && (
+                <div className="p-8 text-center text-slate-400 text-xs bg-slate-800/40 rounded-xl">
+                  No campus issues found.
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -448,7 +743,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {activeTab === 'claims' && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
           <h4 className="font-bold text-sm text-white mb-1">
-            Lost & Found Claim Verification (Slide 6)
+            Lost & Found Claim Verification
           </h4>
           <p className="text-xs text-slate-400 mb-4">
             Verify student ownership proof and approve release of belongings
@@ -536,7 +831,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {activeTab === 'menu' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-            <h4 className="font-bold text-sm text-white mb-3">Add New Menu Dish (Slide 6)</h4>
+            <h4 className="font-bold text-sm text-white mb-3">Add New Menu Dish</h4>
             <form onSubmit={handleAddMenuItem} className="space-y-3 text-xs">
               <div>
                 <label className="block text-slate-300 font-semibold mb-1">Dish Name</label>
@@ -668,7 +963,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {activeTab === 'map' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-            <h4 className="font-bold text-sm text-white mb-1">Add Location to Real Map (Slide 6)</h4>
+            <h4 className="font-bold text-sm text-white mb-1">Add Location to Campus Map</h4>
             <p className="text-[11px] text-slate-400 mb-4">
               Pin new canteens, stationery stores, or labs with real GPS coordinates.
             </p>
@@ -834,6 +1129,39 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                   </span>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Image Preview Modal for Admin */}
+      {adminLightboxImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in"
+          onClick={() => setAdminLightboxImage(null)}
+        >
+          <div
+            className="relative max-w-4xl w-full bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl p-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-2 border-b border-slate-800">
+              <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                <Camera className="w-4 h-4 text-amber-400" />
+                Issue Evidence Photo — High-Resolution Inspection
+              </span>
+              <button
+                onClick={() => setAdminLightboxImage(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-3 flex items-center justify-center bg-slate-950 rounded-xl overflow-hidden mt-3">
+              <img
+                src={adminLightboxImage}
+                alt="Admin high-res evidence inspect"
+                className="max-h-[75vh] w-auto max-w-full rounded-lg object-contain"
+              />
             </div>
           </div>
         </div>

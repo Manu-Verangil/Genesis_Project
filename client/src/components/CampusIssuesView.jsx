@@ -13,7 +13,10 @@ import {
   X,
   Sparkles,
   ArrowRight,
-  Filter
+  Filter,
+  Camera,
+  Image as ImageIcon,
+  Maximize2
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -23,14 +26,17 @@ export function CampusIssuesView() {
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [expandedIssueId, setExpandedIssueId] = useState('iss-1');
+  const [expandedIssueId, setExpandedIssueId] = useState('iss-0');
 
   // Modal State
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [lightboxImage, setLightboxImage] = useState(null);
   const [form, setForm] = useState({
     title: '',
-    category: 'Water Cooler & Plumbing',
+    category: 'Hostel Maintenance & Grounds',
     location: '',
     description: '',
     priority: 'Medium',
@@ -62,11 +68,13 @@ export function CampusIssuesView() {
 
   const categories = [
     'All',
+    'Hostel Maintenance & Grounds',
     'Water Cooler & Plumbing',
     'WiFi & IT Infrastructure',
     'Classroom AV & Electronics',
     'Sanitation & Hygiene',
-    'Electrical Maintenance Cell'
+    'Electrical Maintenance Cell',
+    'Safety & Campus Hazards'
   ];
 
   const filteredIssues = issues.filter((iss) => {
@@ -85,6 +93,29 @@ export function CampusIssuesView() {
     return true;
   });
 
+  const handleFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size exceeds 5MB. Please choose a smaller photo.');
+        return;
+      }
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm((prev) => ({ ...prev, photoUrl: reader.result }));
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeSelectedPhoto = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    setForm((prev) => ({ ...prev, photoUrl: '' }));
+  };
+
   const handleReportSubmit = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.location.trim() || !form.description.trim()) {
@@ -100,12 +131,13 @@ export function CampusIssuesView() {
         setIsReportModalOpen(false);
         setForm({
           title: '',
-          category: 'Water Cooler & Plumbing',
+          category: 'Hostel Maintenance & Grounds',
           location: '',
           description: '',
           priority: 'Medium',
           photoUrl: ''
         });
+        removeSelectedPhoto();
         fetchIssues();
       } else {
         alert(res?.message || 'Could not submit issue report. Please try again.');
@@ -132,15 +164,15 @@ export function CampusIssuesView() {
 
   return (
     <div className="space-y-6">
-      {/* 5-Step Process Banner from Slide 5 */}
+      {/* 5-Step Process Banner */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-800">
           <div>
             <h3 className="font-extrabold text-lg text-white flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-400" />
               <span>Campus Issue Resolution System</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                Slide 5 Lifecycle
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                5-Stage Resolution Workflow
               </span>
             </h3>
             <p className="text-xs text-slate-400 mt-1">
@@ -264,6 +296,11 @@ export function CampusIssuesView() {
                           {issue.priority} Priority
                         </span>
                         <span className="text-slate-400 text-xs">• {issue.category}</span>
+                        {issue.photoUrl && (
+                          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                            <ImageIcon className="w-3 h-3" /> Photo Attached
+                          </span>
+                        )}
                       </div>
 
                       <h4 className="font-bold text-white text-base mt-1">{issue.title}</h4>
@@ -303,7 +340,7 @@ export function CampusIssuesView() {
                   </div>
                 </div>
 
-                {/* 5-Stage Live Interactive Stepper (Slide 5: Report -> Route -> Act -> Notify -> Resolve) */}
+                {/* 5-Stage Live Interactive Stepper */}
                 <div className="px-5 pb-5">
                   <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
                     <div className="grid grid-cols-5 gap-2 relative">
@@ -352,6 +389,31 @@ export function CampusIssuesView() {
                       </p>
                     </div>
 
+                    {/* Optional Photo Display */}
+                    {issue.photoUrl && (
+                      <div>
+                        <h5 className="font-bold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                          <ImageIcon className="w-3.5 h-3.5 text-blue-400" />
+                          <span>Attached Photo Evidence:</span>
+                        </h5>
+                        <div className="relative group max-w-sm rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
+                          <img
+                            src={issue.photoUrl}
+                            alt={issue.title}
+                            className="w-full h-44 object-cover cursor-pointer hover:opacity-95 transition"
+                            onClick={() => setLightboxImage(issue.photoUrl)}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setLightboxImage(issue.photoUrl)}
+                            className="absolute bottom-2 right-2 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:bg-slate-900 text-white text-[11px] font-semibold flex items-center gap-1 shadow-md backdrop-blur-sm transition"
+                          >
+                            <Maximize2 className="w-3 h-3" /> View Full
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Timeline History */}
                     <div>
                       <h5 className="font-bold text-slate-300 mb-2">Resolution Timeline History:</h5>
@@ -388,9 +450,12 @@ export function CampusIssuesView() {
       {/* Report Issue Modal */}
       {isReportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-          <div className="relative w-full max-w-lg bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl p-6 overflow-hidden">
+          <div className="relative w-full max-w-lg bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl p-6 overflow-hidden max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="font-bold text-base text-white">Report Campus Problem (Slide 5)</h3>
+              <h3 className="font-bold text-base text-white flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                <span>Report Campus Problem</span>
+              </h3>
               <button
                 onClick={() => setIsReportModalOpen(false)}
                 className="p-1 rounded-lg text-slate-400 hover:text-white"
@@ -399,16 +464,16 @@ export function CampusIssuesView() {
               </button>
             </div>
 
-            <form onSubmit={handleReportSubmit} className="mt-4 space-y-3 text-xs">
+            <form onSubmit={handleReportSubmit} className="mt-4 space-y-3.5 text-xs">
               <div>
                 <label className="block text-slate-300 font-semibold mb-1">Issue Title</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Water cooler leaking on 3rd floor"
+                  placeholder="e.g. Tree fell blocking Hostel D path / Water cooler leaking"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
+                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
 
@@ -418,13 +483,15 @@ export function CampusIssuesView() {
                   <select
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
                   >
+                    <option value="Hostel Maintenance & Grounds">Hostel & Grounds (Tree falls, Roads, etc.)</option>
                     <option value="Water Cooler & Plumbing">Water Cooler & Plumbing</option>
                     <option value="WiFi & IT Infrastructure">WiFi & IT Infrastructure</option>
                     <option value="Classroom AV & Electronics">Classroom AV & Projectors</option>
                     <option value="Sanitation & Hygiene">Sanitation & Restrooms</option>
                     <option value="Electrical Maintenance Cell">Electrical & Lights</option>
+                    <option value="Safety & Campus Hazards">Safety & Campus Hazards</option>
                   </select>
                 </div>
                 <div>
@@ -432,12 +499,12 @@ export function CampusIssuesView() {
                   <select
                     value={form.priority}
                     onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                    className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
                     <option value="High">High</option>
-                    <option value="Critical">Critical</option>
+                    <option value="Critical">Critical (Immediate Hazard)</option>
                   </select>
                 </div>
               </div>
@@ -449,10 +516,10 @@ export function CampusIssuesView() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Academic Block B, 3rd Floor East Corridor"
+                  placeholder="e.g. Hostel Block D Main Pathway / Academic Block B Room 204"
                   value={form.location}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
+                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
 
@@ -463,18 +530,59 @@ export function CampusIssuesView() {
                 <textarea
                   rows="3"
                   required
-                  placeholder="Describe what is broken, risk, or symptoms..."
+                  placeholder="Describe what happened, any risk, blockage, or urgency..."
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none"
+                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
 
-              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300 leading-relaxed">
-                Smart routing will assign this ticket immediately to the relevant facilities team. You'll receive real-time push alerts as progress is logged.
+              {/* Optional Photo Attachment */}
+              <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-slate-300 font-semibold flex items-center gap-1.5 text-xs">
+                    <Camera className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Attach Photo</span>
+                    <span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">
+                      Optional
+                    </span>
+                  </label>
+                  <span className="text-[10px] text-slate-400">Not all issues require a picture</span>
+                </div>
+                <p className="text-[10px] text-slate-400 mb-2 leading-relaxed">
+                  Helpful for tree falls, damaged infrastructure, or leaks. You can skip this if not applicable.
+                </p>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-white hover:file:bg-amber-500 cursor-pointer focus:outline-none"
+                />
+
+                {imagePreview && (
+                  <div className="mt-2.5 relative w-full h-36 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={removeSelectedPhoto}
+                      className="absolute top-2 right-2 p-1.5 bg-slate-900/85 hover:bg-rose-600 text-white rounded-lg transition"
+                      title="Remove attached photo"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-slate-900/80 rounded text-[10px] text-white">
+                      Photo ready for upload
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="pt-2">
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300 leading-relaxed">
+                Smart routing will assign this ticket immediately to the relevant facilities team. You'll receive real-time updates as progress is logged.
+              </div>
+
+              <div className="pt-1">
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -488,6 +596,39 @@ export function CampusIssuesView() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Image Lightbox Modal */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in"
+          onClick={() => setLightboxImage(null)}
+        >
+          <div
+            className="relative max-w-3xl w-full bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl p-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-2 border-b border-slate-800">
+              <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-blue-400" />
+                Attached Issue Photo Evidence
+              </span>
+              <button
+                onClick={() => setLightboxImage(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-2 flex items-center justify-center bg-slate-950 rounded-xl overflow-hidden mt-2">
+              <img
+                src={lightboxImage}
+                alt="Enlarged issue evidence"
+                className="max-h-[70vh] w-auto max-w-full rounded-lg object-contain"
+              />
+            </div>
           </div>
         </div>
       )}
