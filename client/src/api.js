@@ -24,23 +24,26 @@ function getLocalState() {
       const state = JSON.parse(saved);
       // Ensure campusLocations stay strictly synced with the latest real GPS coordinates
       state.campusLocations = initialData.campusLocations;
-      // Preserve custom-created canteens while keeping base initial canteens updated
+      const deletedIds = new Set(state.deletedCanteenIds || []);
+      const activeBaseCanteens = initialData.canteens.filter((c) => !deletedIds.has(c.id));
+      // Preserve custom-created canteens while keeping base initial canteens updated (excluding deleted)
       if (Array.isArray(state.canteens)) {
         const customCanteens = state.canteens.filter(
-          (c) => !initialData.canteens.some((initC) => initC.id === c.id)
+          (c) => !deletedIds.has(c.id) && !initialData.canteens.some((initC) => initC.id === c.id)
         );
-        state.canteens = [...initialData.canteens, ...customCanteens];
+        state.canteens = [...activeBaseCanteens, ...customCanteens];
       } else {
-        state.canteens = initialData.canteens;
+        state.canteens = activeBaseCanteens;
       }
-      // Preserve custom-created menu items while keeping catalog fresh
+      // Preserve custom-created menu items while filtering out dishes from deleted canteens
       if (Array.isArray(state.menuItems)) {
         const customItems = state.menuItems.filter(
-          (m) => !initialData.menuItems.some((initM) => initM.id === m.id)
+          (m) => !deletedIds.has(m.canteenId) && !initialData.menuItems.some((initM) => initM.id === m.id)
         );
-        state.menuItems = [...initialData.menuItems, ...customItems];
+        const activeBaseItems = initialData.menuItems.filter((m) => !deletedIds.has(m.canteenId));
+        state.menuItems = [...activeBaseItems, ...customItems];
       } else {
-        state.menuItems = initialData.menuItems;
+        state.menuItems = initialData.menuItems.filter((m) => !deletedIds.has(m.canteenId));
       }
       return state;
     }
@@ -48,6 +51,7 @@ function getLocalState() {
     console.warn('LocalStorage read error:', e);
   }
   const initial = JSON.parse(JSON.stringify(initialData));
+  initial.deletedCanteenIds = [];
   saveLocalState(initial);
   return initial;
 }
@@ -130,9 +134,29 @@ export const api = {
           counterSpeed: canteenData.counterSpeed || 'Fast',
           image: canteenData.image || '',
         };
+        if (state.deletedCanteenIds) {
+          state.deletedCanteenIds = state.deletedCanteenIds.filter((delId) => delId !== id);
+        }
         state.canteens.push(newCanteen);
         saveLocalState(state);
         return newCanteen;
+      }
+    ),
+
+  deleteCanteen: (canteenId) =>
+    safeCall(
+      fetch(`${API_BASE}/canteens/${canteenId}`, {
+        method: 'DELETE',
+      }).then(handleResponse),
+      (state) => {
+        if (!state.deletedCanteenIds) state.deletedCanteenIds = [];
+        if (!state.deletedCanteenIds.includes(canteenId)) {
+          state.deletedCanteenIds.push(canteenId);
+        }
+        state.canteens = (state.canteens || []).filter((c) => c.id !== canteenId);
+        state.menuItems = (state.menuItems || []).filter((m) => m.canteenId !== canteenId);
+        saveLocalState(state);
+        return { id: canteenId, deleted: true };
       }
     ),
 

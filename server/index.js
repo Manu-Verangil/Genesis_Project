@@ -65,6 +65,16 @@ app.post("/api/canteens", (req, res) => {
   res.json({ success: true, data: newCanteen });
 });
 
+app.delete("/api/canteens/:id", (req, res) => {
+  const { id } = req.params;
+  const index = db.canteens.findIndex((c) => c.id === id);
+  if (index === -1) return res.status(404).json({ success: false, message: "Canteen not found" });
+
+  db.canteens.splice(index, 1);
+  db.menuItems = db.menuItems.filter((m) => m.canteenId !== id);
+  res.json({ success: true, message: "Canteen deleted successfully" });
+});
+
 app.put("/api/canteens/:id/crowd", (req, res) => {
   const { id } = req.params;
   const { crowdLevel } = req.body;

@@ -441,6 +441,33 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
     }
   };
 
+  // Delete Canteen / Store
+  const handleDeleteCanteen = async (canteen) => {
+    if (canteens.length <= 1) {
+      alert('Cannot delete the only remaining canteen. Campus requires at least one active dining facility.');
+      return;
+    }
+
+    const dishCount = menuItems.filter((m) => m.canteenId === canteen.id).length;
+    const confirmMsg = `Are you sure you want to permanently delete "${canteen.name}"?\n\nThis will remove the outlet from student ordering, staff stations, and delete its ${dishCount} associated menu dishes.`;
+
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      const res = await api.deleteCanteen(canteen.id);
+      if (res.success) {
+        alert(`Outlet "${canteen.name}" and its menu dishes have been removed.`);
+        if (adminCanteenFilter === canteen.id) {
+          setAdminCanteenFilter('All');
+        }
+        onDataUpdated();
+        fetchAdminData();
+      }
+    } catch (err) {
+      alert('Error deleting canteen: ' + err.message);
+    }
+  };
+
   // Filtered menu dishes for Admin panel
   const filteredAdminMenuItems = useMemo(() => {
     return menuItems.filter((item) => {
@@ -1414,6 +1441,15 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                             </span>
                           </div>
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCanteen(c)}
+                          title={`Delete ${c.name}`}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition shrink-0"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 my-3 text-[11px] bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
@@ -1468,7 +1504,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                         onClick={() => {
                           setAdminCanteenFilter(isFiltered ? 'All' : c.id);
                         }}
-                        className={`w-full py-1.5 px-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1.5 ${
+                        className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1.5 ${
                           isFiltered
                             ? 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-300'
                             : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
@@ -1476,6 +1512,16 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       >
                         <Utensils className="w-3 h-3" />
                         <span>{isFiltered ? 'Viewing Menu' : 'Manage Dishes'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCanteen(c)}
+                        title={`Delete ${c.name}`}
+                        className="py-1.5 px-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-[11px] font-bold transition flex items-center justify-center gap-1 border border-rose-500/30 shrink-0"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Delete</span>
                       </button>
                     </div>
                   </div>

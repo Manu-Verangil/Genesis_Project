@@ -34,7 +34,15 @@ export function App() {
         api.getWallet(),
         api.getNotifications()
       ]);
-      if (cRes.success) setCanteens(cRes.data);
+      if (cRes.success) {
+        setCanteens(cRes.data);
+        setSelectedCanteenId((prev) => {
+          if (cRes.data.length > 0 && !cRes.data.some((c) => c.id === prev)) {
+            return cRes.data[0].id;
+          }
+          return prev;
+        });
+      }
       if (mRes.success) setMenuItems(mRes.data);
       if (wRes.success) setWallet(wRes.data);
       if (nRes.success) setNotifications(nRes.data);
