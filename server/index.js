@@ -42,6 +42,129 @@ function calculateWaitTime(canteenId, orderItems = []) {
   };
 }
 
+// Helper: Load users from users.csv in root directory
+function loadUsersFromCSV() {
+  try {
+    const csvPath = path.resolve(__dirname, "../users.csv");
+    if (!fs.existsSync(csvPath)) return [];
+    const content = fs.readFileSync(csvPath, "utf-8");
+    const lines = content.split(/\r?\n/).filter((l) => l.trim().length > 0);
+    if (lines.length <= 1) return [];
+
+    const users = [];
+    for (let i = 1; i < lines.length; i++) {
+      const parts = lines[i].split(",").map((p) => p.trim());
+      if (parts.length >= 6) {
+        users.push({
+          id: parts[0],
+          name: parts[1],
+          role: parts[2],
+          username: parts[3],
+          email: parts[4],
+          password: parts[5],
+        });
+      }
+    }
+    return users;
+  } catch (err) {
+    console.error("Error reading users.csv:", err);
+    return [];
+  }
+}
+
+// In-memory active auth session state
+let currentUserSession = null;
+
+// ----------------- AUTHENTICATION ROUTES -----------------
+app.post("/api/auth/login", (req, res) => {
+  const { identifier, username, email, password } = req.body || {};
+  const idInput = (identifier || username || email || "").trim().toLowerCase();
+  const passInput = (password || "").trim();
+
+  if (!idInput || !passInput) {
+    return res.status(401).json({ success: false, message: "Invalid credentials" });
+  }
+
+  const users = loadUsersFromCSV();
+  const matchedUser = users.find(
+    (u) =>
+      (u.username.toLowerCase() === idInput || u.email.toLowerCase() === idInput) &&
+      u.password === passInput
+  );
+
+  if (!matchedUser) {
+    return res.status(401).json({ success: false, message: "Invalid credentials" });
+  }
+
+  const safeUser = {
+    id: matchedUser.id,
+    name: matchedUser.name,
+    role: matchedUser.role,
+    username: matchedUser.username,
+    email: matchedUser.email,
+  };
+
+  currentUserSession = safeUser;
+  return res.json({ success: true, user: safeUser, message: "Login successful" });
+});
+
+app.post("/api/auth/logout", (req, res) => {
+  currentUserSession = null;
+  res.json({ success: true, message: "Logged out successfully" });
+});
+
+app.get("/api/auth/me", (req, res) => {
+  if (!currentUserSession) {
+    return res.status(401).json({ success: false, message: "Not authenticated" });
+  }
+  res.json({ success: true, user: currentUserSession });
+});
+
+app.post("/api/auth/guest", (req, res) => {
+  const guestUser = {
+    id: `guest_${Date.now()}`,
+    name: "Guest Visitor",
+    role: "guest",
+    username: "guest-visitor",
+    email: "guest@campus.edu",
+    isGuest: true,
+  };
+  currentUserSession = guestUser;
+  res.json({ success: true, user: guestUser, message: "Logged in as temporary guest" });
+});
+
+// ----------------- PRIVACY-COMPLIANT STUDENT SPENDING TRACKER -----------------
+// STRICT PRIVACY COMPLIANCE: Records ONLY non-sensitive high-level spending metrics
+// (orderId, orderTotal, date, canteenId, itemsCount). ZERO banking/card/UPI credentials stored.
+app.get("/api/student/spending", (req, res) => {
+  if (!currentUserSession || currentUserSession.role !== "student") {
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalSpentAmount: 0,
+        orderCount: 0,
+        spendingHistory: [],
+        studentName: currentUserSession?.name || "Student",
+      },
+    });
+  }
+
+  const studentId = currentUserSession.id || currentUserSession.username;
+  const history = (db.studentSpending || {})[studentId] || [];
+  const totalSpentAmount = history.reduce((sum, h) => sum + (h.orderTotal || 0), 0);
+  const orderCount = history.length;
+
+  res.json({
+    success: true,
+    data: {
+      totalSpentAmount,
+      orderCount,
+      spendingHistory: history,
+      studentName: currentUserSession.name,
+    },
+  });
+});
+
 // ----------------- CANTEENS & MENU -----------------
 app.get("/api/canteens", (req, res) => {
   res.json({ success: true, data: db.canteens });
@@ -311,6 +434,22 @@ app.post("/api/orders", (req, res) => {
   };
 
   db.orders.unshift(newOrder);
+
+  // STRICT PRIVACY COMPLIANCE: Store ONLY non-sensitive high-level spending metrics
+  // (orderId, orderTotal, date, canteenId, itemsCount). ZERO banking or credential data stored.
+  if (currentUserSession && currentUserSession.role === "student") {
+    const studentId = currentUserSession.id || currentUserSession.username;
+    db.studentSpending = db.studentSpending || {};
+    db.studentSpending[studentId] = db.studentSpending[studentId] || [];
+    db.studentSpending[studentId].unshift({
+      orderId: newOrder.id,
+      token: newOrder.token,
+      orderTotal: totalAmount,
+      date: newOrder.createdAt,
+      canteenName: canteen.name,
+      itemsCount: items.length
+    });
+  }
 
   // In-app notification
   db.notifications.unshift({

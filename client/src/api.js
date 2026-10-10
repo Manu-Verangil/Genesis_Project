@@ -113,6 +113,30 @@ async function safeCall(fetchPromise, fallbackFn) {
 }
 
 export const api = {
+  // Authentication
+  login: (credentials) =>
+    fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    }).then(handleResponse),
+
+  logout: () =>
+    fetch(`${API_BASE}/auth/logout`, {
+      method: 'POST',
+    }).then(handleResponse),
+
+  getCurrentUser: () =>
+    fetch(`${API_BASE}/auth/me`).then(handleResponse),
+
+  guestLogin: () =>
+    fetch(`${API_BASE}/auth/guest`, {
+      method: 'POST',
+    }).then(handleResponse),
+
+  getStudentSpending: () =>
+    fetch(`${API_BASE}/student/spending`).then(handleResponse),
+
   // Canteens & Menu
   getCanteens: () =>
     safeCall(

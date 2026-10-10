@@ -12,7 +12,8 @@ import {
   Shield,
   ChefHat,
   User,
-  Building
+  LogOut,
+  LogIn
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 
@@ -26,7 +27,10 @@ export function Navbar({
   unreadCount,
   onOpenWallet,
   onOpenVoice,
-  onRefreshNotifications
+  onRefreshNotifications,
+  currentUser,
+  onOpenLogin,
+  onLogout
 }) {
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -35,14 +39,17 @@ export function Navbar({
     { id: 'queue', label: 'Live Queue & Token', icon: Clock, badge: 'C1-047' },
     { id: 'map', label: 'Campus Map', icon: MapPin },
     { id: 'lost-found', label: 'Lost & Found', icon: Search },
-    { id: 'issues', label: 'Campus Issues', icon: AlertTriangle }
+    { id: 'issues', label: 'Campus Issues', icon: AlertTriangle },
+    ...(currentUser && currentUser.role === 'student'
+      ? [{ id: 'spending', label: 'Spending Tracker', icon: Wallet }]
+      : [])
   ];
 
   return (
     <header className="sticky top-0 z-40 bg-[#A41034] shadow-md border-b border-[#880E2D] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between min-h-[4rem] py-2 gap-3">
-          {/* Logo & Platform Title - Fully Contained Inside Box */}
+          {/* Logo & Platform Title */}
           <div className="flex items-center gap-3 shrink-0">
             <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/25 p-0.5 shadow-sm flex items-center justify-center shrink-0">
               <Sparkles className="w-5 h-5 text-amber-300" />
@@ -62,7 +69,7 @@ export function Navbar({
             </div>
           </div>
 
-          {/* Right Action Controls: Voice, Wallet, Notifications, and Role Switcher */}
+          {/* Right Action Controls: Voice, Wallet, Notifications, Auth User, and Role Switcher */}
           <div className="flex items-center gap-2 shrink-0">
             {/* Voice Guidance Button */}
             <button
@@ -107,45 +114,31 @@ export function Navbar({
               />
             </div>
 
-            {/* Role Switcher Pill - Always visible at top right without overflow */}
-            <div className="flex items-center p-0.5 bg-black/25 border border-white/25 rounded-xl shrink-0 shadow-sm">
+            {/* Logged in User Profile or Login Button */}
+            {currentUser ? (
+              <div className="flex items-center gap-1.5 pl-1 shrink-0">
+                <div className="hidden md:flex flex-col text-right">
+                  <span className="text-xs font-bold text-white leading-none">{currentUser.name}</span>
+                  <span className="text-[10px] font-mono text-amber-300 uppercase leading-tight">{currentUser.role} ({currentUser.username})</span>
+                </div>
+                <button
+                  onClick={onLogout}
+                  title="Sign Out"
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-600/40 hover:bg-rose-600/60 border border-rose-300/40 text-rose-100 text-xs font-semibold transition shadow-sm"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              </div>
+            ) : (
               <button
-                onClick={() => setCurrentRole('student')}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
-                  currentRole === 'student'
-                    ? 'bg-white text-[#A41034] shadow-sm font-bold'
-                    : 'text-white/80 hover:text-white'
-                }`}
-                title="Student / User Interface"
+                onClick={onOpenLogin}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md transition shrink-0"
               >
-                <User className="w-3.5 h-3.5 shrink-0" />
-                <span className="hidden sm:inline">Student</span>
+                <LogIn className="w-4 h-4" />
+                <span>Log In</span>
               </button>
-              <button
-                onClick={() => setCurrentRole('staff')}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
-                  currentRole === 'staff'
-                    ? 'bg-white text-[#A41034] shadow-sm font-bold'
-                    : 'text-white/80 hover:text-white'
-                }`}
-                title="Kitchen & Counter Staff Panel"
-              >
-                <ChefHat className="w-3.5 h-3.5 shrink-0" />
-                <span className="hidden sm:inline">Staff</span>
-              </button>
-              <button
-                onClick={() => setCurrentRole('admin')}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
-                  currentRole === 'admin'
-                    ? 'bg-white text-[#A41034] shadow-sm font-bold'
-                    : 'text-white/80 hover:text-white'
-                }`}
-                title="Campus Admin Panel"
-              >
-                <Shield className="w-3.5 h-3.5 shrink-0" />
-                <span className="hidden sm:inline">Admin</span>
-              </button>
-            </div>
+            )}
           </div>
         </div>
       </div>

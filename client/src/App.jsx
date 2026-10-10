@@ -9,12 +9,16 @@ import { StaffPanelView } from './components/StaffPanelView';
 import { AdminPanelView } from './components/AdminPanelView';
 import { WalletModal } from './components/WalletModal';
 import { VoiceGuidanceModal } from './components/VoiceGuidanceModal';
+import { LoginModal } from './components/LoginModal';
+import { StudentSpendingWidget } from './components/StudentSpendingWidget';
 import { api } from './api';
 
 export function App() {
   const [activeTab, setActiveTab] = useState('canteen'); // 'canteen', 'queue', 'map', 'lost-found', 'issues'
   const [currentRole, setCurrentRole] = useState('student'); // 'student', 'staff', 'admin'
   const [selectedCanteenId, setSelectedCanteenId] = useState('canteen-1');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   // Shared Data
   const [canteens, setCanteens] = useState([]);
@@ -25,6 +29,33 @@ export function App() {
   // Modals
   const [isWalletOpen, setIsWalletOpen] = useState(false);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+
+  const handleRoleRedirection = (role) => {
+    if (role === 'student') {
+      setCurrentRole('student');
+      setActiveTab('canteen');
+    } else if (role === 'staff') {
+      setCurrentRole('staff');
+    } else if (role === 'admin') {
+      setCurrentRole('admin');
+    }
+  };
+
+  const handleLoginSuccess = (user) => {
+    setCurrentUser(user);
+    handleRoleRedirection(user.role);
+    setIsLoginOpen(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+    } catch (e) {}
+    setCurrentUser(null);
+    setCurrentRole('student');
+    setActiveTab('canteen');
+    setIsLoginOpen(true);
+  };
 
   const fetchGlobalData = async () => {
     try {
@@ -53,6 +84,20 @@ export function App() {
 
   useEffect(() => {
     fetchGlobalData();
+    // Default to Login Screen if no active session detected on load
+    api.getCurrentUser()
+      .then((res) => {
+        if (res.success && res.user) {
+          setCurrentUser(res.user);
+          handleRoleRedirection(res.user.role);
+        } else {
+          setIsLoginOpen(true);
+        }
+      })
+      .catch(() => {
+        setIsLoginOpen(true);
+      });
+
     // Live update interval
     const interval = setInterval(fetchGlobalData, 6000);
     return () => clearInterval(interval);
@@ -87,9 +132,13 @@ export function App() {
         setCurrentRole={setCurrentRole}
         wallet={wallet}
         notifications={notifications}
+        unreadCount={notifications ? notifications.filter((n) => !n.read).length : 0}
         onOpenWallet={() => setIsWalletOpen(true)}
         onOpenVoice={() => setIsVoiceOpen(true)}
         onRefreshNotifications={fetchGlobalData}
+        currentUser={currentUser}
+        onOpenLogin={() => setIsLoginOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Area */}
@@ -176,6 +225,8 @@ export function App() {
             {activeTab === 'lost-found' && <LostAndFoundView />}
 
             {activeTab === 'issues' && <CampusIssuesView />}
+
+            {activeTab === 'spending' && <StudentSpendingWidget />}
           </div>
         )}
 
@@ -210,6 +261,12 @@ export function App() {
           setActiveTab(tab);
           setIsVoiceOpen(false);
         }}
+      />
+
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
       />
 
       {/* Footer in Amrita Brand Style */}
