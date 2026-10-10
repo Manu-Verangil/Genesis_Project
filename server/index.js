@@ -451,6 +451,13 @@ app.get("/api/lost-found", (req, res) => {
 });
 
 app.post("/api/lost-found", (req, res) => {
+  const imageUrl =
+    req.body.imageUrl ||
+    req.body.photoUrl ||
+    req.body.image ||
+    (req.file ? `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}` : null) ||
+    "https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=500&auto=format&fit=crop&q=80";
+
   const newItem = {
     id: `lf_${Date.now()}`,
     title: req.body.title,
@@ -462,7 +469,7 @@ app.post("/api/lost-found", (req, res) => {
     reportedBy: req.body.reportedBy || "Student (Karthik)",
     contactInfo: req.body.contactInfo || "student@campus.edu",
     status: "open",
-    imageUrl: req.body.imageUrl || "https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=500&auto=format&fit=crop&q=80",
+    imageUrl,
     claims: []
   };
   db.lostAndFound.unshift(newItem);
