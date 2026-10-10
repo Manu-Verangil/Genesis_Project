@@ -523,163 +523,176 @@ app.put("/api/lost-found/:id/claim/:claimId", (req, res) => {
 // ----------------- CAMPUS ISSUE REPORTING (Slide 5) -----------------
 // 5-Stage Life Cycle: 1. Report -> 2. Route -> 3. Act -> 4. Notify -> 5. Resolve
 app.get("/api/issues", (req, res) => {
-  const { category, status, search } = req.query;
-  let issues = [...db.campusIssues];
-  if (category && category !== "All") issues = issues.filter((i) => i.category.toLowerCase() === category.toLowerCase());
-  if (status && status !== "All") issues = issues.filter((i) => i.status === status);
-  if (search) {
-    const q = search.toLowerCase();
-    issues = issues.filter((i) => i.title.toLowerCase().includes(q) || i.description.toLowerCase().includes(q) || i.location.toLowerCase().includes(q));
+  try {
+    const { category, status, search } = req.query;
+    let issues = [...(db.campusIssues || [])];
+    if (category && category !== "All") issues = issues.filter((i) => i.category?.toLowerCase() === category.toLowerCase());
+    if (status && status !== "All") issues = issues.filter((i) => i.status === status);
+    if (search) {
+      const q = search.toLowerCase();
+      issues = issues.filter((i) => i.title?.toLowerCase().includes(q) || i.description?.toLowerCase().includes(q) || i.location?.toLowerCase().includes(q));
+    }
+    issues.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.status(200).json({ success: true, data: issues });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Internal server error fetching issues", error: err.message });
   }
-  issues.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  res.json({ success: true, data: issues });
 });
 
 app.post("/api/issues", (req, res) => {
-  const { title, category, location, description, priority, photoUrl } = req.body;
-  if (!title || !description || !location) {
-    return res.status(400).json({ success: false, message: "Title, location and description are required" });
+  try {
+    const { title, category, location, description, priority, photoUrl } = req.body || {};
+    if (!title || !description || !location) {
+      return res.status(400).json({ success: false, message: "Title, location and description are required" });
+    }
+
+    const count = (db.campusIssues || []).length + 45;
+    const ticketNumber = `ISS-2026-${String(count).padStart(3, "0")}`;
+
+    // Department auto-routing based on category
+    let department = "Campus Estate Management";
+    const catLower = (category || "").toLowerCase();
+    if (catLower.includes("wifi") || catLower.includes("it")) {
+      department = "Campus IT Network Services";
+    } else if (catLower.includes("water") || catLower.includes("plumbing")) {
+      department = "Estate & Plumbing Facilities";
+    } else if (catLower.includes("electric") || catLower.includes("power")) {
+      department = "Electrical Maintenance Cell";
+    } else if (catLower.includes("sanitation") || catLower.includes("restroom")) {
+      department = "Housekeeping & Campus Hygiene";
+    } else if (catLower.includes("classroom") || catLower.includes("projector")) {
+      department = "Audio-Visual Technical Team";
+    }
+
+    const newIssue = {
+      id: `iss_${Date.now()}`,
+      ticketNumber,
+      title: title.trim(),
+      category: category || "General Facilities",
+      location: location.trim(),
+      description: description.trim(),
+      priority: priority || "Medium",
+      status: "reported", // Stage 1
+      currentStageIndex: 1, // 1: Report, 2: Route, 3: Act, 4: Notify, 5: Resolve
+      reportedBy: "Karthik (CS24B001)",
+      department,
+      assignedStaff: "Pending Route",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      photoUrl: photoUrl || "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500&auto=format&fit=crop&q=80",
+      timeline: [
+        {
+          stage: "Report",
+          status: "reported",
+          message: "Issue reported by student with problem details and location marker.",
+          timestamp: new Date().toISOString(),
+          actor: "Karthik"
+        }
+      ]
+    };
+
+    db.campusIssues.unshift(newIssue);
+
+    db.notifications.unshift({
+      id: `nt_${Date.now()}`,
+      title: `Campus Issue Created (${ticketNumber})`,
+      message: `Your issue "${title}" was logged and queued for administrative routing.`,
+      type: "issue",
+      timestamp: new Date().toISOString(),
+      read: false
+    });
+
+    res.status(201).json({
+      success: true,
+      data: newIssue,
+      message: `Issue logged under ticket #${ticketNumber}`
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Internal server error logging issue", error: err.message });
   }
-
-  const count = db.campusIssues.length + 45;
-  const ticketNumber = `ISS-2026-${String(count).padStart(3, "0")}`;
-
-  // Department auto-routing based on category
-  let department = "Campus Estate Management";
-  if (category?.toLowerCase().includes("wifi") || category?.toLowerCase().includes("it")) {
-    department = "Campus IT Network Services";
-  } else if (category?.toLowerCase().includes("water") || category?.toLowerCase().includes("plumbing")) {
-    department = "Estate & Plumbing Facilities";
-  } else if (category?.toLowerCase().includes("electric") || category?.toLowerCase().includes("power")) {
-    department = "Electrical Maintenance Cell";
-  } else if (category?.toLowerCase().includes("sanitation") || category?.toLowerCase().includes("restroom")) {
-    department = "Housekeeping & Campus Hygiene";
-  } else if (category?.toLowerCase().includes("classroom") || category?.toLowerCase().includes("projector")) {
-    department = "Audio-Visual Technical Team";
-  }
-
-  const newIssue = {
-    id: `iss_${Date.now()}`,
-    ticketNumber,
-    title,
-    category: category || "General Facilities",
-    location,
-    description,
-    priority: priority || "Medium",
-    status: "reported", // Stage 1
-    currentStageIndex: 1, // 1: Report, 2: Route, 3: Act, 4: Notify, 5: Resolve
-    reportedBy: "Karthik (CS24B001)",
-    department,
-    assignedStaff: "Pending Route",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    photoUrl: photoUrl || "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500&auto=format&fit=crop&q=80",
-    timeline: [
-      {
-        stage: "Report",
-        status: "reported",
-        message: "Issue reported by student with problem details and location marker.",
-        timestamp: new Date().toISOString(),
-        actor: "Karthik"
-      }
-    ]
-  };
-
-  db.campusIssues.unshift(newIssue);
-
-  db.notifications.unshift({
-    id: `nt_${Date.now()}`,
-    title: `Campus Issue Created (${ticketNumber})`,
-    message: `Your issue "${title}" was logged and queued for administrative routing.`,
-    type: "issue",
-    timestamp: new Date().toISOString(),
-    read: false
-  });
-
-  res.json({
-    success: true,
-    data: newIssue,
-    message: `Issue logged under ticket #${ticketNumber}`
-  });
 });
 
 // Advance stage / Update issue (Slide 5: Report -> Route -> Act -> Notify -> Resolve)
 app.put("/api/issues/:id/stage", (req, res) => {
-  const { id } = req.params;
-  const { targetStage, assignedStaff, note } = req.body;
-  const issue = db.campusIssues.find((i) => i.id === id);
-  if (!issue) return res.status(404).json({ success: false, message: "Issue not found" });
+  try {
+    const { id } = req.params;
+    const { targetStage, assignedStaff, note } = req.body || {};
+    const issue = db.campusIssues.find((i) => i.id === id);
+    if (!issue) return res.status(404).json({ success: false, message: "Issue not found" });
 
-  const now = new Date().toISOString();
-  issue.updatedAt = now;
+    const now = new Date().toISOString();
+    issue.updatedAt = now;
 
-  if (targetStage === "Route" || targetStage === 2) {
-    issue.currentStageIndex = 2;
-    issue.status = "routed";
-    if (assignedStaff) issue.assignedStaff = assignedStaff;
-    issue.timeline.push({
-      stage: "Route",
-      status: "routed",
-      message: note || `Routed to ${issue.department}. Assigned staff: ${issue.assignedStaff}.`,
-      timestamp: now,
-      actor: "Campus Admin"
-    });
-    db.notifications.unshift({
-      id: `nt_${Date.now()}`,
-      title: `Issue Routed (${issue.ticketNumber})`,
-      message: `Your issue was assigned to ${issue.assignedStaff || issue.department}.`,
-      type: "issue",
-      timestamp: now,
-      read: false
-    });
-  } else if (targetStage === "Act" || targetStage === 3) {
-    issue.currentStageIndex = 3;
-    issue.status = "in_progress";
-    issue.timeline.push({
-      stage: "Act",
-      status: "in_progress",
-      message: note || "Staff actively addressing the issue on-site.",
-      timestamp: now,
-      actor: issue.assignedStaff || "Staff"
-    });
-    db.notifications.unshift({
-      id: `nt_${Date.now()}`,
-      title: `Work in Progress (${issue.ticketNumber})`,
-      message: `Maintenance staff is currently resolving: ${issue.title}`,
-      type: "issue",
-      timestamp: now,
-      read: false
-    });
-  } else if (targetStage === "Notify" || targetStage === 4) {
-    issue.currentStageIndex = 4;
-    issue.timeline.push({
-      stage: "Notify",
-      status: "in_progress",
-      message: note || "Work completed and undergoing validation. Student notified.",
-      timestamp: now,
-      actor: "Operations System"
-    });
-  } else if (targetStage === "Resolve" || targetStage === 5) {
-    issue.currentStageIndex = 5;
-    issue.status = "resolved";
-    issue.timeline.push({
-      stage: "Resolve",
-      status: "resolved",
-      message: note || "Issue verified and resolved. Ticket closed.",
-      timestamp: now,
-      actor: "Campus Admin"
-    });
-    db.notifications.unshift({
-      id: `nt_${Date.now()}`,
-      title: `Issue Resolved! 🎉 (${issue.ticketNumber})`,
-      message: `Your reported issue "${issue.title}" has been marked resolved. Thank you!`,
-      type: "issue",
-      timestamp: now,
-      read: false
-    });
+    if (targetStage === "Route" || targetStage === 2) {
+      issue.currentStageIndex = 2;
+      issue.status = "routed";
+      if (assignedStaff) issue.assignedStaff = assignedStaff;
+      issue.timeline.push({
+        stage: "Route",
+        status: "routed",
+        message: note || `Routed to ${issue.department}. Assigned staff: ${issue.assignedStaff}.`,
+        timestamp: now,
+        actor: "Campus Admin"
+      });
+      db.notifications.unshift({
+        id: `nt_${Date.now()}`,
+        title: `Issue Routed (${issue.ticketNumber})`,
+        message: `Your issue was assigned to ${issue.assignedStaff || issue.department}.`,
+        type: "issue",
+        timestamp: now,
+        read: false
+      });
+    } else if (targetStage === "Act" || targetStage === 3) {
+      issue.currentStageIndex = 3;
+      issue.status = "in_progress";
+      issue.timeline.push({
+        stage: "Act",
+        status: "in_progress",
+        message: note || "Staff actively addressing the issue on-site.",
+        timestamp: now,
+        actor: issue.assignedStaff || "Staff"
+      });
+      db.notifications.unshift({
+        id: `nt_${Date.now()}`,
+        title: `Work in Progress (${issue.ticketNumber})`,
+        message: `Maintenance staff is currently resolving: ${issue.title}`,
+        type: "issue",
+        timestamp: now,
+        read: false
+      });
+    } else if (targetStage === "Notify" || targetStage === 4) {
+      issue.currentStageIndex = 4;
+      issue.timeline.push({
+        stage: "Notify",
+        status: "in_progress",
+        message: note || "Work completed and undergoing validation. Student notified.",
+        timestamp: now,
+        actor: "Operations System"
+      });
+    } else if (targetStage === "Resolve" || targetStage === 5) {
+      issue.currentStageIndex = 5;
+      issue.status = "resolved";
+      issue.timeline.push({
+        stage: "Resolve",
+        status: "resolved",
+        message: note || "Issue verified and resolved. Ticket closed.",
+        timestamp: now,
+        actor: "Campus Admin"
+      });
+      db.notifications.unshift({
+        id: `nt_${Date.now()}`,
+        title: `Issue Resolved! 🎉 (${issue.ticketNumber})`,
+        message: `Your reported issue "${issue.title}" has been marked resolved. Thank you!`,
+        type: "issue",
+        timestamp: now,
+        read: false
+      });
+    }
+
+    res.status(200).json({ success: true, data: issue });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Internal server error updating issue stage", error: err.message });
   }
-
-  res.json({ success: true, data: issue });
 });
 
 // ----------------- NOTIFICATIONS & STATS -----------------

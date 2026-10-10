@@ -27,6 +27,7 @@ export function CampusIssuesView() {
 
   // Modal State
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     title: '',
     category: 'Water Cooler & Plumbing',
@@ -39,9 +40,9 @@ export function CampusIssuesView() {
   const fetchIssues = async () => {
     try {
       const res = await api.getIssues();
-      if (res.success) setIssues(res.data);
+      if (res && res.success) setIssues(res.data);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load campus issues:', err);
     } finally {
       setLoading(false);
     }
@@ -86,9 +87,15 @@ export function CampusIssuesView() {
 
   const handleReportSubmit = async (e) => {
     e.preventDefault();
+    if (!form.title.trim() || !form.location.trim() || !form.description.trim()) {
+      alert('Please fill out all required fields: Issue Title, Location, and Problem Description.');
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       const res = await api.createIssue(form);
-      if (res.success) {
+      if (res && res.success) {
         alert(res.message || 'Issue reported successfully!');
         setIsReportModalOpen(false);
         setForm({
@@ -100,9 +107,13 @@ export function CampusIssuesView() {
           photoUrl: ''
         });
         fetchIssues();
+      } else {
+        alert(res?.message || 'Could not submit issue report. Please try again.');
       }
     } catch (err) {
-      alert('Error: ' + err.message);
+      alert('Error submitting report: ' + (err.message || 'Unable to connect to server.'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -466,9 +477,14 @@ export function CampusIssuesView() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs transition shadow-lg shadow-amber-600/30"
+                  disabled={isSubmitting}
+                  className={`w-full py-2.5 rounded-xl text-white font-bold text-xs transition shadow-lg ${
+                    isSubmitting
+                      ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-amber-600/30'
+                  }`}
                 >
-                  Submit Campus Ticket
+                  {isSubmitting ? 'Submitting Ticket...' : 'Submit Campus Ticket'}
                 </button>
               </div>
             </form>

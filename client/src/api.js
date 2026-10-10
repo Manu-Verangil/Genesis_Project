@@ -1,6 +1,7 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const handleResponse = async (r) => {
+  const contentType = r.headers.get('content-type') || '';
   if (!r.ok) {
     const text = await r.text();
     let errorMessage = `Server error (${r.status}): ${r.statusText || 'Response not OK'}`;
@@ -15,7 +16,15 @@ const handleResponse = async (r) => {
     }
     throw new Error(errorMessage);
   }
-  return r.json();
+  if (contentType.includes('application/json')) {
+    return r.json();
+  }
+  const text = await r.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { success: true, data: text };
+  }
 };
 
 export const api = {
@@ -30,7 +39,8 @@ export const api = {
 
   getMenu: (params = {}) => {
     const query = new URLSearchParams(params).toString();
-    return fetch(`${API_BASE}/menu?${query}`).then(handleResponse);
+    const url = query ? `${API_BASE}/menu?${query}` : `${API_BASE}/menu`;
+    return fetch(url).then(handleResponse);
   },
   addMenuItem: (item) =>
     fetch(`${API_BASE}/menu`, {
@@ -52,7 +62,8 @@ export const api = {
   // Orders & Queue
   getOrders: (params = {}) => {
     const query = new URLSearchParams(params).toString();
-    return fetch(`${API_BASE}/orders?${query}`).then(handleResponse);
+    const url = query ? `${API_BASE}/orders?${query}` : `${API_BASE}/orders`;
+    return fetch(url).then(handleResponse);
   },
   getQueue: (canteenId) => fetch(`${API_BASE}/queue/${canteenId}`).then(handleResponse),
   createOrder: (orderData) =>
@@ -86,7 +97,8 @@ export const api = {
   // Campus Map
   getMapLocations: (params = {}) => {
     const query = new URLSearchParams(params).toString();
-    return fetch(`${API_BASE}/map?${query}`).then(handleResponse);
+    const url = query ? `${API_BASE}/map?${query}` : `${API_BASE}/map`;
+    return fetch(url).then(handleResponse);
   },
   addMapLocation: (loc) =>
     fetch(`${API_BASE}/map`, {
@@ -104,7 +116,8 @@ export const api = {
   // Lost & Found
   getLostAndFound: (params = {}) => {
     const query = new URLSearchParams(params).toString();
-    return fetch(`${API_BASE}/lost-found?${query}`).then(handleResponse);
+    const url = query ? `${API_BASE}/lost-found?${query}` : `${API_BASE}/lost-found`;
+    return fetch(url).then(handleResponse);
   },
   reportLostFound: (item) => {
     const isFormData = typeof FormData !== 'undefined' && item instanceof FormData;
@@ -130,7 +143,8 @@ export const api = {
   // Campus Issues (5-Stage lifecycle)
   getIssues: (params = {}) => {
     const query = new URLSearchParams(params).toString();
-    return fetch(`${API_BASE}/issues?${query}`).then(handleResponse);
+    const url = query ? `${API_BASE}/issues?${query}` : `${API_BASE}/issues`;
+    return fetch(url).then(handleResponse);
   },
   createIssue: (issue) =>
     fetch(`${API_BASE}/issues`, {
