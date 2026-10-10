@@ -193,7 +193,6 @@ export function CanteenView({
               );
             })}
           </div>
-          </div>
 
           {/* Live Crowd & Wait Time Status */}
           {currentCanteen && (
