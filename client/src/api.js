@@ -54,6 +54,9 @@ function getLocalState() {
       } else {
         state.menuItems = initialData.menuItems.filter((m) => !deletedIds.has(m.canteenId));
       }
+      if (!state.wallet || typeof state.wallet.balance !== 'number') {
+        state.wallet = JSON.parse(JSON.stringify(initialData.wallet || { balance: 425, transactions: [] }));
+      }
       return state;
     }
   } catch (e) {
@@ -396,7 +399,7 @@ export const api = {
   getWallet: () =>
     safeCall(
       fetch(`${API_BASE}/wallet`).then(handleResponse),
-      (state) => state.wallet
+      (state) => state.wallet || initialData.wallet || { balance: 425, transactions: [] }
     ),
 
   topUpWallet: (amount) =>

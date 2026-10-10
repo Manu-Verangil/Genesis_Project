@@ -107,7 +107,7 @@ export function WalletModal({ isOpen, onClose, wallet, onWalletUpdated }) {
                 Available Student Balance
               </span>
               <div className="text-3xl font-extrabold text-white mt-1 font-mono">
-                ₹{wallet.balance.toFixed(2)}
+                ₹{Number(wallet?.balance ?? 0).toFixed(2)}
               </div>
               <p className="text-xs text-rose-100 mt-1">{wallet.studentName}</p>
             </div>

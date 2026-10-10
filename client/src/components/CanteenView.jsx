@@ -107,9 +107,10 @@ export function CanteenView({
   const handleCheckout = async () => {
     if (cart.length === 0) return;
 
-    if (paymentMethod === 'Wallet' && wallet && wallet.balance < cartTotal) {
+    if (paymentMethod === 'Wallet' && Number(wallet?.balance ?? 0) < cartTotal) {
+      const availableBal = Number(wallet?.balance ?? 0).toFixed(0);
       const confirmTopUp = window.confirm(
-        `Insufficient wallet balance (₹${wallet.balance.toFixed(0)} available, order is ₹${cartTotal}). Top up wallet now?`
+        `Insufficient wallet balance (₹${availableBal} available, order is ₹${cartTotal}). Top up wallet now?`
       );
       if (confirmTopUp) onOpenWallet();
       return;
@@ -544,7 +545,7 @@ export function CanteenView({
                       Campus Wallet
                     </span>
                     <span className={`font-black mt-1 ${paymentMethod === 'Wallet' ? 'text-[#A41034]' : 'text-slate-800'}`}>
-                      ₹{wallet ? wallet.balance.toFixed(0) : '0'} Bal
+                      ₹{Number(wallet?.balance ?? 0).toFixed(0)} Bal
                     </span>
                   </button>
 
