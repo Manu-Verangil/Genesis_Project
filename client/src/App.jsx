@@ -97,12 +97,12 @@ export function App() {
         {/* Student View */}
         {currentRole === 'student' && (
           <div>
-            {/* Amrita Student Portal Official Welcome Header & Inspiration Banner */}
+            {/* Amrita Student Portal Official Header & Inspiration Banner */}
             <div className="mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
                 <div>
                   <h2 className="text-base sm:text-lg font-extrabold text-[#A41034] tracking-tight">
-                    Welcome! MANU V ( CB.PS.I5DAS23120 )
+                    Smart Campus Hub — Student & Campus Community
                   </h2>
                   <p className="text-xs text-slate-500 font-medium">
                     Amrita Vishwa Vidyapeetham • Ettimadai Campus, Coimbatore

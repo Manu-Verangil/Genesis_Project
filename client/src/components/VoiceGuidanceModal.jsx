@@ -5,7 +5,7 @@ export function VoiceGuidanceModal({ isOpen, onClose, onNavigate, onAskStatus })
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [assistantReply, setAssistantReply] = useState(
-    "Hi Karthik! I'm your Smart Campus Voice Guide. How can I help you today? You can say 'Show menu', 'How busy is Canteen 1', 'Where is the library', or 'Report an issue'."
+    "Hello! I'm your Smart Campus Voice Guide. How can I help you today? You can say 'Show menu', 'How busy is Canteen 1', 'Where is the library', or 'Report an issue'."
   );
   const [supported, setSupported] = useState(true);
 
