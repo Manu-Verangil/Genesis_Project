@@ -169,29 +169,30 @@ export function CanteenView({
       <div className="bg-zinc-950 border border-zinc-800/90 rounded-3xl p-4 sm:p-6 shadow-2xl backdrop-blur-md">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Canteen Switcher Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             {canteens.map((c) => {
               const isSelected = selectedCanteenId === c.id;
               return (
                 <button
                   key={c.id}
                   onClick={() => setSelectedCanteenId(c.id)}
-                  className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl border text-sm font-semibold transition-all duration-200 ${
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl border text-sm font-semibold transition-all duration-200 ${
                     isSelected
                       ? 'bg-white text-black border-white shadow-xl shadow-white/10 font-bold scale-[1.01]'
                       : 'bg-zinc-900/80 text-zinc-400 border-zinc-800 hover:text-white hover:border-zinc-700 hover:bg-zinc-900'
                   }`}
                 >
-                  <Utensils className={`w-4 h-4 ${isSelected ? 'text-black' : 'text-zinc-400'}`} />
-                  <div className="text-left">
-                    <div className="font-bold">{c.name}</div>
-                    <div className={`text-[10px] font-normal ${isSelected ? 'text-zinc-800' : 'text-zinc-500'}`}>
+                  <Utensils className={`w-4 h-4 shrink-0 ${isSelected ? 'text-black' : 'text-zinc-400'}`} />
+                  <div className="text-left flex flex-col justify-center">
+                    <div className="font-bold text-xs sm:text-sm whitespace-nowrap leading-tight">{c.name}</div>
+                    <div className={`text-[10px] font-medium leading-tight mt-0.5 whitespace-nowrap ${isSelected ? 'text-zinc-800' : 'text-zinc-500'}`}>
                       {c.location}
                     </div>
                   </div>
                 </button>
               );
             })}
+          </div>
           </div>
 
           {/* Live Crowd & Wait Time Status */}
