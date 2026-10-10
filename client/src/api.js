@@ -692,14 +692,14 @@ export const api = {
           status: 'reported',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          reportedBy: 'Karthik (CS24B001)',
+          reportedBy: 'Student Community (Ettimadai)',
           timeline: [
             {
               stage: 'Report',
               status: 'reported',
               message: 'Issue reported by student with details.',
               timestamp: new Date().toISOString(),
-              actor: 'Karthik',
+              actor: 'Student Community',
             },
           ],
           ...issue,

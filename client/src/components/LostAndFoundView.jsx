@@ -42,9 +42,9 @@ export function LostAndFoundView() {
 
   // Claim Form State
   const [claimForm, setClaimForm] = useState({
-    claimantName: 'Karthik',
-    claimantRoll: 'CS24B001',
-    claimantPhone: '9876543210',
+    claimantName: '',
+    claimantRoll: '',
+    claimantPhone: '',
     proofDetails: ''
   });
 
@@ -149,9 +149,9 @@ export function LostAndFoundView() {
         alert('Claim request submitted! Campus administration will review your proof.');
         setIsClaimModalOpen(false);
         setClaimForm({
-          claimantName: 'Karthik',
-          claimantRoll: 'CS24B001',
-          claimantPhone: '9876543210',
+          claimantName: '',
+          claimantRoll: '',
+          claimantPhone: '',
           proofDetails: ''
         });
         fetchItems();

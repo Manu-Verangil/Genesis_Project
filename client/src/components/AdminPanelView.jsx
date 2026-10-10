@@ -798,19 +798,19 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
   return (
     <div className="space-y-6">
       {/* Admin Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+          <div className="p-3 rounded-xl bg-rose-50 text-[#A41034] border border-rose-200/60 shadow-sm">
             <Shield className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-extrabold text-lg text-white flex items-center gap-2">
+            <h3 className="font-extrabold text-lg text-[#A41034] flex items-center gap-2">
               <span>Campus Central Administration & Analytics</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-rose-50 text-[#A41034] border border-rose-200/60 font-bold">
                 Administration
               </span>
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Unified governance of food menus, map hubs, lost-and-found claims, and issue resolutions
             </p>
           </div>
@@ -818,34 +818,34 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
         {/* Quick KPI stats cards */}
         {stats && (
-          <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-800">
-            <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/40">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Total Revenue</span>
-              <div className="text-xl font-extrabold text-emerald-400 font-mono mt-1">
+          <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-100">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Total Revenue</span>
+              <div className="text-xl font-extrabold text-emerald-600 font-mono mt-1">
                 ₹{stats.totalRevenue}
               </div>
               <span className="text-[10px] text-slate-500">100% cashless via wallet</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/40">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Total Orders</span>
-              <div className="text-xl font-extrabold text-white font-mono mt-1">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Total Orders</span>
+              <div className="text-xl font-extrabold text-slate-900 font-mono mt-1">
                 {stats.totalOrders}
               </div>
-              <span className="text-[10px] text-cyan-400">{stats.activeOrdersCount} in active prep</span>
+              <span className="text-[10px] text-sky-600 font-semibold">{stats.activeOrdersCount} in active prep</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/40">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Campus Issues</span>
-              <div className="text-xl font-extrabold text-amber-400 font-mono mt-1">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Campus Issues</span>
+              <div className="text-xl font-extrabold text-[#A41034] font-mono mt-1">
                 {stats.openIssuesCount} Open
               </div>
               <span className="text-[10px] text-slate-500">{stats.resolvedIssuesCount} resolved</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/40">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Lost Items Open</span>
-              <div className="text-xl font-extrabold text-blue-400 font-mono mt-1">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Lost Items Open</span>
+              <div className="text-xl font-extrabold text-indigo-700 font-mono mt-1">
                 {stats.openLostFoundCount}
               </div>
               <span className="text-[10px] text-slate-500">Awaiting claim handover</span>
@@ -855,13 +855,13 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       </div>
 
       {/* Admin Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+      <div className="flex items-center gap-2 border-b border-slate-200/90 pb-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap shadow-sm ${
             activeTab === 'overview'
-              ? 'bg-indigo-600 text-white shadow-md'
-              : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+              ? 'bg-[#A41034] text-white shadow-md'
+              : 'bg-white text-slate-700 hover:text-[#A41034] hover:bg-rose-50/50 border border-slate-200'
           }`}
         >
           Impact Overview & Analytics
@@ -869,10 +869,10 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
         <button
           onClick={() => setActiveTab('issues')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap shadow-sm ${
             activeTab === 'issues'
-              ? 'bg-indigo-600 text-white shadow-md'
-              : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+              ? 'bg-[#A41034] text-white shadow-md'
+              : 'bg-white text-slate-700 hover:text-[#A41034] hover:bg-rose-50/50 border border-slate-200'
           }`}
         >
           Resolve Campus Issues ({issues.filter((i) => i.status !== 'resolved').length})
@@ -880,10 +880,10 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
         <button
           onClick={() => setActiveTab('claims')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap shadow-sm ${
             activeTab === 'claims'
-              ? 'bg-indigo-600 text-white shadow-md'
-              : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+              ? 'bg-[#A41034] text-white shadow-md'
+              : 'bg-white text-slate-700 hover:text-[#A41034] hover:bg-rose-50/50 border border-slate-200'
           }`}
         >
           Review Lost & Found Claims
@@ -891,25 +891,27 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
         <button
           onClick={() => setActiveTab('menu')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap shadow-sm ${
             activeTab === 'menu'
-              ? 'bg-indigo-600 text-white shadow-md'
-              : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+              ? 'bg-[#A41034] text-white shadow-md'
+              : 'bg-white text-slate-700 hover:text-[#A41034] hover:bg-rose-50/50 border border-slate-200'
           }`}
         >
           <Utensils className="w-3.5 h-3.5" />
           <span>Canteens & Menu Governance</span>
-          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-950/60 font-mono">
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
+            activeTab === 'menu' ? 'bg-rose-900/40 text-white' : 'bg-slate-100 text-slate-600'
+          }`}>
             {canteens.length} Outlets
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab('map')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap shadow-sm ${
             activeTab === 'map'
-              ? 'bg-indigo-600 text-white shadow-md'
-              : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+              ? 'bg-[#A41034] text-white shadow-md'
+              : 'bg-white text-slate-700 hover:text-[#A41034] hover:bg-rose-50/50 border border-slate-200'
           }`}
         >
           Campus Map Hubs ({mapLocations.length})
@@ -919,59 +921,59 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {/* TAB 1: CAMPUS IMPACT OVERVIEW */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <h4 className="font-extrabold text-base text-white mb-1">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm">
+            <h4 className="font-extrabold text-base text-[#A41034] mb-1">
               Expected Campus Impact & Analytics
             </h4>
-            <p className="text-xs text-slate-400 mb-5">
+            <p className="text-xs text-slate-500 mb-5">
               Measurable outcomes achieved by consolidating food, map, lost items, and issues into Smart Campus Hub:
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-              <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1.5">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 shadow-sm">
                 <span className="text-lg">⏱️</span>
-                <h5 className="font-bold text-white text-sm">Saves Student Time</h5>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
+                <h5 className="font-bold text-slate-900 text-sm">Saves Student Time</h5>
+                <p className="text-slate-600 text-[11px] leading-relaxed">
                   Eliminates wasted trips when food runs out. Pre-ordering cuts average queue wait time from 18 minutes to zero counter wait.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1.5">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 shadow-sm">
                 <span className="text-lg">🥗</span>
-                <h5 className="font-bold text-white text-sm">Reduces Food Waste</h5>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
+                <h5 className="font-bold text-slate-900 text-sm">Reduces Food Waste</h5>
+                <p className="text-slate-600 text-[11px] leading-relaxed">
                   Real-time demand tracking shows what dishes are actually being consumed, preventing over-preparation of perishables.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1.5">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 shadow-sm">
                 <span className="text-lg">💳</span>
-                <h5 className="font-bold text-white text-sm">Cuts Cash Handling</h5>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
+                <h5 className="font-bold text-slate-900 text-sm">Cuts Cash Handling</h5>
+                <p className="text-slate-600 text-[11px] leading-relaxed">
                   100% digital transactions through student campus wallet and UPI. Eliminates tender change delays and cash shrinkage.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1.5">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 shadow-sm">
                 <span className="text-lg">🛠️</span>
-                <h5 className="font-bold text-white text-sm">Faster Issue Resolution</h5>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
+                <h5 className="font-bold text-slate-900 text-sm">Faster Issue Resolution</h5>
+                <p className="text-slate-600 text-[11px] leading-relaxed">
                   5-stage lifecycle routes problems immediately to facilities teams. Closed tickets remain in audit history for maintenance planning.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1.5">
+              <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1.5 shadow-sm bg-slate-50 border-slate-200/80">
                 <span className="text-lg">🔍</span>
-                <h5 className="font-bold text-white text-sm">Organized Lost Belongings</h5>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
+                <h5 className="font-bold text-slate-900 text-sm">Organized Lost Belongings</h5>
+                <p className="text-slate-600 text-[11px] leading-relaxed">
                   Replaces scattered WhatsApp messages and paper notices with a verified, single-custody claim recovery registry.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1.5">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 shadow-sm">
                 <span className="text-lg">🏛️</span>
-                <h5 className="font-bold text-white text-sm">One Unified Platform</h5>
-                <p className="text-slate-300 text-[11px] leading-relaxed">
+                <h5 className="font-bold text-slate-900 text-sm">One Unified Platform</h5>
+                <p className="text-slate-600 text-[11px] leading-relaxed">
                   Students, kitchen staff, and university admins operate on a single synchronized dashboard with zero vendor fragmentation.
                 </p>
               </div>
@@ -983,42 +985,42 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {/* TAB 2: RESOLVE CAMPUS ISSUES */}
       {activeTab === 'issues' && (
         <div className="space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80">
               <div>
-                <h4 className="font-extrabold text-base text-white flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-amber-400" />
+                <h4 className="font-extrabold text-base text-[#A41034] flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-amber-500" />
                   <span>Campus Facilities Dispatch & Issue Resolution</span>
                 </h4>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Real-time ticket triage, photo evidence inspection, and 5-stage lifecycle dispatching
                 </p>
               </div>
 
               {/* Quick Issue Counts */}
               <div className="flex items-center gap-2 text-[11px]">
-                <span className="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold">
+                <span className="px-2.5 py-1 rounded-lg bg-rose-50 text-[#A41034] border border-rose-200/80 font-bold">
                   {issues.filter((i) => i.priority === 'Critical' && i.status !== 'resolved').length} Critical Open
                 </span>
-                <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold">
+                <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 font-bold">
                   {issues.filter((i) => i.status !== 'resolved').length} Total Active
                 </span>
-                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
                   {issues.filter((i) => i.status === 'resolved').length} Resolved
                 </span>
               </div>
             </div>
 
             {/* Filter and Search Bar for Admin */}
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 pb-4 border-b border-slate-800">
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 pb-4 border-b border-slate-200/80">
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search ticket #, student, title, location..."
                   value={issueSearch}
                   onChange={(e) => setIssueSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#A41034]"
                 />
               </div>
 
@@ -1026,7 +1028,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 <select
                   value={issueStatusFilter}
                   onChange={(e) => setIssueStatusFilter(e.target.value)}
-                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#A41034]"
                 >
                   <option value="All">All Statuses</option>
                   <option value="open">Active / Unresolved Tickets</option>
@@ -1040,7 +1042,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 <select
                   value={issuePriorityFilter}
                   onChange={(e) => setIssuePriorityFilter(e.target.value)}
-                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#A41034]"
                 >
                   <option value="All">All Priorities</option>
                   <option value="Critical">Critical Priority (Immediate Hazards)</option>
@@ -1081,29 +1083,29 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                   const getPriorityBadgeClass = (p) => {
                     switch (p) {
                       case 'Critical':
-                        return 'bg-rose-500/20 text-rose-300 border-rose-500/40 ring-2 ring-rose-500/20 animate-pulse';
+                        return 'bg-rose-50 text-[#A41034] border-rose-300 ring-2 ring-rose-100 font-bold';
                       case 'High':
-                        return 'bg-orange-500/20 text-orange-300 border-orange-500/40';
+                        return 'bg-orange-50 text-orange-800 border-orange-300 font-bold';
                       case 'Medium':
-                        return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+                        return 'bg-amber-50 text-amber-800 border-amber-300 font-bold';
                       default:
-                        return 'bg-slate-700 text-slate-300 border-slate-600';
+                        return 'bg-slate-100 text-slate-700 border-slate-300';
                     }
                   };
 
                   return (
                     <div
                       key={iss.id}
-                      className={`p-5 rounded-2xl bg-slate-800/60 border transition-all ${
+                      className={`p-5 rounded-2xl bg-white border transition-all shadow-sm ${
                         iss.priority === 'Critical' && !isResolved
-                          ? 'border-rose-500/40 shadow-lg shadow-rose-950/20'
-                          : 'border-slate-700/60'
+                          ? 'border-rose-400 ring-1 ring-rose-200'
+                          : 'border-slate-200/90'
                       }`}
                     >
                       {/* Top Meta Header */}
-                      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-700/40 text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200/80 text-xs">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono font-bold text-sm text-blue-400">
+                          <span className="font-mono font-bold text-sm text-[#A41034]">
                             {iss.ticketNumber}
                           </span>
                           <span
@@ -1113,24 +1115,24 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                           >
                             {iss.priority} Priority
                           </span>
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-700/80 text-slate-300 border border-slate-600/50">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                             {iss.category}
                           </span>
                           {iss.photoUrl && (
-                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-[#A41034] border border-rose-200">
                               <ImageIcon className="w-3 h-3" /> Photo Proof
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-3 text-[11px] text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <Users className="w-3.5 h-3.5 text-slate-500" />
+                        <div className="flex items-center gap-3 text-[11px] text-slate-500">
+                          <span className="flex items-center gap-1 font-medium">
+                            <Users className="w-3.5 h-3.5 text-slate-400" />
                             {iss.reportedBy}
                           </span>
                           <span>•</span>
                           <span className="flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5 text-slate-500" />
+                            <Clock className="w-3.5 h-3.5 text-slate-400" />
                             {new Date(iss.createdAt).toLocaleDateString()}
                           </span>
                         </div>
@@ -1141,43 +1143,43 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                         {/* Left Details (2 cols on lg) */}
                         <div className="lg:col-span-2 space-y-3">
                           <div>
-                            <h5 className="font-bold text-white text-base leading-snug">{iss.title}</h5>
-                            <p className="mt-1.5 text-slate-300 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800 leading-relaxed">
+                            <h5 className="font-bold text-slate-900 text-base leading-snug">{iss.title}</h5>
+                            <p className="mt-1.5 text-slate-700 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">
                               {iss.description}
                             </p>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-300">
-                            <div className="p-2 rounded-lg bg-slate-900/40 border border-slate-800">
-                              <span className="text-[10px] text-slate-400 block font-semibold mb-0.5">Location</span>
-                              <span className="flex items-center gap-1 font-medium">
-                                <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-700">
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                              <span className="text-[10px] text-slate-500 block font-semibold mb-0.5">Location</span>
+                              <span className="flex items-center gap-1 font-medium text-slate-900">
+                                <MapPin className="w-3.5 h-3.5 text-[#A41034] shrink-0" />
                                 <span className="truncate">{iss.location}</span>
                               </span>
                             </div>
 
-                            <div className="p-2 rounded-lg bg-slate-900/40 border border-slate-800">
-                              <span className="text-[10px] text-slate-400 block font-semibold mb-0.5">Assigned Department</span>
-                              <span className="flex items-center gap-1 font-medium">
-                                <Building className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                              <span className="text-[10px] text-slate-500 block font-semibold mb-0.5">Assigned Department</span>
+                              <span className="flex items-center gap-1 font-medium text-slate-900">
+                                <Building className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                                 <span className="truncate">{iss.department}</span>
                               </span>
                             </div>
 
-                            <div className="p-2 rounded-lg bg-slate-900/40 border border-slate-800">
-                              <span className="text-[10px] text-slate-400 block font-semibold mb-0.5">Responsible Staff</span>
-                              <span className="flex items-center gap-1 font-medium">
-                                <Users className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                              <span className="text-[10px] text-slate-500 block font-semibold mb-0.5">Responsible Staff</span>
+                              <span className="flex items-center gap-1 font-medium text-slate-900">
+                                <Users className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                                 <span className="truncate">{iss.assignedStaff}</span>
                               </span>
                             </div>
                           </div>
 
                           {/* 5-Stage Stepper Progress Tracker */}
-                          <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
+                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
                             <div className="flex items-center justify-between mb-1.5 text-[10px] font-bold">
-                              <span className="text-slate-400">Resolution Progress</span>
-                              <span className={isResolved ? 'text-emerald-400' : 'text-blue-400'}>
+                              <span className="text-slate-600">Resolution Progress</span>
+                              <span className={isResolved ? 'text-emerald-700' : 'text-[#A41034]'}>
                                 Stage {iss.currentStageIndex}/5: {
                                   ['Reported', 'Routed', 'Work In Progress', 'Notified', 'Resolved'][iss.currentStageIndex - 1] || 'In Progress'
                                 }
@@ -1194,10 +1196,10 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                                     key={stepNum}
                                     className={`py-1 text-center rounded text-[10px] font-bold transition ${
                                       isCurrent
-                                        ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+                                        ? 'bg-[#A41034] text-white shadow-sm ring-1 ring-[#A41034]'
                                         : isDone
-                                        ? 'bg-emerald-600/80 text-white'
-                                        : 'bg-slate-800 text-slate-500'
+                                        ? 'bg-emerald-600 text-white'
+                                        : 'bg-slate-200 text-slate-600'
                                     }`}
                                   >
                                     {stLabel}
@@ -1211,25 +1213,25 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                         {/* Right Photo Column */}
                         <div className="lg:col-span-1 flex flex-col justify-between">
                           {iss.photoUrl ? (
-                            <div className="relative group rounded-xl overflow-hidden border border-slate-700 bg-slate-950 p-1 flex flex-col h-full justify-between">
-                              <div className="flex items-center justify-between p-1.5 text-[11px] font-bold text-slate-300">
+                            <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-1 flex flex-col h-full justify-between shadow-sm">
+                              <div className="flex items-center justify-between p-1.5 text-[11px] font-bold text-slate-700">
                                 <span className="flex items-center gap-1">
-                                  <Camera className="w-3.5 h-3.5 text-amber-400" />
+                                  <Camera className="w-3.5 h-3.5 text-amber-500" />
                                   <span>Attached Photo</span>
                                 </span>
-                                <span className="text-[10px] text-indigo-400">Click to view</span>
+                                <span className="text-[10px] text-[#A41034] font-semibold">Click to view</span>
                               </div>
                               <div
                                 onClick={() => setAdminLightboxImage(iss.photoUrl)}
-                                className="relative rounded-lg overflow-hidden h-36 bg-slate-900 cursor-pointer"
+                                className="relative rounded-lg overflow-hidden h-36 bg-slate-100 cursor-pointer border border-slate-200"
                               >
                                 <img
                                   src={iss.photoUrl}
                                   alt={iss.title}
                                   className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                                 />
-                                <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                                  <span className="px-2.5 py-1 rounded-lg bg-slate-900/90 text-white text-[11px] font-bold flex items-center gap-1 shadow-md">
+                                <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                                  <span className="px-2.5 py-1 rounded-lg bg-white text-slate-900 text-[11px] font-bold flex items-center gap-1 shadow-md">
                                     <Maximize2 className="w-3.5 h-3.5" /> Full Photo
                                   </span>
                                 </div>
@@ -1237,15 +1239,15 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                               <button
                                 type="button"
                                 onClick={() => setAdminLightboxImage(iss.photoUrl)}
-                                className="mt-2 w-full py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold flex items-center justify-center gap-1 transition"
+                                className="mt-2 w-full py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-semibold flex items-center justify-center gap-1 border border-slate-200 transition shadow-sm"
                               >
-                                <Eye className="w-3.5 h-3.5 text-indigo-400" /> Inspect Evidence Photo
+                                <Eye className="w-3.5 h-3.5 text-[#A41034]" /> Inspect Evidence Photo
                               </button>
                             </div>
                           ) : (
-                            <div className="h-full rounded-xl border border-dashed border-slate-700/70 p-4 flex flex-col items-center justify-center text-center text-slate-500 text-xs">
-                              <Camera className="w-6 h-6 mb-1 text-slate-600" />
-                              <span className="font-semibold text-slate-400">No Photo Attached</span>
+                            <div className="h-full rounded-xl border border-dashed border-slate-300 p-4 flex flex-col items-center justify-center text-center text-slate-500 text-xs bg-slate-50">
+                              <Camera className="w-6 h-6 mb-1 text-slate-400" />
+                              <span className="font-semibold text-slate-600">No Photo Attached</span>
                               <span className="text-[10px] text-slate-500 mt-0.5">Student submitted text-only report</span>
                             </div>
                           )}
@@ -1253,11 +1255,11 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       </div>
 
                       {/* Action Bar & Timeline Toggle */}
-                      <div className="mt-4 pt-3.5 border-t border-slate-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                      <div className="mt-4 pt-3.5 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                         <button
                           type="button"
                           onClick={() => setExpandedIssueHistoryId(isTimelineExpanded ? null : iss.id)}
-                          className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition"
+                          className="flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-slate-900 transition"
                         >
                           {isTimelineExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                           <span>{isTimelineExpanded ? 'Hide Timeline History' : `View Full Timeline (${iss.timeline?.length || 1} logged updates)`}</span>
@@ -1268,7 +1270,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                           {iss.currentStageIndex < 2 && (
                             <button
                               onClick={() => handleAdvanceIssue(iss.id, 2, 'Route')}
-                              className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-md shadow-blue-600/30"
+                              className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-sm"
                             >
                               Dispatch to Route (Stage 2)
                             </button>
@@ -1277,7 +1279,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                           {iss.currentStageIndex === 2 && (
                             <button
                               onClick={() => handleAdvanceIssue(iss.id, 3, 'Act')}
-                              className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition shadow-md shadow-amber-600/30"
+                              className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition shadow-sm"
                             >
                               Dispatch to Act / In Progress (Stage 3)
                             </button>
@@ -1286,7 +1288,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                           {iss.currentStageIndex === 3 && (
                             <button
                               onClick={() => handleAdvanceIssue(iss.id, 4, 'Notify')}
-                              className="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition shadow-md shadow-cyan-600/30"
+                              className="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs transition shadow-sm"
                             >
                               Send Progress Alert to Student (Stage 4)
                             </button>
@@ -1295,15 +1297,15 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                           {iss.currentStageIndex >= 3 && iss.status !== 'resolved' && (
                             <button
                               onClick={() => handleAdvanceIssue(iss.id, 5, 'Resolve')}
-                              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md shadow-emerald-600/30"
+                              className="px-3 py-1.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-bold text-xs transition shadow-sm"
                             >
                               ✓ Resolve & Close Ticket (Stage 5)
                             </button>
                           )}
 
                           {iss.status === 'resolved' && (
-                            <span className="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center gap-1">
-                              <CheckCircle className="w-3.5 h-3.5" /> Ticket Resolved & Closed
+                            <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold flex items-center gap-1">
+                              <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Ticket Resolved & Closed
                             </span>
                           )}
                         </div>
@@ -1311,20 +1313,20 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
                       {/* Expandable History Drawer */}
                       {isTimelineExpanded && (
-                        <div className="mt-3 pt-3 border-t border-slate-700/40 space-y-2 animate-in fade-in">
-                          <h6 className="font-bold text-slate-300 text-[11px]">Audit Log & Activity History:</h6>
-                          <div className="space-y-2 border-l-2 border-slate-700 ml-2 pl-3">
+                        <div className="mt-3 pt-3 border-t border-slate-200/80 space-y-2 animate-in fade-in">
+                          <h6 className="font-bold text-slate-800 text-[11px]">Audit Log & Activity History:</h6>
+                          <div className="space-y-2 border-l-2 border-slate-300 ml-2 pl-3">
                             {(iss.timeline || []).map((step, idx) => (
                               <div key={idx} className="relative text-[11px]">
-                                <span className="absolute -left-[17px] top-1 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-slate-800" />
-                                <div className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                                  <div className="flex items-center justify-between text-slate-300 font-semibold">
+                                <span className="absolute -left-[17px] top-1 w-2 h-2 rounded-full bg-[#A41034] ring-2 ring-white" />
+                                <div className="bg-slate-50 p-2 rounded-lg border border-slate-200 text-slate-700">
+                                  <div className="flex items-center justify-between text-slate-800 font-semibold">
                                     <span>Stage: {step.stage} • Logged by: {step.actor}</span>
-                                    <span className="text-[10px] text-slate-400">
+                                    <span className="text-[10px] text-slate-500">
                                       {new Date(step.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                   </div>
-                                  <p className="text-slate-400 mt-0.5 text-[10px]">{step.message}</p>
+                                  <p className="text-slate-600 mt-0.5 text-[10px]">{step.message}</p>
                                 </div>
                               </div>
                             ))}
@@ -1336,7 +1338,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 })}
 
               {issues.length === 0 && (
-                <div className="p-8 text-center text-slate-400 text-xs bg-slate-800/40 rounded-xl">
+                <div className="p-8 text-center text-slate-500 text-xs bg-slate-50 rounded-xl border border-slate-200">
                   No campus issues found.
                 </div>
               )}
@@ -1347,11 +1349,11 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
       {/* TAB 3: REVIEW LOST & FOUND CLAIMS */}
       {activeTab === 'claims' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <h4 className="font-bold text-sm text-white mb-1">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm">
+          <h4 className="font-extrabold text-base text-[#A41034] mb-1">
             Lost & Found Claim Verification
           </h4>
-          <p className="text-xs text-slate-400 mb-4">
+          <p className="text-xs text-slate-500 mb-4">
             Verify student ownership proof and approve release of belongings
           </p>
 
@@ -1361,38 +1363,38 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               .map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-3 text-xs"
+                  className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3 text-xs shadow-sm"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <img
                         src={item.imageUrl}
                         alt={item.title}
-                        className="w-12 h-12 rounded-lg object-cover"
+                        className="w-12 h-12 rounded-lg object-cover border border-slate-200"
                       />
                       <div>
-                        <h5 className="font-bold text-white text-sm">{item.title}</h5>
-                        <p className="text-[11px] text-slate-400">Found at: {item.location}</p>
+                        <h5 className="font-bold text-slate-900 text-sm">{item.title}</h5>
+                        <p className="text-[11px] text-slate-500">Found at: {item.location}</p>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-slate-700 text-slate-300">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-slate-200 text-slate-700">
                       {item.status}
                     </span>
                   </div>
 
                   {/* Claims List */}
-                  <div className="space-y-2 pt-2 border-t border-slate-800">
+                  <div className="space-y-2 pt-2 border-t border-slate-200">
                     {item.claims.map((c) => (
                       <div
                         key={c.id}
-                        className="p-3 rounded-lg bg-slate-900 border border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        className="p-3 rounded-lg bg-white border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm"
                       >
                         <div>
-                          <div className="font-bold text-blue-300">
+                          <div className="font-bold text-[#A41034]">
                             Claimant: {c.claimantName} (Roll: {c.claimantRoll}, Tel: {c.claimantPhone})
                           </div>
-                          <p className="text-slate-300 text-[11px] mt-0.5">
-                            <strong>Submitted Proof:</strong> "{c.proofDetails}"
+                          <p className="text-slate-600 text-[11px] mt-0.5">
+                            <strong className="text-slate-800">Submitted Proof:</strong> "{c.proofDetails}"
                           </p>
                         </div>
 
@@ -1401,23 +1403,23 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                             <>
                               <button
                                 onClick={() => handleReviewClaim(item.id, c.id, 'approve')}
-                                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition"
+                                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-sm"
                               >
                                 Approve & Hand Over
                               </button>
                               <button
                                 onClick={() => handleReviewClaim(item.id, c.id, 'reject')}
-                                className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition"
+                                className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition"
                               >
                                 Reject
                               </button>
                             </>
                           ) : (
                             <span
-                              className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase ${
+                              className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${
                                 c.status === 'approved'
-                                  ? 'bg-emerald-500/20 text-emerald-300'
-                                  : 'bg-rose-500/20 text-rose-300'
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                  : 'bg-rose-50 text-rose-800 border-rose-200'
                               }`}
                             >
                               Claim {c.status}
@@ -1437,22 +1439,21 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {activeTab === 'menu' && (
         <div className="space-y-6">
           {/* SECTION A: REGISTERED CAMPUS DINING OUTLETS & REAL-TIME CROWD CALIBRATION */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-80 h-32 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm relative overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl">
+                  <span className="p-2 bg-rose-50 text-[#A41034] border border-rose-200 rounded-xl shadow-sm">
                     <Store className="w-5 h-5" />
                   </span>
-                  <h3 className="text-lg font-bold text-white tracking-tight">
+                  <h3 className="text-lg font-bold text-[#A41034] tracking-tight">
                     Registered Dining Outlets & Campus Stores
                   </h3>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-50 text-[#A41034] border border-rose-200">
                     {canteens.length} Active Outlets
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Manage active dining halls, kiosks, and food courts. Calibrate live kitchen crowd load, wait times, and launch new food stores.
                 </p>
               </div>
@@ -1461,7 +1462,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 <button
                   type="button"
                   onClick={() => setIsAddCanteenModalOpen(true)}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-bold text-xs shadow-sm transition-all flex items-center gap-2"
                 >
                   <PlusCircle className="w-4 h-4" />
                   <span>+ Register New Canteen / Store</span>
@@ -1477,22 +1478,22 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 return (
                   <div
                     key={c.id}
-                    className={`rounded-2xl border p-4 transition-all duration-200 relative flex flex-col justify-between ${
+                    className={`rounded-2xl border p-4 transition-all duration-200 relative flex flex-col justify-between shadow-sm ${
                       isFiltered
-                        ? 'bg-slate-800/90 border-indigo-500/80 shadow-lg shadow-indigo-500/10'
-                        : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'
+                        ? 'bg-rose-50/40 border-[#A41034] ring-1 ring-[#A41034]/30'
+                        : 'bg-white border-slate-200/90 hover:border-slate-300'
                     }`}
                   >
                     <div>
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-mono font-black text-amber-400">
+                          <span className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-mono font-black text-[#A41034]">
                             {c.code || (c.id === 'canteen-1' ? 'C1' : c.id === 'canteen-2' ? 'C2' : c.id === 'canteen-3' ? 'C3' : 'CT')}
                           </span>
                           <div>
-                            <h4 className="font-bold text-sm text-white line-clamp-1">{c.name}</h4>
-                            <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-slate-500" />
+                            <h4 className="font-bold text-sm text-slate-900 line-clamp-1">{c.name}</h4>
+                            <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-slate-400" />
                               <span className="line-clamp-1">{c.location || 'Campus Quad'}</span>
                             </span>
                           </div>
@@ -1503,7 +1504,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                             type="button"
                             onClick={() => openEditCanteenModal(c)}
                             title={`Edit ${c.name} name & details`}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 transition shrink-0"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-[#A41034] hover:bg-rose-50 transition shrink-0"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
@@ -1511,35 +1512,35 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                             type="button"
                             onClick={() => handleDeleteCanteen(c)}
                             title={`Delete ${c.name}`}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition shrink-0"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition shrink-0"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 my-3 text-[11px] bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                      <div className="grid grid-cols-2 gap-2 my-3 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                         <div>
-                          <div className="text-slate-400 text-[10px]">Catalog Dishes</div>
-                          <div className="font-bold text-slate-200">{outletDishCount} items</div>
+                          <div className="text-slate-500 text-[10px]">Catalog Dishes</div>
+                          <div className="font-bold text-slate-800">{outletDishCount} items</div>
                         </div>
                         <div>
-                          <div className="text-slate-400 text-[10px]">Avg Wait Time</div>
-                          <div className="font-bold text-slate-200">{c.avgWaitTimeMinutes || 5} mins</div>
+                          <div className="text-slate-500 text-[10px]">Avg Wait Time</div>
+                          <div className="font-bold text-slate-800">{c.avgWaitTimeMinutes || 5} mins</div>
                         </div>
                       </div>
 
                       {/* Live Crowd Level Switcher */}
                       <div className="mt-2">
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium mb-1.5">
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 font-medium mb-1.5">
                           <span>Live Crowd Status</span>
                           <span
-                            className={`font-bold uppercase px-1.5 py-0.5 rounded text-[10px] ${
+                            className={`font-bold uppercase px-1.5 py-0.5 rounded text-[10px] border ${
                               c.crowdLevel === 'Rush Hour' || c.crowdLevel === 'High'
-                                ? 'bg-rose-500/20 text-rose-300'
+                                ? 'bg-rose-50 text-[#A41034] border-rose-200'
                                 : c.crowdLevel === 'Busy' || c.crowdLevel === 'Moderate'
-                                ? 'bg-amber-500/20 text-amber-300'
-                                : 'bg-emerald-500/20 text-emerald-300'
+                                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                : 'bg-emerald-50 text-emerald-800 border-emerald-200'
                             }`}
                           >
                             {c.crowdLevel || 'Low'}
@@ -1553,8 +1554,8 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                               onClick={() => handleUpdateCanteenCrowd(c.id, lvl)}
                               className={`py-1 rounded-lg text-[9px] font-bold transition ${
                                 (c.crowdLevel || 'Low') === lvl
-                                  ? 'bg-indigo-600 text-white shadow-sm'
-                                  : 'bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700'
+                                  ? 'bg-[#A41034] text-white shadow-sm'
+                                  : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
                               }`}
                             >
                               {lvl === 'Rush Hour' ? 'Rush' : lvl}
@@ -1564,16 +1565,16 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-1.5">
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-1.5">
                       <button
                         type="button"
                         onClick={() => {
                           setAdminCanteenFilter(isFiltered ? 'All' : c.id);
                         }}
-                        className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1.5 ${
+                        className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1.5 shadow-sm ${
                           isFiltered
-                            ? 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-300'
-                            : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                            ? 'bg-[#A41034] text-white shadow-sm'
+                            : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
                         }`}
                       >
                         <Utensils className="w-3 h-3" />
@@ -1584,7 +1585,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                         type="button"
                         onClick={() => openEditCanteenModal(c)}
                         title={`Edit ${c.name} name & details`}
-                        className="py-1.5 px-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-bold transition flex items-center justify-center gap-1 border border-amber-500/30 shrink-0"
+                        className="py-1.5 px-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-[11px] font-bold transition flex items-center justify-center gap-1 border border-amber-200 shrink-0 shadow-sm"
                       >
                         <Edit2 className="w-3 h-3" />
                         <span>Edit Name</span>
@@ -1594,7 +1595,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                         type="button"
                         onClick={() => handleDeleteCanteen(c)}
                         title={`Delete ${c.name}`}
-                        className="py-1.5 px-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-[11px] font-bold transition flex items-center justify-center gap-1 border border-rose-500/30 shrink-0"
+                        className="py-1.5 px-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold transition flex items-center justify-center gap-1 border border-rose-200 shrink-0 shadow-sm"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -1606,15 +1607,15 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
           </div>
 
           {/* SECTION B: DISHES CATALOG & STAFF ACCESS POWERS */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm">
             {/* Header & Main Controls */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
               <div>
-                <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                  <Utensils className="w-5 h-5 text-amber-400" />
+                <h3 className="text-lg font-bold text-[#A41034] tracking-tight flex items-center gap-2">
+                  <Utensils className="w-5 h-5 text-[#A41034]" />
                   <span>Menu Dishes Catalog & Kitchen Stock Governance</span>
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Full staff access equipped: adjust stock quantities (-1, +1, +5, +15), instant in/out-of-stock toggles, upload dish images, edit pricing, or remove items.
                 </p>
               </div>
@@ -1623,7 +1624,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 <button
                   type="button"
                   onClick={openAddDishModal}
-                  className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-bold text-xs shadow-sm transition flex items-center gap-2"
                 >
                   <PlusCircle className="w-4 h-4" />
                   <span>+ Add Dish to Menu</span>
@@ -1632,19 +1633,19 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
             </div>
 
             {/* Filter Bar */}
-            <div className="space-y-3 mb-6 bg-slate-950/70 p-4 rounded-2xl border border-slate-800">
+            <div className="space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
               {/* Outlet Tabs */}
               <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
                   Outlet:
                 </span>
                 <button
                   type="button"
                   onClick={() => setAdminCanteenFilter('All')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition shadow-sm ${
                     adminCanteenFilter === 'All'
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                      : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
+                      ? 'bg-[#A41034] text-white shadow-sm'
+                      : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
                   }`}
                 >
                   All Outlets ({menuItems.length})
@@ -1656,10 +1657,10 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       key={c.id}
                       type="button"
                       onClick={() => setAdminCanteenFilter(c.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition shadow-sm ${
                         adminCanteenFilter === c.id
-                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                          : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
+                          ? 'bg-[#A41034] text-white shadow-sm'
+                          : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
                       }`}
                     >
                       {c.name} ({count})
@@ -1669,10 +1670,10 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               </div>
 
               {/* Category & Search Filter */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2 border-t border-slate-800/80">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2 border-t border-slate-200">
                 {/* Category Pills */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
                     Category:
                   </span>
                   {['All', ...categoriesList].map((cat) => (
@@ -1680,10 +1681,10 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       key={cat}
                       type="button"
                       onClick={() => setAdminCategoryFilter(cat)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition ${
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition shadow-sm ${
                         adminCategoryFilter === cat
-                          ? 'bg-amber-500 text-slate-950 font-bold'
-                          : 'bg-slate-800/70 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                          ? 'bg-[#A41034] text-white font-bold'
+                          : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
                       }`}
                     >
                       {cat}
@@ -1699,13 +1700,13 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     placeholder="Search dish or ingredient..."
                     value={adminMenuSearch}
                     onChange={(e) => setAdminMenuSearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#A41034]"
                   />
                   {adminMenuSearch && (
                     <button
                       type="button"
                       onClick={() => setAdminMenuSearch('')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -1715,12 +1716,12 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
             </div>
 
             {/* Results Count Strip */}
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-4 px-1">
+            <div className="flex items-center justify-between text-xs text-slate-500 mb-4 px-1">
               <div>
-                Showing <span className="font-bold text-white">{filteredAdminMenuItems.length}</span> dishes matching active filters
+                Showing <span className="font-bold text-slate-900">{filteredAdminMenuItems.length}</span> dishes matching active filters
               </div>
               {filteredAdminMenuItems.length === 0 && (
-                <div className="text-amber-400 text-xs">No menu dishes found for this filter combination.</div>
+                <div className="text-[#A41034] text-xs font-semibold">No menu dishes found for this filter combination.</div>
               )}
             </div>
 
@@ -1734,7 +1735,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 return (
                   <div
                     key={item.id}
-                    className="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow-lg group relative"
+                    className="bg-white border border-slate-200/90 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-300 transition shadow-sm group relative"
                   >
                     <div>
                       {/* Top Row: Image + Details */}
@@ -1743,11 +1744,11 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                           <img
                             src={item.imageUrl}
                             alt={item.name}
-                            className="w-20 h-20 rounded-xl object-cover bg-slate-900 border border-slate-800"
+                            className="w-20 h-20 rounded-xl object-cover bg-slate-50 border border-slate-200"
                           />
                           <span
-                            className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-950 flex items-center justify-center text-[8px] font-bold ${
-                              item.isVeg ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'
+                            className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center text-[8px] font-bold ${
+                              item.isVeg ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
                             }`}
                             title={item.isVeg ? 'Vegetarian' : 'Non-Vegetarian'}
                           >
@@ -1757,24 +1758,24 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-1">
-                            <h4 className="font-bold text-sm text-white truncate" title={item.name}>
+                            <h4 className="font-bold text-sm text-slate-900 truncate" title={item.name}>
                               {item.name}
                             </h4>
                           </div>
 
                           <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-amber-300 border border-slate-700">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-[#A41034] border border-rose-200/60">
                               {canteenObj?.name || item.canteenId}
                             </span>
-                            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-slate-800/80 text-slate-300">
+                            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-700">
                               {item.category}
                             </span>
                           </div>
 
                           <div className="flex items-center gap-3 mt-2 text-xs">
-                            <span className="font-mono font-bold text-white text-sm">₹{item.price}</span>
-                            <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                              <Clock className="w-3 h-3 text-slate-500" />
+                            <span className="font-mono font-bold text-[#A41034] text-sm">₹{item.price}</span>
+                            <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-slate-400" />
                               ~{item.prepTimeMinutes || 4}m prep
                             </span>
                           </div>
@@ -1783,24 +1784,24 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
                       {/* Description if any */}
                       {item.description && (
-                        <p className="text-[11px] text-slate-400 mt-2.5 line-clamp-2 leading-relaxed bg-slate-900/40 p-2 rounded-lg border border-slate-800/50">
+                        <p className="text-[11px] text-slate-600 mt-2.5 line-clamp-2 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-200">
                           {item.description}
                         </p>
                       )}
                     </div>
 
                     {/* Controls & Stock Management */}
-                    <div className="mt-4 pt-3 border-t border-slate-800/80 space-y-2.5">
+                    <div className="mt-4 pt-3 border-t border-slate-100 space-y-2.5">
                       {/* Stock Status & Instant Toggle */}
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                            className={`px-2 py-0.5 rounded-md text-[11px] font-bold border ${
                               isOutOfStock
-                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                ? 'bg-rose-50 text-[#A41034] border-rose-200'
                                 : isLowStock
-                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                : 'bg-emerald-50 text-emerald-800 border-emerald-200'
                             }`}
                           >
                             {isOutOfStock ? 'Sold Out' : `${item.stock} in stock`}
@@ -1811,10 +1812,10 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                         <button
                           type="button"
                           onClick={() => handleToggleStockStatus(item)}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 ${
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 shadow-sm ${
                             isOutOfStock
-                              ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                              : 'bg-slate-800 hover:bg-rose-900/40 text-rose-400 hover:text-rose-300 border border-slate-700'
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                              : 'bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200'
                           }`}
                         >
                           <RefreshCw className="w-3 h-3" />
@@ -1823,14 +1824,14 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       </div>
 
                       {/* Stock Adjustment Buttons (-1, +1, +5, +15) */}
-                      <div className="flex items-center justify-between gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
-                        <span className="text-[10px] text-slate-400 font-semibold px-1">Adjust:</span>
+                      <div className="flex items-center justify-between gap-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                        <span className="text-[10px] text-slate-500 font-semibold px-1">Adjust:</span>
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
                             disabled={Number(item.stock) <= 0}
                             onClick={() => handleAdjustStock(item, -1)}
-                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-[11px] font-bold transition"
+                            className="px-2 py-1 rounded-lg bg-white hover:bg-slate-100 disabled:opacity-40 text-slate-700 border border-slate-200 text-[11px] font-bold transition shadow-sm"
                             title="Decrease by 1"
                           >
                             -1
@@ -1838,7 +1839,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                           <button
                             type="button"
                             onClick={() => handleAdjustStock(item, 1)}
-                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold transition"
+                            className="px-2 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-bold transition shadow-sm"
                             title="Increase by 1"
                           >
                             +1
@@ -1846,7 +1847,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                           <button
                             type="button"
                             onClick={() => handleAdjustStock(item, 5)}
-                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold transition"
+                            className="px-2 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-bold transition shadow-sm"
                             title="Increase by 5"
                           >
                             +5
@@ -1854,7 +1855,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                           <button
                             type="button"
                             onClick={() => handleAdjustStock(item, 15)}
-                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 font-mono text-[11px] font-bold transition"
+                            className="px-2 py-1 rounded-lg bg-white hover:bg-slate-100 text-[#A41034] border border-slate-200 font-mono text-[11px] font-bold transition shadow-sm"
                             title="Batch restock 15 portions"
                           >
                             +15
@@ -1867,15 +1868,15 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                         <button
                           type="button"
                           onClick={() => openEditDishModal(item)}
-                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 border border-slate-700/60"
+                          className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 border border-slate-200 shadow-sm"
                         >
-                          <Edit2 className="w-3.5 h-3.5 text-amber-400" />
+                          <Edit2 className="w-3.5 h-3.5 text-amber-600" />
                           <span>Edit Dish</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteDish(item)}
-                          className="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-bold transition flex items-center gap-1.5 border border-rose-500/30"
+                          className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition flex items-center gap-1.5 border border-rose-200 shadow-sm"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Delete</span>
@@ -1894,16 +1895,16 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {activeTab === 'map' && (
         <div className="space-y-6">
           {/* Header & Filter Bar */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <Compass className="w-5 h-5 text-indigo-400" />
-                <h4 className="font-extrabold text-base text-white">Campus Map & Establishment Management</h4>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <Compass className="w-5 h-5 text-[#A41034]" />
+                <h4 className="font-extrabold text-base text-[#A41034]">Campus Map & Establishment Management</h4>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-rose-50 text-[#A41034] border border-rose-200 font-bold">
                   Live Relational Sync
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Edit, relocate, or establish stores, clinics, canteens, academic blocks, and hostels across the 400-acre Amrita Ettimadai campus compound.
               </p>
             </div>
@@ -1911,7 +1912,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handleOpenAddModal()}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition transform active:scale-95"
+                className="px-4 py-2.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-bold text-xs flex items-center gap-2 shadow-sm transition transform active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>Pin New Establishment</span>
@@ -1920,7 +1921,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
           </div>
 
           {/* Search & Category Filter Chips */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
             <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
               {[
                 { id: 'All', label: 'All Establishments' },
@@ -1935,10 +1936,10 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedMapCategory(cat.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition shadow-sm ${
                     selectedMapCategory === cat.id
-                      ? 'bg-indigo-600 text-white shadow-md'
-                      : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700/80 border border-slate-700/60'
+                      ? 'bg-[#A41034] text-white font-bold'
+                      : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
                   }`}
                 >
                   {cat.label}
@@ -1953,7 +1954,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 placeholder="Search establishments..."
                 value={searchMapQuery}
                 onChange={(e) => setSearchMapQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#A41034]"
               />
             </div>
           </div>
@@ -1962,14 +1963,14 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left: Interactive Compound Leaflet Map */}
             <div className="lg:col-span-7 space-y-3">
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3 text-xs">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-emerald-400" />
-                    <span className="font-bold text-white">Interactive Amrita Compound Map</span>
-                    <span className="text-[10px] text-slate-400 font-mono">(Locked to 400-Acre Perimeter)</span>
+                    <MapPin className="w-4 h-4 text-[#A41034]" />
+                    <span className="font-bold text-slate-900">Interactive Amrita Compound Map</span>
+                    <span className="text-[10px] text-slate-500 font-mono">(Locked to 400-Acre Perimeter)</span>
                   </div>
-                  <span className="text-[10px] text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                  <span className="text-[10px] text-[#A41034] font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
                     Click pin to edit
                   </span>
                 </div>
@@ -1977,28 +1978,28 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 {/* Leaflet Container */}
                 <div
                   ref={adminMapContainerRef}
-                  className="w-full h-[480px] rounded-xl overflow-hidden border border-slate-800 shadow-inner relative z-0"
+                  className="w-full h-[480px] rounded-xl overflow-hidden border border-slate-200 shadow-inner relative z-0"
                 />
 
                 {/* Map Bottom Bar: Click capture or hint */}
-                <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
+                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                   {clickedMapCoord ? (
-                    <div className="flex items-center gap-2 text-cyan-300 font-mono text-[11px]">
-                      <Crosshair className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                    <div className="flex items-center gap-2 text-[#A41034] font-mono text-[11px]">
+                      <Crosshair className="w-3.5 h-3.5 text-[#A41034] animate-pulse" />
                       <span>
                         Map Pin Picked: {clickedMapCoord.lat}, {clickedMapCoord.lng}
                       </span>
                       <button
                         onClick={() => handleOpenAddModal(clickedMapCoord)}
-                        className="ml-2 px-2.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 border border-cyan-500/40 text-[10px] font-bold"
+                        className="ml-2 px-2.5 py-0.5 rounded bg-[#A41034] text-white hover:bg-[#880E2D] text-[10px] font-bold shadow-sm"
                       >
                         + Pin Here
                       </button>
                     </div>
                   ) : (
-                    <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-                      <Info className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Click anywhere inside the purple Amrita compound to capture coordinates or click any marker to edit.</span>
+                    <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                      <Info className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Click anywhere inside the Amrita compound to capture coordinates or click any marker to edit.</span>
                     </div>
                   )}
 
@@ -2008,7 +2009,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                         adminMapInstanceRef.current.flyTo(AMRITA_CAMPUS_CENTER, 16.5, { duration: 0.8 });
                       }
                     }}
-                    className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1"
+                    className="text-[10px] text-[#A41034] hover:text-[#880E2D] font-bold flex items-center gap-1"
                   >
                     <RefreshCw className="w-3 h-3" />
                     Reset Campus View
@@ -2016,8 +2017,8 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 </div>
 
                 {/* Quick Landmark Preset Jumps */}
-                <div className="mt-3 pt-2 border-t border-slate-800/60">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1.5">
+                <div className="mt-3 pt-2 border-t border-slate-100">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 block mb-1.5">
                     Quick Landmark Navigator:
                   </span>
                   <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto pr-1">
@@ -2029,7 +2030,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                             adminMapInstanceRef.current.flyTo([p.lat, p.lng], 18, { duration: 0.8 });
                           }
                         }}
-                        className="px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-[10px] text-slate-300 hover:text-white border border-slate-700/60 transition"
+                        className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-[10px] text-slate-700 hover:text-slate-900 border border-slate-200 transition font-medium"
                       >
                         {p.label}
                       </button>
@@ -2041,11 +2042,11 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
             {/* Right: Pinned Campus Establishments Cards */}
             <div className="lg:col-span-5 space-y-3">
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h4 className="font-bold text-sm text-white">Campus Establishments</h4>
-                    <p className="text-[11px] text-slate-400">
+                    <h4 className="font-bold text-sm text-[#A41034]">Campus Establishments</h4>
+                    <p className="text-[11px] text-slate-500">
                       Showing {
                         mapLocations.filter((loc) => {
                           if (selectedMapCategory !== 'All' && loc.category !== selectedMapCategory) return false;
@@ -2085,32 +2086,32 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       const isAcademic = loc.category === 'Academic & Labs';
                       const isHostel = loc.category === 'Hostels & Living';
 
-                      let badgeColor = 'bg-slate-800 text-slate-300 border-slate-700';
-                      if (isDining) badgeColor = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
-                      else if (isMedical) badgeColor = 'bg-rose-500/10 text-rose-300 border-rose-500/30';
-                      else if (isStore) badgeColor = 'bg-teal-500/10 text-teal-300 border-teal-500/30';
-                      else if (isAcademic) badgeColor = 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30';
-                      else if (isHostel) badgeColor = 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30';
+                      let badgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
+                      if (isDining) badgeColor = 'bg-amber-50 text-amber-800 border-amber-200';
+                      else if (isMedical) badgeColor = 'bg-rose-50 text-rose-800 border-rose-200';
+                      else if (isStore) badgeColor = 'bg-teal-50 text-teal-800 border-teal-200';
+                      else if (isAcademic) badgeColor = 'bg-sky-50 text-sky-800 border-sky-200';
+                      else if (isHostel) badgeColor = 'bg-indigo-50 text-indigo-800 border-indigo-200';
 
                       return (
                         <div
                           key={loc.id}
-                          className="p-3.5 rounded-2xl bg-slate-800/40 border border-slate-700/60 hover:border-slate-600 transition space-y-2 text-xs"
+                          className="p-3.5 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 transition space-y-2 text-xs shadow-sm"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-3">
                               <img
                                 src={loc.image}
                                 alt={loc.name}
-                                className="w-12 h-12 rounded-xl object-cover border border-slate-700/80 shrink-0"
+                                className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0 bg-slate-50"
                               />
                               <div>
-                                <h5 className="font-bold text-white text-sm line-clamp-1">{loc.name}</h5>
+                                <h5 className="font-bold text-slate-900 text-sm line-clamp-1">{loc.name}</h5>
                                 <div className="flex items-center gap-1.5 mt-1">
                                   <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
                                     {loc.category}
                                   </span>
-                                  <span className="text-[10px] text-slate-400">
+                                  <span className="text-[10px] text-slate-500">
                                     {loc.building} ({loc.floor})
                                   </span>
                                 </div>
@@ -2120,8 +2121,8 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
                           {/* Relational Canteen Link Indicator */}
                           {isDining && (
-                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[10px]">
-                              <Utensils className="w-3 h-3 text-amber-400 shrink-0" />
+                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 text-[#A41034] border border-rose-200 text-[10px] font-semibold">
+                              <Utensils className="w-3 h-3 text-[#A41034] shrink-0" />
                               <span>
                                 Relational Sync: Staff Kitchen Active ({loc.relatedCanteenId || 'Canteen'})
                               </span>
@@ -2129,19 +2130,19 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                           )}
 
                           {/* Timings and Contact info */}
-                          <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400 pt-1 border-t border-slate-800/60">
+                          <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 pt-1 border-t border-slate-100">
                             <div className="flex items-center gap-1 truncate">
-                              <Clock className="w-3 h-3 text-slate-500 shrink-0" />
+                              <Clock className="w-3 h-3 text-slate-400 shrink-0" />
                               <span className="truncate">{loc.timings || '08:00 AM - 09:30 PM'}</span>
                             </div>
                             <div className="flex items-center gap-1 truncate">
-                              <Phone className="w-3 h-3 text-slate-500 shrink-0" />
+                              <Phone className="w-3 h-3 text-slate-400 shrink-0" />
                               <span className="truncate">{loc.contact || 'Campus Ext'}</span>
                             </div>
                           </div>
 
                           {/* Monospace GPS Coordinates */}
-                          <div className="text-[10px] font-mono text-cyan-400 bg-slate-900/80 px-2 py-1 rounded border border-slate-800 flex items-center justify-between">
+                          <div className="text-[10px] font-mono text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-200 flex items-center justify-between">
                             <span>GPS: {loc.lat || loc.coordinates?.lat}, {loc.lng || loc.coordinates?.lng}</span>
                             <span className="text-slate-500 font-sans">{loc.zone}</span>
                           </div>
@@ -2156,15 +2157,15 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                                   adminMapInstanceRef.current.flyTo([lat, lng], 18, { duration: 0.8 });
                                 }
                               }}
-                              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] flex items-center gap-1 border border-slate-700/60 transition"
+                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] flex items-center gap-1 border border-slate-200 transition shadow-sm font-semibold"
                             >
-                              <Crosshair className="w-3 h-3 text-cyan-400" />
+                              <Crosshair className="w-3 h-3 text-[#A41034]" />
                               <span>Locate</span>
                             </button>
 
                             <button
                               onClick={() => handleOpenEditModal(loc)}
-                              className="px-3 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 text-[11px] font-bold flex items-center gap-1 transition"
+                              className="px-3 py-1 rounded-lg bg-[#A41034] hover:bg-[#880E2D] text-white text-[11px] font-bold flex items-center gap-1 transition shadow-sm"
                             >
                               <Edit className="w-3 h-3" />
                               <span>Edit Details</span>
@@ -2172,7 +2173,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
                             <button
                               onClick={() => handleDeleteMapLoc(loc)}
-                              className="px-2 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[11px] transition"
+                              className="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] transition shadow-sm"
                               title="Delete establishment"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -2188,18 +2189,18 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
           {/* EDIT & PIN ESTABLISHMENT MODAL (Slide 6 Relational Updates) */}
           {isMapModalOpen && editingMapLoc && (
-            <div className="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
-              <div className="max-w-2xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="fixed inset-0 bg-slate-950/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
+              <div className="max-w-2xl w-full bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto space-y-4 text-slate-900">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                    <div className="p-2.5 rounded-xl bg-rose-50 text-[#A41034] border border-rose-200 shadow-sm">
                       {isAddingNewLoc ? <Plus className="w-5 h-5" /> : <Edit className="w-5 h-5" />}
                     </div>
                     <div>
-                      <h4 className="font-extrabold text-base text-white">
+                      <h4 className="font-extrabold text-base text-[#A41034]">
                         {isAddingNewLoc ? 'Pin New Campus Establishment' : 'Edit Establishment Details'}
                       </h4>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-500">
                         Configuring location, hours, and relational options across campus systems
                       </p>
                     </div>
@@ -2209,7 +2210,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       setIsMapModalOpen(false);
                       setEditingMapLoc(null);
                     }}
-                    className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+                    className="p-1.5 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-900 transition"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -2218,7 +2219,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 <form onSubmit={handleSaveMapLoc} className="space-y-4 text-xs">
                   {/* Name */}
                   <div>
-                    <label className="block text-slate-300 font-semibold mb-1">
+                    <label className="block text-slate-700 font-semibold mb-1">
                       Establishment Name *
                     </label>
                     <input
@@ -2227,18 +2228,18 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       placeholder="e.g. Main Canteen 1 or Health Clinic & Dispensary"
                       value={editingMapLoc.name || ''}
                       onChange={(e) => setEditingMapLoc({ ...editingMapLoc, name: e.target.value })}
-                      className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-[#A41034]"
                     />
                   </div>
 
                   {/* Category & Zone */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">Category *</label>
+                      <label className="block text-slate-700 font-semibold mb-1">Category *</label>
                       <select
                         value={editingMapLoc.category || 'Food & Dining'}
                         onChange={(e) => setEditingMapLoc({ ...editingMapLoc, category: e.target.value })}
-                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                        className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                       >
                         <option value="Food & Dining">Food & Dining (Canteens & Cafes)</option>
                         <option value="Medical & Health">Medical & Health (Clinic & Dispensary)</option>
@@ -2253,11 +2254,11 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">Campus Zone *</label>
+                      <label className="block text-slate-700 font-semibold mb-1">Campus Zone *</label>
                       <select
                         value={editingMapLoc.zone || 'Central Campus'}
                         onChange={(e) => setEditingMapLoc({ ...editingMapLoc, zone: e.target.value })}
-                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                        className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                       >
                         <option value="Central Campus">Central Campus</option>
                         <option value="North Campus">North Campus</option>
@@ -2273,26 +2274,26 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                   {/* Building & Floor */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">Building *</label>
+                      <label className="block text-slate-700 font-semibold mb-1">Building *</label>
                       <input
                         type="text"
                         required
                         placeholder="e.g. Academic Block 3 or North Sports Pavilion"
                         value={editingMapLoc.building || ''}
                         onChange={(e) => setEditingMapLoc({ ...editingMapLoc, building: e.target.value })}
-                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                        className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">Floor *</label>
+                      <label className="block text-slate-700 font-semibold mb-1">Floor *</label>
                       <input
                         type="text"
                         required
                         placeholder="e.g. Ground Floor or Floors 1 to 4"
                         value={editingMapLoc.floor || ''}
                         onChange={(e) => setEditingMapLoc({ ...editingMapLoc, floor: e.target.value })}
-                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                        className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                       />
                     </div>
                   </div>
@@ -2300,49 +2301,49 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                   {/* Timings & Contact */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">Operating Hours *</label>
+                      <label className="block text-slate-700 font-semibold mb-1">Operating Hours *</label>
                       <input
                         type="text"
                         required
                         placeholder="e.g. 08:00 AM - 09:30 PM"
                         value={editingMapLoc.timings || ''}
                         onChange={(e) => setEditingMapLoc({ ...editingMapLoc, timings: e.target.value })}
-                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                        className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">Contact Details</label>
+                      <label className="block text-slate-700 font-semibold mb-1">Contact Details</label>
                       <input
                         type="text"
                         placeholder="e.g. Extension 2401 or clinic@campus.edu"
                         value={editingMapLoc.contact || ''}
                         onChange={(e) => setEditingMapLoc({ ...editingMapLoc, contact: e.target.value })}
-                        className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                        className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                       />
                     </div>
                   </div>
 
                   {/* RELATIONAL CANTEEN SYNC SECTION */}
                   {(editingMapLoc.category === 'Food & Dining' || editingMapLoc.relatedCanteenId) && (
-                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 space-y-2.5">
-                      <div className="flex items-center gap-2 font-bold text-xs">
-                        <Utensils className="w-4 h-4 text-amber-400" />
+                    <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200 text-rose-950 space-y-2.5">
+                      <div className="flex items-center gap-2 font-bold text-xs text-[#A41034]">
+                        <Utensils className="w-4 h-4 text-[#A41034]" />
                         <span>⚡ Relational Canteen & Staff Operations Synchronization</span>
                       </div>
-                      <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
                         Renaming this establishment or updating its location/timings will automatically propagate to:
                         <br />• <strong>Staff Kitchen Panel</strong>: Active canteen dropdown selector & kitchen queues
                         <br />• <strong>Student Canteen View</strong>: Canteen tab switcher, header banner & active order tokens
                       </p>
                       <div>
-                        <label className="block text-slate-300 font-semibold mb-1 text-[11px]">
+                        <label className="block text-slate-700 font-semibold mb-1 text-[11px]">
                           Relational Canteen Mapping
                         </label>
                         <select
                           value={editingMapLoc.relatedCanteenId || ''}
                           onChange={(e) => setEditingMapLoc({ ...editingMapLoc, relatedCanteenId: e.target.value })}
-                          className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-500"
+                          className="w-full p-2 bg-white border border-slate-300 rounded-xl text-slate-900 text-xs focus:outline-none focus:border-[#A41034]"
                         >
                           <option value="">-- Standalone / Unlinked Dining Hub --</option>
                           {canteens.map((c) => (
@@ -2357,8 +2358,8 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
                   {/* MEDICAL & HEALTH INFO */}
                   {editingMapLoc.category === 'Medical & Health' && (
-                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-rose-400 shrink-0" />
+                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-rose-600 shrink-0" />
                       <span>
                         Campus Clinic entries are highlighted with 24/7 emergency response beacons on student maps.
                       </span>
@@ -2367,8 +2368,8 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
                   {/* STORE INFO */}
                   {(editingMapLoc.category === 'Academic Store' || editingMapLoc.category === 'Retail Store') && (
-                    <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs flex items-center gap-2">
-                      <Store className="w-4 h-4 text-teal-400 shrink-0" />
+                    <div className="p-3 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 text-xs flex items-center gap-2">
+                      <Store className="w-4 h-4 text-teal-600 shrink-0" />
                       <span>
                         Stationery, xerox & textbook stores are searchable by academic materials on student map search.
                       </span>
@@ -2376,10 +2377,10 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                   )}
 
                   {/* GPS COORDINATES & PRESETS */}
-                  <div className="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2.5">
+                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white text-xs flex items-center gap-1.5">
-                        <Crosshair className="w-4 h-4 text-cyan-400" />
+                      <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                        <Crosshair className="w-4 h-4 text-[#A41034]" />
                         <span>Precise GPS Coordinates</span>
                       </span>
                       {clickedMapCoord && (
@@ -2390,7 +2391,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                             lat: clickedMapCoord.lat,
                             lng: clickedMapCoord.lng
                           })}
-                          className="text-[10px] text-cyan-400 hover:text-cyan-300 font-bold underline flex items-center gap-1"
+                          className="text-[10px] text-[#A41034] hover:text-[#880E2D] font-bold underline flex items-center gap-1"
                         >
                           Use Map Clicked ({clickedMapCoord.lat}, {clickedMapCoord.lng})
                         </button>
@@ -2399,32 +2400,32 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-slate-300 font-semibold mb-1 text-[11px]">Latitude (GPS)</label>
+                        <label className="block text-slate-700 font-semibold mb-1 text-[11px]">Latitude (GPS)</label>
                         <input
                           type="number"
                           step="0.000001"
                           required
                           value={editingMapLoc.lat || ''}
                           onChange={(e) => setEditingMapLoc({ ...editingMapLoc, lat: e.target.value })}
-                          className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-cyan-500"
+                          className="w-full p-2 bg-white border border-slate-300 rounded-xl text-slate-900 font-mono text-xs focus:outline-none focus:border-[#A41034]"
                         />
                       </div>
                       <div>
-                        <label className="block text-slate-300 font-semibold mb-1 text-[11px]">Longitude (GPS)</label>
+                        <label className="block text-slate-700 font-semibold mb-1 text-[11px]">Longitude (GPS)</label>
                         <input
                           type="number"
                           step="0.000001"
                           required
                           value={editingMapLoc.lng || ''}
                           onChange={(e) => setEditingMapLoc({ ...editingMapLoc, lng: e.target.value })}
-                          className="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-cyan-500"
+                          className="w-full p-2 bg-white border border-slate-300 rounded-xl text-slate-900 font-mono text-xs focus:outline-none focus:border-[#A41034]"
                         />
                       </div>
                     </div>
 
                     {/* Quick Landmark Preset Buttons */}
-                    <div className="pt-2 border-t border-slate-700/60">
-                      <span className="text-[10px] text-slate-400 font-bold block mb-1">
+                    <div className="pt-2 border-t border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-bold block mb-1">
                         One-Click Coordinate Snapping:
                       </span>
                       <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
@@ -2437,7 +2438,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                               lat: p.lat,
                               lng: p.lng
                             })}
-                            className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 border border-slate-700 transition"
+                            className="px-2 py-0.5 rounded-lg bg-white hover:bg-slate-100 text-[10px] text-slate-700 border border-slate-200 transition shadow-sm"
                           >
                             {p.label}
                           </button>
@@ -2448,44 +2449,44 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
                   {/* Description */}
                   <div>
-                    <label className="block text-slate-300 font-semibold mb-1">Description & Services</label>
+                    <label className="block text-slate-700 font-semibold mb-1">Description & Services</label>
                     <textarea
                       rows="2"
                       placeholder="Services offered, specialties, student access details..."
                       value={editingMapLoc.description || ''}
                       onChange={(e) => setEditingMapLoc({ ...editingMapLoc, description: e.target.value })}
-                      className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                     />
                   </div>
 
                   {/* Image URL */}
                   <div>
-                    <label className="block text-slate-300 font-semibold mb-1">Image URL</label>
+                    <label className="block text-slate-700 font-semibold mb-1">Image URL</label>
                     <input
                       type="url"
                       placeholder="https://..."
                       value={editingMapLoc.image || ''}
                       onChange={(e) => setEditingMapLoc({ ...editingMapLoc, image: e.target.value })}
-                      className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                     />
                   </div>
 
                   {/* Modal Actions */}
-                  <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                  <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                     <button
                       type="button"
                       onClick={() => {
                         setIsMapModalOpen(false);
                         setEditingMapLoc(null);
                       }}
-                      className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition"
+                      className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold transition shadow-sm"
                     >
                       Cancel
                     </button>
 
                     <button
                       type="submit"
-                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold transition shadow-lg shadow-indigo-600/30 flex items-center gap-2"
+                      className="px-5 py-2.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-bold transition shadow-sm flex items-center gap-2"
                     >
                       <Check className="w-4 h-4" />
                       <span>{isAddingNewLoc ? 'Pin Establishment to Map' : 'Save & Synchronize Changes'}</span>
@@ -2501,26 +2502,26 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {/* Lightbox Image Preview Modal for Admin */}
       {adminLightboxImage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in"
           onClick={() => setAdminLightboxImage(null)}
         >
           <div
-            className="relative max-w-4xl w-full bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl p-3"
+            className="relative max-w-4xl w-full bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl p-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-2 border-b border-slate-800">
-              <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                <Camera className="w-4 h-4 text-amber-400" />
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <span className="text-xs font-bold text-[#A41034] flex items-center gap-1.5">
+                <Camera className="w-4 h-4 text-[#A41034]" />
                 Issue Evidence Photo — High-Resolution Inspection
               </span>
               <button
                 onClick={() => setAdminLightboxImage(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition"
+                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 transition"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-3 flex items-center justify-center bg-slate-950 rounded-xl overflow-hidden mt-3">
+            <div className="p-3 flex items-center justify-center bg-slate-900 rounded-xl overflow-hidden mt-3">
               <img
                 src={adminLightboxImage}
                 alt="Admin high-res evidence inspect"
@@ -2530,24 +2531,25 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
           </div>
         </div>
       )}
+
       {/* MODAL 1: REGISTER NEW CANTEEN / STORE */}
       {isAddCanteenModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in"
           onClick={() => setIsAddCanteenModalOpen(false)}
         >
           <div
-            className="relative max-w-xl w-full bg-slate-900 border border-slate-700/80 rounded-3xl overflow-hidden shadow-2xl p-6"
+            className="relative max-w-xl w-full bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl p-6 text-slate-900"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <span className="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl">
+                <span className="p-2 bg-rose-50 text-[#A41034] border border-rose-200 rounded-xl shadow-sm">
                   <Store className="w-5 h-5" />
                 </span>
                 <div>
-                  <h3 className="font-bold text-base text-white">Register New Canteen or Store</h3>
-                  <p className="text-[11px] text-slate-400">
+                  <h3 className="font-bold text-base text-[#A41034]">Register New Canteen or Store</h3>
+                  <p className="text-[11px] text-slate-500">
                     Instantly activates across Student Menu, Kitchen KDS, and Admin controls.
                   </p>
                 </div>
@@ -2555,7 +2557,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               <button
                 type="button"
                 onClick={() => setIsAddCanteenModalOpen(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition"
+                className="p-1.5 rounded-xl text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2564,7 +2566,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
             <form onSubmit={handleCreateCanteen} className="space-y-4 pt-4 text-xs">
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2">
-                  <label className="block text-slate-300 font-semibold mb-1">
+                  <label className="block text-slate-700 font-semibold mb-1">
                     Canteen / Store Name *
                   </label>
                   <input
@@ -2573,48 +2575,48 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     placeholder="e.g. Canteen 4 (PG Diner) or Nescafe Kiosk"
                     value={canteenForm.name}
                     onChange={(e) => setCanteenForm({ ...canteenForm, name: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034]"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Badge Code</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Badge Code</label>
                   <input
                     type="text"
                     placeholder="e.g. C4 or NES"
                     value={canteenForm.code}
                     onChange={(e) => setCanteenForm({ ...canteenForm, code: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white uppercase placeholder-slate-500 font-mono focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 uppercase placeholder-slate-400 font-mono focus:outline-none focus:border-[#A41034]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Campus Location</label>
+                <label className="block text-slate-700 font-semibold mb-1">Campus Location</label>
                 <input
                   type="text"
                   placeholder="e.g. Academic Block 3 Ground Floor, Near Tech Quad"
                   value={canteenForm.location}
                   onChange={(e) => setCanteenForm({ ...canteenForm, location: e.target.value })}
-                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034]"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Operating Hours</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Operating Hours</label>
                   <input
                     type="text"
                     value={canteenForm.timings}
                     onChange={(e) => setCanteenForm({ ...canteenForm, timings: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Initial Crowd</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Initial Crowd</label>
                   <select
                     value={canteenForm.crowdLevel}
                     onChange={(e) => setCanteenForm({ ...canteenForm, crowdLevel: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   >
                     <option value="Low">Low</option>
                     <option value="Moderate">Moderate</option>
@@ -2623,7 +2625,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Avg Wait (mins)</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Avg Wait (mins)</label>
                   <input
                     type="number"
                     min="1"
@@ -2632,33 +2634,33 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     onChange={(e) =>
                       setCanteenForm({ ...canteenForm, avgWaitTimeMinutes: e.target.value })
                     }
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Cover Image URL</label>
+                <label className="block text-slate-700 font-semibold mb-1">Cover Image URL</label>
                 <input
                   type="url"
                   placeholder="https://images.unsplash.com/..."
                   value={canteenForm.image}
                   onChange={(e) => setCanteenForm({ ...canteenForm, image: e.target.value })}
-                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                 />
               </div>
 
-              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsAddCanteenModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition"
+                  className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-xs transition shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-bold text-xs shadow-sm transition flex items-center gap-2"
                 >
                   <PlusCircle className="w-4 h-4" />
                   <span>Create & Launch Outlet</span>
@@ -2672,21 +2674,21 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {/* MODAL 2: ADD DISH TO MENU */}
       {isAddDishModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in"
           onClick={() => setIsAddDishModalOpen(false)}
         >
           <div
-            className="relative max-w-xl w-full bg-slate-900 border border-slate-700/80 rounded-3xl overflow-hidden shadow-2xl p-6 max-h-[90vh] overflow-y-auto"
+            className="relative max-w-xl w-full bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl p-6 max-h-[90vh] overflow-y-auto text-slate-900"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <span className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl">
+                <span className="p-2 bg-rose-50 text-[#A41034] border border-rose-200 rounded-xl shadow-sm">
                   <Utensils className="w-5 h-5" />
                 </span>
                 <div>
-                  <h3 className="font-bold text-base text-white">Add New Food Item to Menu</h3>
-                  <p className="text-[11px] text-slate-400">
+                  <h3 className="font-bold text-base text-[#A41034]">Add New Food Item to Menu</h3>
+                  <p className="text-[11px] text-slate-500">
                     Specify outlet, category, pricing, kitchen prep time, and upload photo.
                   </p>
                 </div>
@@ -2694,7 +2696,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               <button
                 type="button"
                 onClick={() => setIsAddDishModalOpen(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition"
+                className="p-1.5 rounded-xl text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2703,11 +2705,11 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
             <form onSubmit={handleSaveDish} className="space-y-4 pt-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Canteen / Outlet *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Canteen / Outlet *</label>
                   <select
                     value={dishForm.canteenId}
                     onChange={(e) => setDishForm({ ...dishForm, canteenId: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   >
                     {canteens.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -2717,11 +2719,11 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Category *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Category *</label>
                   <select
                     value={dishForm.category}
                     onChange={(e) => setDishForm({ ...dishForm, category: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   >
                     {categoriesList.map((cat) => (
                       <option key={cat} value={cat}>
@@ -2733,77 +2735,77 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Dish Name *</label>
+                <label className="block text-slate-700 font-semibold mb-1">Dish Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Paneer Butter Masala Combo or Cold Coffee Shake"
                   value={dishForm.name}
                   onChange={(e) => setDishForm({ ...dishForm, name: e.target.value })}
-                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034]"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Price (₹) *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Price (₹) *</label>
                   <input
                     type="number"
                     min="1"
                     required
                     value={dishForm.price}
                     onChange={(e) => setDishForm({ ...dishForm, price: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034] font-mono font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Prep Time (mins)</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Prep Time (mins)</label>
                   <input
                     type="number"
                     min="1"
                     value={dishForm.prepTimeMinutes}
                     onChange={(e) => setDishForm({ ...dishForm, prepTimeMinutes: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Initial Stock</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Initial Stock</label>
                   <input
                     type="number"
                     min="0"
                     value={dishForm.stock}
                     onChange={(e) => setDishForm({ ...dishForm, stock: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   />
                 </div>
               </div>
 
               {/* Diet Classification */}
               <div>
-                <label className="block text-slate-300 font-semibold mb-1.5">Diet Type</label>
+                <label className="block text-slate-700 font-semibold mb-1.5">Diet Type</label>
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => setDishForm({ ...dishForm, isVeg: true })}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 shadow-sm ${
                       dishForm.isVeg
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                        : 'bg-slate-800 border-slate-700 text-slate-400'
+                        ? 'bg-emerald-50 border-emerald-400 text-emerald-800'
+                        : 'bg-slate-50 border-slate-200 text-slate-600'
                     }`}
                   >
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
                     <span>Pure Vegetarian</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setDishForm({ ...dishForm, isVeg: false })}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 shadow-sm ${
                       !dishForm.isVeg
-                        ? 'bg-rose-500/20 border-rose-500 text-rose-300'
-                        : 'bg-slate-800 border-slate-700 text-slate-400'
+                        ? 'bg-rose-50 border-rose-400 text-rose-800'
+                        : 'bg-slate-50 border-slate-200 text-slate-600'
                     }`}
                   >
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-600" />
                     <span>Non-Vegetarian</span>
                   </button>
                 </div>
@@ -2812,15 +2814,15 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               {/* Dish Image Source (Upload vs URL) */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-slate-300 font-semibold">Dish Photo</label>
-                  <div className="flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+                  <label className="block text-slate-700 font-semibold">Dish Photo</label>
+                  <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
                     <button
                       type="button"
                       onClick={() => setDishImageMode('upload')}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 shadow-sm ${
                         dishImageMode === 'upload'
-                          ? 'bg-indigo-600 text-white'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-[#A41034] text-white'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       <Upload className="w-2.5 h-2.5" />
@@ -2829,10 +2831,10 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     <button
                       type="button"
                       onClick={() => setDishImageMode('url')}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 shadow-sm ${
                         dishImageMode === 'url'
-                          ? 'bg-indigo-600 text-white'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-[#A41034] text-white'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       <Link className="w-2.5 h-2.5" />
@@ -2853,9 +2855,9 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     <button
                       type="button"
                       onClick={() => adminDishFileInputRef.current?.click()}
-                      className="flex-1 py-3 px-4 rounded-xl border-2 border-dashed border-slate-700 hover:border-indigo-500 bg-slate-800/60 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition flex items-center justify-center gap-2"
+                      className="flex-1 py-3 px-4 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#A41034] bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition flex items-center justify-center gap-2"
                     >
-                      <Upload className="w-4 h-4 text-indigo-400" />
+                      <Upload className="w-4 h-4 text-[#A41034]" />
                       <span>Choose Image from Computer</span>
                     </button>
                     {dishForm.imageUrl && (
@@ -2863,7 +2865,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                         <img
                           src={dishForm.imageUrl}
                           alt="Dish preview"
-                          className="w-12 h-12 rounded-xl object-cover border border-slate-700"
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-sm"
                         />
                         <button
                           type="button"
@@ -2882,13 +2884,13 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       placeholder="Paste image URL (https://...)"
                       value={dishForm.imageUrl}
                       onChange={(e) => setDishForm({ ...dishForm, imageUrl: e.target.value })}
-                      className="flex-1 p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="flex-1 p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034]"
                     />
                     {dishForm.imageUrl && (
                       <img
                         src={dishForm.imageUrl}
                         alt="Preview"
-                        className="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0"
+                        className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0 shadow-sm"
                       />
                     )}
                   </div>
@@ -2896,27 +2898,27 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Description / Ingredients</label>
+                <label className="block text-slate-700 font-semibold mb-1">Description / Ingredients</label>
                 <textarea
                   rows="2"
                   value={dishForm.description}
                   onChange={(e) => setDishForm({ ...dishForm, description: e.target.value })}
                   placeholder="Ingredients, accompaniments, allergens..."
-                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034]"
                 />
               </div>
 
-              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsAddDishModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition"
+                  className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-xs transition shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-bold text-xs shadow-sm transition flex items-center gap-2"
                 >
                   <PlusCircle className="w-4 h-4" />
                   <span>Add Dish to Menu</span>
@@ -2930,21 +2932,21 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {/* MODAL 3: EDIT DISH MODAL */}
       {editingDish && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in"
           onClick={() => setEditingDish(null)}
         >
           <div
-            className="relative max-w-xl w-full bg-slate-900 border border-slate-700/80 rounded-3xl overflow-hidden shadow-2xl p-6 max-h-[90vh] overflow-y-auto"
+            className="relative max-w-xl w-full bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl p-6 max-h-[90vh] overflow-y-auto text-slate-900"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <span className="p-2 bg-amber-500/20 text-amber-400 rounded-xl">
+                <span className="p-2 bg-rose-50 text-[#A41034] border border-rose-200 rounded-xl shadow-sm">
                   <Edit2 className="w-5 h-5" />
                 </span>
                 <div>
-                  <h3 className="font-bold text-base text-white">Edit Dish: {editingDish.name}</h3>
-                  <p className="text-[11px] text-slate-400">
+                  <h3 className="font-bold text-base text-[#A41034]">Edit Dish: {editingDish.name}</h3>
+                  <p className="text-[11px] text-slate-500">
                     Update pricing, category, kitchen prep time, photo, or stock availability.
                   </p>
                 </div>
@@ -2952,7 +2954,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               <button
                 type="button"
                 onClick={() => setEditingDish(null)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition"
+                className="p-1.5 rounded-xl text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2961,11 +2963,11 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
             <form onSubmit={handleSaveDish} className="space-y-4 pt-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Canteen / Outlet *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Canteen / Outlet *</label>
                   <select
                     value={dishForm.canteenId}
                     onChange={(e) => setDishForm({ ...dishForm, canteenId: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   >
                     {canteens.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -2975,11 +2977,11 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Category *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Category *</label>
                   <select
                     value={dishForm.category}
                     onChange={(e) => setDishForm({ ...dishForm, category: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   >
                     {categoriesList.map((cat) => (
                       <option key={cat} value={cat}>
@@ -2991,76 +2993,76 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Dish Name *</label>
+                <label className="block text-slate-700 font-semibold mb-1">Dish Name *</label>
                 <input
                   type="text"
                   required
                   value={dishForm.name}
                   onChange={(e) => setDishForm({ ...dishForm, name: e.target.value })}
-                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Price (₹) *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Price (₹) *</label>
                   <input
                     type="number"
                     min="1"
                     required
                     value={dishForm.price}
                     onChange={(e) => setDishForm({ ...dishForm, price: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034] font-mono font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Prep Time (mins)</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Prep Time (mins)</label>
                   <input
                     type="number"
                     min="1"
                     value={dishForm.prepTimeMinutes}
                     onChange={(e) => setDishForm({ ...dishForm, prepTimeMinutes: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Stock Count</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Stock Count</label>
                   <input
                     type="number"
                     min="0"
                     value={dishForm.stock}
                     onChange={(e) => setDishForm({ ...dishForm, stock: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   />
                 </div>
               </div>
 
               {/* Diet Classification */}
               <div>
-                <label className="block text-slate-300 font-semibold mb-1.5">Diet Type</label>
+                <label className="block text-slate-700 font-semibold mb-1.5">Diet Type</label>
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => setDishForm({ ...dishForm, isVeg: true })}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 shadow-sm ${
                       dishForm.isVeg
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                        : 'bg-slate-800 border-slate-700 text-slate-400'
+                        ? 'bg-emerald-50 border-emerald-400 text-emerald-800'
+                        : 'bg-slate-50 border-slate-200 text-slate-600'
                     }`}
                   >
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
                     <span>Pure Vegetarian</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setDishForm({ ...dishForm, isVeg: false })}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 shadow-sm ${
                       !dishForm.isVeg
-                        ? 'bg-rose-500/20 border-rose-500 text-rose-300'
-                        : 'bg-slate-800 border-slate-700 text-slate-400'
+                        ? 'bg-rose-50 border-rose-400 text-rose-800'
+                        : 'bg-slate-50 border-slate-200 text-slate-600'
                     }`}
                   >
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-600" />
                     <span>Non-Vegetarian</span>
                   </button>
                 </div>
@@ -3069,15 +3071,15 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               {/* Dish Image Source (Upload vs URL) */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-slate-300 font-semibold">Dish Photo</label>
-                  <div className="flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+                  <label className="block text-slate-700 font-semibold">Dish Photo</label>
+                  <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
                     <button
                       type="button"
                       onClick={() => setDishImageMode('upload')}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 shadow-sm ${
                         dishImageMode === 'upload'
-                          ? 'bg-indigo-600 text-white'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-[#A41034] text-white'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       <Upload className="w-2.5 h-2.5" />
@@ -3086,10 +3088,10 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     <button
                       type="button"
                       onClick={() => setDishImageMode('url')}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 shadow-sm ${
                         dishImageMode === 'url'
-                          ? 'bg-indigo-600 text-white'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-[#A41034] text-white'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       <Link className="w-2.5 h-2.5" />
@@ -3110,9 +3112,9 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     <button
                       type="button"
                       onClick={() => adminEditDishFileInputRef.current?.click()}
-                      className="flex-1 py-3 px-4 rounded-xl border-2 border-dashed border-slate-700 hover:border-amber-500 bg-slate-800/60 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition flex items-center justify-center gap-2"
+                      className="flex-1 py-3 px-4 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#A41034] bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition flex items-center justify-center gap-2"
                     >
-                      <Upload className="w-4 h-4 text-amber-400" />
+                      <Upload className="w-4 h-4 text-[#A41034]" />
                       <span>Choose New Image from Computer</span>
                     </button>
                     {dishForm.imageUrl && (
@@ -3120,7 +3122,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                         <img
                           src={dishForm.imageUrl}
                           alt="Dish preview"
-                          className="w-12 h-12 rounded-xl object-cover border border-slate-700"
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-sm"
                         />
                         <button
                           type="button"
@@ -3139,13 +3141,13 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       placeholder="Paste image URL (https://...)"
                       value={dishForm.imageUrl}
                       onChange={(e) => setDishForm({ ...dishForm, imageUrl: e.target.value })}
-                      className="flex-1 p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="flex-1 p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034]"
                     />
                     {dishForm.imageUrl && (
                       <img
                         src={dishForm.imageUrl}
                         alt="Preview"
-                        className="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0"
+                        className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0 shadow-sm"
                       />
                     )}
                   </div>
@@ -3153,27 +3155,27 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Description / Ingredients</label>
+                <label className="block text-slate-700 font-semibold mb-1">Description / Ingredients</label>
                 <textarea
                   rows="2"
                   value={dishForm.description}
                   onChange={(e) => setDishForm({ ...dishForm, description: e.target.value })}
                   placeholder="Ingredients, accompaniments..."
-                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034]"
                 />
               </div>
 
-              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setEditingDish(null)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition"
+                  className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-xs transition shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 transition flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-bold text-xs shadow-sm transition flex items-center gap-2"
                 >
                   <Edit2 className="w-4 h-4" />
                   <span>Save Changes</span>
@@ -3187,21 +3189,21 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       {/* MODAL 4: EDIT CANTEEN / STORE DETAILS & RENAME */}
       {editingCanteen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in"
           onClick={() => setEditingCanteen(null)}
         >
           <div
-            className="relative max-w-xl w-full bg-slate-900 border border-slate-700/80 rounded-3xl overflow-hidden shadow-2xl p-6"
+            className="relative max-w-xl w-full bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl p-6 text-slate-900"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <span className="p-2 bg-amber-500/20 text-amber-400 rounded-xl">
+                <span className="p-2 bg-rose-50 text-[#A41034] rounded-xl border border-rose-200 shadow-sm">
                   <Edit2 className="w-5 h-5" />
                 </span>
                 <div>
-                  <h3 className="font-bold text-base text-white">Edit Canteen / Store Details</h3>
-                  <p className="text-[11px] text-slate-400">
+                  <h3 className="font-extrabold text-base text-[#A41034]">Edit Canteen / Store Details</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">
                     Rename outlet, update badge code, location, timings, and operational settings.
                   </p>
                 </div>
@@ -3209,7 +3211,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
               <button
                 type="button"
                 onClick={() => setEditingCanteen(null)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -3218,7 +3220,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
             <form onSubmit={handleSaveEditCanteen} className="space-y-4 pt-4 text-xs">
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2">
-                  <label className="block text-slate-300 font-semibold mb-1">
+                  <label className="block text-slate-700 font-bold mb-1">
                     Canteen / Store Name *
                   </label>
                   <input
@@ -3227,46 +3229,46 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     placeholder="e.g. Canteen 1 (Central Dining Hall)"
                     value={editCanteenForm.name}
                     onChange={(e) => setEditCanteenForm({ ...editCanteenForm, name: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 font-bold"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034] font-bold"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Badge Code</label>
+                  <label className="block text-slate-700 font-bold mb-1">Badge Code</label>
                   <input
                     type="text"
                     value={editCanteenForm.code}
                     onChange={(e) => setEditCanteenForm({ ...editCanteenForm, code: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white uppercase font-mono focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 uppercase font-mono focus:outline-none focus:border-[#A41034]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Campus Location</label>
+                <label className="block text-slate-700 font-bold mb-1">Campus Location</label>
                 <input
                   type="text"
                   value={editCanteenForm.location}
                   onChange={(e) => setEditCanteenForm({ ...editCanteenForm, location: e.target.value })}
-                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034]"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Operating Hours</label>
+                  <label className="block text-slate-700 font-bold mb-1">Operating Hours</label>
                   <input
                     type="text"
                     value={editCanteenForm.timings}
                     onChange={(e) => setEditCanteenForm({ ...editCanteenForm, timings: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Live Crowd</label>
+                  <label className="block text-slate-700 font-bold mb-1">Live Crowd</label>
                   <select
                     value={editCanteenForm.crowdLevel}
                     onChange={(e) => setEditCanteenForm({ ...editCanteenForm, crowdLevel: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   >
                     <option value="Low">Low</option>
                     <option value="Moderate">Moderate</option>
@@ -3275,40 +3277,40 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Avg Wait (mins)</label>
+                  <label className="block text-slate-700 font-bold mb-1">Avg Wait (mins)</label>
                   <input
                     type="number"
                     min="1"
                     max="60"
                     value={editCanteenForm.avgWaitTimeMinutes}
                     onChange={(e) => setEditCanteenForm({ ...editCanteenForm, avgWaitTimeMinutes: e.target.value })}
-                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Cover Image URL</label>
+                <label className="block text-slate-700 font-bold mb-1">Cover Image URL</label>
                 <input
                   type="url"
                   placeholder="https://images.unsplash.com/..."
                   value={editCanteenForm.image}
                   onChange={(e) => setEditCanteenForm({ ...editCanteenForm, image: e.target.value })}
-                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#A41034]"
                 />
               </div>
 
-              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setEditingCanteen(null)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 transition flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-bold text-xs shadow-sm transition flex items-center gap-2"
                 >
                   <Edit2 className="w-4 h-4" />
                   <span>Save Outlet Changes</span>

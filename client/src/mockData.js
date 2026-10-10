@@ -4630,8 +4630,8 @@ export const initialData = {
       token: "C1-047",
       canteenId: "canteen-1",
       canteenName: "Canteen 1",
-      studentName: "You (Karthik)",
-      studentRoll: "CS24B001",
+      studentName: "Student (Live Token)",
+      studentRoll: "CB.EN.U4CSE23101",
       isCurrentUser: true,
       items: [
         { id: "m4", name: "Crispy Samosa (2 pcs)", quantity: 1, price: 30, prepTimeMinutes: 1 },
@@ -4648,7 +4648,7 @@ export const initialData = {
   ],
   wallet: {
     studentId: "student-current",
-    studentName: "Karthik (Student)",
+    studentName: "Student Community Wallet",
     balance: 425,
     transactions: [
       { id: "tx-1", type: "credit", amount: 500, description: "Wallet Top-up via UPI", timestamp: new Date(Date.now() - 3600 * 1000 * 2).toISOString() },
@@ -5121,13 +5121,13 @@ export const initialData = {
       priority: "Medium",
       status: "in_progress",
       currentStageIndex: 3,
-      reportedBy: "Karthik (CS24B001)",
+      reportedBy: "Student Community (Ettimadai)",
       department: "Estate & Plumbing Facilities",
       assignedStaff: "Ramesh Kumar (Senior Plumber)",
       createdAt: new Date(Date.now() - 20 * 3600 * 1000).toISOString(),
       updatedAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
       timeline: [
-        { stage: "Report", status: "reported", message: "Issue submitted by student with location marker and photo.", timestamp: new Date(Date.now() - 20 * 3600 * 1000).toISOString(), actor: "Karthik" },
+        { stage: "Report", status: "reported", message: "Issue submitted by student with location marker and photo.", timestamp: new Date(Date.now() - 20 * 3600 * 1000).toISOString(), actor: "Student Community" },
         { stage: "Route", status: "routed", message: "Ticket routed automatically to Estate & Plumbing Maintenance team.", timestamp: new Date(Date.now() - 15 * 3600 * 1000).toISOString(), actor: "System Dispatcher" },
         { stage: "Act", status: "in_progress", message: "Staff assigned: Ramesh Kumar. Drainage blockage cleared; compressor refrigerant refill scheduled for 3 PM.", timestamp: new Date(Date.now() - 2 * 3600 * 1000).toISOString(), actor: "Ramesh Kumar" }
       ],
