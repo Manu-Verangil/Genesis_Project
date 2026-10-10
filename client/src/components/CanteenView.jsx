@@ -46,7 +46,7 @@ export function CanteenView({
     if (vegOnly && !item.isVeg) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      if (!item.name.toLowerCase().includes(q) && !item.description.toLowerCase().includes(q)) {
+      if (!item.name.toLowerCase().includes(q) && !item.description?.toLowerCase().includes(q)) {
         return false;
       }
     }
@@ -129,7 +129,6 @@ export function CanteenView({
 
       const res = await api.createOrder(orderPayload);
       if (res.success) {
-        // Trigger celebratory confetti
         confetti({
           particleCount: 80,
           spread: 60,
@@ -148,76 +147,81 @@ export function CanteenView({
     }
   };
 
-  // Crowd level colors
-  const getCrowdBg = (crowd) => {
+  // Crowd level monochrome badge
+  const getCrowdMonochrome = (crowd) => {
     switch (crowd) {
       case 'Low':
-        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+        return 'bg-zinc-900 text-zinc-300 border-zinc-700';
       case 'Moderate':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+        return 'bg-zinc-800 text-zinc-100 border-zinc-600 font-bold';
       case 'Busy':
-        return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+        return 'bg-zinc-800 text-white border-zinc-500 font-extrabold';
       case 'Rush Hour':
-        return 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+        return 'bg-white text-black border-white font-black shadow-sm';
       default:
-        return 'bg-slate-700 text-slate-300';
+        return 'bg-zinc-900 text-zinc-400 border-zinc-800';
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-zinc-100">
       {/* Canteen Selector & Real-Time Crowd Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl">
+      <div className="bg-zinc-950 border border-zinc-800/90 rounded-3xl p-4 sm:p-6 shadow-2xl backdrop-blur-md">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Canteen Switcher Buttons */}
           <div className="flex flex-wrap items-center gap-2">
-            {canteens.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setSelectedCanteenId(c.id)}
-                className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border text-sm font-semibold transition ${
-                  selectedCanteenId === c.id
-                    ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-600/30'
-                    : 'bg-slate-800/80 text-slate-300 border-slate-700/60 hover:bg-slate-800'
-                }`}
-              >
-                <Utensils className="w-4 h-4" />
-                <div className="text-left">
-                  <div>{c.name}</div>
-                  <div className="text-[10px] font-normal opacity-80">{c.location}</div>
-                </div>
-              </button>
-            ))}
+            {canteens.map((c) => {
+              const isSelected = selectedCanteenId === c.id;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedCanteenId(c.id)}
+                  className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl border text-sm font-semibold transition-all duration-200 ${
+                    isSelected
+                      ? 'bg-white text-black border-white shadow-xl shadow-white/10 font-bold scale-[1.01]'
+                      : 'bg-zinc-900/80 text-zinc-400 border-zinc-800 hover:text-white hover:border-zinc-700 hover:bg-zinc-900'
+                  }`}
+                >
+                  <Utensils className={`w-4 h-4 ${isSelected ? 'text-black' : 'text-zinc-400'}`} />
+                  <div className="text-left">
+                    <div className="font-bold">{c.name}</div>
+                    <div className={`text-[10px] font-normal ${isSelected ? 'text-zinc-800' : 'text-zinc-500'}`}>
+                      {c.location}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Live Crowd & Wait Time Status (Slide 4 requirement) */}
+          {/* Live Crowd & Wait Time Status */}
           {currentCanteen && (
-            <div className="flex items-center flex-wrap gap-3 bg-slate-800/90 p-3 rounded-xl border border-slate-700/60 text-xs">
+            <div className="flex items-center flex-wrap gap-3 bg-zinc-900/90 p-3 rounded-2xl border border-zinc-800 text-xs">
               <div className="flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-slate-400" />
-                <span className="text-slate-400">Crowd Level:</span>
-                <span className={`px-2.5 py-0.5 rounded-full font-semibold border ${getCrowdBg(currentCanteen.crowdLevel)}`}>
+                <Users className="w-4 h-4 text-zinc-400" />
+                <span className="text-zinc-400">Crowd Level:</span>
+                <span className={`px-2.5 py-0.5 rounded-full font-semibold border ${getCrowdMonochrome(currentCanteen.crowdLevel)}`}>
                   {currentCanteen.crowdLevel}
                 </span>
               </div>
 
-              <div className="h-4 w-px bg-slate-700 hidden sm:block" />
+              <div className="h-4 w-px bg-zinc-800 hidden sm:block" />
 
               <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-cyan-400" />
-                <span className="text-slate-400">Avg Wait:</span>
+                <Clock className="w-4 h-4 text-zinc-300" />
+                <span className="text-zinc-400">Avg Wait:</span>
                 <span className="font-bold text-white font-mono">
                   ~{currentCanteen.avgWaitTimeMinutes} mins
                 </span>
               </div>
 
-              <div className="h-4 w-px bg-slate-700 hidden sm:block" />
+              <div className="h-4 w-px bg-zinc-800 hidden sm:block" />
 
               <div className="flex items-center gap-1.5">
-                <Flame className="w-4 h-4 text-amber-400" />
-                <span className="text-slate-400">Active Kitchen Orders:</span>
-                <span className="font-bold text-amber-300 font-mono">
-                  {currentCanteen.activeOrdersCount || 4}
+                <Flame className="w-4 h-4 text-zinc-300" />
+                <span className="text-zinc-400">Active Kitchen Orders:</span>
+                <span className="font-bold text-white font-mono">
+                  {currentCanteen.activeOrdersCount || 3}
                 </span>
               </div>
             </div>
@@ -225,23 +229,26 @@ export function CanteenView({
         </div>
       </div>
 
-      {/* Search & Filters */}
+      {/* Search & Category Filter Controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        {/* Category Pills */}
+        {/* Category Filter Chips */}
         <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
-                selectedCategory === cat
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {categories.map((cat) => {
+            const isSelected = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  isSelected
+                    ? 'bg-white text-black shadow-md shadow-white/10 font-extrabold'
+                    : 'bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 border border-zinc-800/80'
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
 
         {/* Search & Veg toggle */}
@@ -250,24 +257,28 @@ export function CanteenView({
             onClick={() => setVegOnly(!vegOnly)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition ${
               vegOnly
-                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                ? 'bg-white text-black border-white shadow-sm font-bold'
+                : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-white'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full border border-emerald-500 flex items-center justify-center p-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span
+              className={`w-2.5 h-2.5 rounded-full border flex items-center justify-center p-0.5 ${
+                vegOnly ? 'border-black' : 'border-zinc-500'
+              }`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${vegOnly ? 'bg-black' : 'bg-zinc-500'}`} />
             </span>
-            Veg Only
+            <span>Veg Only</span>
           </button>
 
-          <div className="relative flex-1 sm:w-60">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+          <div className="relative flex-1 sm:w-64">
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-500" />
             <input
               type="text"
               placeholder="Search items, biryani, coffee..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-400 font-medium"
             />
           </div>
         </div>
@@ -278,7 +289,7 @@ export function CanteenView({
         {/* Menu Cards (2 Columns on Desktop) */}
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {filteredItems.length === 0 ? (
-            <div className="col-span-full py-16 text-center text-slate-400 bg-slate-900 border border-slate-800 rounded-2xl">
+            <div className="col-span-full py-16 text-center text-zinc-400 bg-zinc-950 border border-zinc-800 rounded-3xl">
               No menu items match your search or filter criteria.
             </div>
           ) : (
@@ -290,12 +301,12 @@ export function CanteenView({
               return (
                 <div
                   key={item.id}
-                  className={`bg-slate-900 border rounded-2xl overflow-hidden transition-all duration-200 hover:border-slate-700 flex flex-col justify-between ${
-                    isOutOfStock ? 'border-rose-900/30 opacity-90' : 'border-slate-800'
+                  className={`bg-zinc-950 border rounded-3xl overflow-hidden transition-all duration-300 hover:border-zinc-500/80 flex flex-col justify-between shadow-xl hover:shadow-2xl hover:shadow-black/70 group ${
+                    isOutOfStock ? 'border-zinc-800/60 opacity-80' : 'border-zinc-800/90'
                   }`}
                 >
                   {/* Food Image & Badges */}
-                  <div className="relative h-44 w-full bg-slate-800 overflow-hidden group">
+                  <div className="relative h-44 w-full bg-zinc-900 overflow-hidden">
                     <img
                       src={item.imageUrl}
                       alt={item.name}
@@ -305,46 +316,46 @@ export function CanteenView({
                           ? 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80'
                           : 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=600&auto=format&fit=crop&q=80';
                       }}
-                      className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
+                      className="w-full h-full object-cover transition duration-500 group-hover:scale-105 filter brightness-95 group-hover:brightness-100"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent" />
 
                     {/* Veg / Non-Veg badge */}
-                    <div className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md px-2 py-1 rounded-md border border-slate-700 flex items-center gap-1.5">
+                    <div className="absolute top-3 left-3 bg-black/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-700/80 flex items-center gap-1.5 shadow-md">
                       <span
                         className={`w-2.5 h-2.5 rounded-full border flex items-center justify-center ${
-                          item.isVeg ? 'border-emerald-500' : 'border-rose-500'
+                          item.isVeg ? 'border-zinc-300' : 'border-zinc-400'
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
-                            item.isVeg ? 'bg-emerald-500' : 'bg-rose-500'
+                            item.isVeg ? 'bg-zinc-200' : 'bg-zinc-400'
                           }`}
                         />
                       </span>
-                      <span className="text-[10px] font-semibold text-slate-200">
-                        {item.isVeg ? 'Veg' : 'Non-Veg'}
+                      <span className="text-[10px] font-extrabold text-zinc-200 tracking-wider">
+                        {item.isVeg ? 'VEG' : 'NON-VEG'}
                       </span>
                     </div>
 
                     {/* Prep time badge */}
-                    <div className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md px-2 py-1 rounded-md border border-slate-700 flex items-center gap-1 text-[10px] text-cyan-300 font-mono">
-                      <Clock className="w-3 h-3 text-cyan-400" />
-                      ~{item.prepTimeMinutes}m prep
+                    <div className="absolute top-3 right-3 bg-black/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 flex items-center gap-1 text-[10px] text-zinc-300 font-mono shadow-md">
+                      <Clock className="w-3 h-3 text-zinc-400" />
+                      <span>~{item.prepTimeMinutes}m</span>
                     </div>
 
-                    {/* Stock status badge (Slide 4: In stock / out of stock, with quantity left) */}
+                    {/* Stock status badge */}
                     <div className="absolute bottom-3 left-3">
                       {isOutOfStock ? (
-                        <span className="px-2.5 py-1 rounded-lg bg-rose-500/90 text-white text-[11px] font-bold shadow-md">
+                        <span className="px-2.5 py-1 rounded-lg bg-black/90 text-zinc-400 border border-zinc-800 text-[11px] font-bold shadow-md">
                           Out of Stock
                         </span>
                       ) : item.stock <= 5 ? (
-                        <span className="px-2.5 py-1 rounded-lg bg-amber-500/90 text-slate-950 text-[11px] font-bold shadow-md">
-                          Only {item.stock} portions left!
+                        <span className="px-2.5 py-1 rounded-lg bg-white text-black text-[11px] font-extrabold shadow-lg">
+                          Only {item.stock} left
                         </span>
                       ) : (
-                        <span className="px-2.5 py-1 rounded-lg bg-emerald-950/90 text-emerald-300 text-[10px] font-semibold border border-emerald-500/30">
+                        <span className="px-2.5 py-1 rounded-lg bg-zinc-900/90 text-zinc-200 text-[10px] font-semibold border border-zinc-700/80 backdrop-blur-md">
                           {item.stock} in stock
                         </span>
                       )}
@@ -355,21 +366,21 @@ export function CanteenView({
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <div>
                       <div className="flex items-start justify-between gap-2">
-                        <h4 className="font-bold text-slate-100 text-sm leading-snug">
+                        <h4 className="font-extrabold text-white text-sm leading-snug group-hover:text-zinc-100">
                           {item.name}
                         </h4>
                         <span className="font-extrabold text-white font-mono text-base shrink-0">
                           ₹{item.price}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed font-normal">
                         {item.description}
                       </p>
                     </div>
 
-                    {/* Action Button: Add to Cart OR "Notify Me" (Slide 4) */}
-                    <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                      <span className="text-[11px] font-medium text-slate-400">
+                    {/* Action Button: Add to Cart OR "Notify Me" */}
+                    <div className="mt-4 pt-3 border-t border-zinc-800/80 flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
                         {item.category}
                       </span>
 
@@ -379,25 +390,25 @@ export function CanteenView({
                           disabled={isAlertSet}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
                             isAlertSet
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 cursor-default'
-                              : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40'
+                              ? 'bg-zinc-800 text-white border border-zinc-700 cursor-default'
+                              : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700'
                           }`}
                         >
                           {isAlertSet ? (
                             <>
-                              <Check className="w-3.5 h-3.5" /> Alert Active
+                              <Check className="w-3.5 h-3.5 text-white" /> Alert Set
                             </>
                           ) : (
                             <>
-                              <BellRing className="w-3.5 h-3.5" /> Notify Me
+                              <BellRing className="w-3.5 h-3.5 text-zinc-400" /> Notify Me
                             </>
                           )}
                         </button>
                       ) : inCart ? (
-                        <div className="flex items-center gap-2 bg-blue-600/20 border border-blue-500/40 rounded-xl p-1">
+                        <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded-xl p-1">
                           <button
                             onClick={() => removeFromCart(item.id)}
-                            className="p-1 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition"
+                            className="p-1 rounded-lg bg-zinc-800 text-white hover:bg-zinc-700 transition"
                           >
                             <Minus className="w-3.5 h-3.5" />
                           </button>
@@ -406,7 +417,7 @@ export function CanteenView({
                           </span>
                           <button
                             onClick={() => addToCart(item)}
-                            className="p-1 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition"
+                            className="p-1 rounded-lg bg-zinc-800 text-white hover:bg-zinc-700 transition"
                           >
                             <Plus className="w-3.5 h-3.5" />
                           </button>
@@ -414,9 +425,9 @@ export function CanteenView({
                       ) : (
                         <button
                           onClick={() => addToCart(item)}
-                          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition shadow-md shadow-blue-600/20"
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-extrabold transition shadow-md active:scale-95"
                         >
-                          <Plus className="w-3.5 h-3.5" /> Add
+                          <Plus className="w-3.5 h-3.5 text-black" /> Add
                         </button>
                       )}
                     </div>
@@ -427,51 +438,51 @@ export function CanteenView({
           )}
         </div>
 
-        {/* Right Column: Prepaid Cart & Token Checkout (Slide 4 & 7) */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl sticky top-24">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        {/* Right Column: Prepaid Cart & Token Checkout */}
+        <div className="bg-zinc-950 border border-zinc-800/90 rounded-3xl p-5 shadow-2xl backdrop-blur-md sticky top-24">
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4 text-blue-400" />
-              <h3 className="font-bold text-sm text-white">Your Prepaid Cart</h3>
+              <ShoppingBag className="w-4 h-4 text-white" />
+              <h3 className="font-extrabold text-sm text-white">Your Prepaid Cart</h3>
             </div>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 font-semibold border border-blue-500/20">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-white text-black font-mono font-bold">
               {cart.reduce((sum, i) => sum + i.quantity, 0)} items
             </span>
           </div>
 
           {cart.length === 0 ? (
-            <div className="py-10 text-center text-slate-400 text-xs">
-              <Utensils className="w-8 h-8 mx-auto text-slate-600 mb-2 opacity-50" />
+            <div className="py-12 text-center text-zinc-500 text-xs">
+              <Utensils className="w-8 h-8 mx-auto text-zinc-700 mb-2 opacity-50" />
               Your tray is empty. Add delicious food from {currentCanteen?.name}!
             </div>
           ) : (
             <div className="mt-4 space-y-4">
               {/* Cart items list */}
-              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                 {cart.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/40 text-xs"
+                    className="flex items-center justify-between p-2.5 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 text-xs"
                   >
                     <div className="flex-1 mr-2">
-                      <div className="font-semibold text-slate-200">{item.name}</div>
-                      <div className="text-[11px] text-slate-400 font-mono">
+                      <div className="font-bold text-white">{item.name}</div>
+                      <div className="text-[11px] text-zinc-400 font-mono">
                         ₹{item.price} × {item.quantity} = ₹{item.price * item.quantity}
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="p-1 rounded-md bg-slate-700 text-slate-300 hover:text-white"
+                        className="p-1 rounded-lg bg-zinc-800 text-zinc-300 hover:text-white"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="font-bold text-white px-1 font-mono text-xs">
+                      <span className="font-mono font-bold text-white px-1 text-xs">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => addToCart(item)}
-                        className="p-1 rounded-md bg-slate-700 text-slate-300 hover:text-white"
+                        className="p-1 rounded-lg bg-zinc-800 text-zinc-300 hover:text-white"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
@@ -481,38 +492,40 @@ export function CanteenView({
               </div>
 
               {/* Total & Summary */}
-              <div className="pt-3 border-t border-slate-800 space-y-2 text-xs">
-                <div className="flex justify-between text-slate-400">
+              <div className="pt-3 border-t border-zinc-800 space-y-2 text-xs">
+                <div className="flex justify-between text-zinc-400">
                   <span>Subtotal</span>
-                  <span className="font-mono text-slate-200">₹{cartTotal}</span>
+                  <span className="font-mono text-zinc-200">₹{cartTotal}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-zinc-400">
                   <span>Platform & Token Fee</span>
-                  <span className="font-mono text-emerald-400">₹0 (Free)</span>
+                  <span className="font-mono text-zinc-200">₹0 (Free)</span>
                 </div>
-                <div className="flex justify-between text-sm font-bold text-white pt-1 border-t border-slate-800">
+                <div className="flex justify-between text-sm font-bold text-white pt-1 border-t border-zinc-800">
                   <span>Total Amount</span>
-                  <span className="font-mono text-emerald-400 text-base">₹{cartTotal}</span>
+                  <span className="font-mono text-white text-base font-black">₹{cartTotal}</span>
                 </div>
               </div>
 
-              {/* Payment Mode Selector (Slide 4: Cart, wallet or UPI) */}
+              {/* Payment Mode Selector */}
               <div className="pt-2">
-                <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2">
                   Select Payment Method
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('Wallet')}
-                    className={`p-2.5 rounded-xl border text-left text-xs transition flex flex-col justify-between ${
+                    className={`p-2.5 rounded-2xl border text-left text-xs transition flex flex-col justify-between ${
                       paymentMethod === 'Wallet'
-                        ? 'bg-emerald-500/20 border-emerald-500 text-white font-semibold'
-                        : 'bg-slate-800/80 border-slate-700 text-slate-400'
+                        ? 'bg-white text-black border-white font-extrabold shadow-md'
+                        : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-white'
                     }`}
                   >
-                    <span className="text-[10px] text-slate-300">Campus Wallet</span>
-                    <span className="font-bold text-emerald-400 mt-1">
+                    <span className={`text-[10px] ${paymentMethod === 'Wallet' ? 'text-zinc-800' : 'text-zinc-400'}`}>
+                      Campus Wallet
+                    </span>
+                    <span className={`font-black mt-1 ${paymentMethod === 'Wallet' ? 'text-black' : 'text-zinc-200'}`}>
                       ₹{wallet ? wallet.balance.toFixed(0) : '0'} Bal
                     </span>
                   </button>
@@ -520,23 +533,27 @@ export function CanteenView({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('UPI')}
-                    className={`p-2.5 rounded-xl border text-left text-xs transition flex flex-col justify-between ${
+                    className={`p-2.5 rounded-2xl border text-left text-xs transition flex flex-col justify-between ${
                       paymentMethod === 'UPI'
-                        ? 'bg-blue-600/20 border-blue-500 text-white font-semibold'
-                        : 'bg-slate-800/80 border-slate-700 text-slate-400'
+                        ? 'bg-white text-black border-white font-extrabold shadow-md'
+                        : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-white'
                     }`}
                   >
-                    <span className="text-[10px] text-slate-300">Fast UPI</span>
-                    <span className="font-bold text-blue-400 mt-1">Auto-Confirm</span>
+                    <span className={`text-[10px] ${paymentMethod === 'UPI' ? 'text-zinc-800' : 'text-zinc-400'}`}>
+                      Fast UPI
+                    </span>
+                    <span className={`font-black mt-1 ${paymentMethod === 'UPI' ? 'text-black' : 'text-zinc-200'}`}>
+                      Auto-Confirm
+                    </span>
                   </button>
                 </div>
               </div>
 
-              {/* Guarantee notice from Slide 7 */}
-              <div className="p-2 rounded-xl bg-slate-800/50 border border-slate-700/30 text-[10px] text-slate-400 leading-relaxed flex items-start gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+              {/* Guarantee notice */}
+              <div className="p-2.5 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 text-[10px] text-zinc-400 leading-relaxed flex items-start gap-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-zinc-300 shrink-0 mt-0.5" />
                 <span>
-                  <strong>Stock reserved at payment.</strong> Instant token issued. Single-use token prevents queue-jumping.
+                  <strong className="text-zinc-200">Stock reserved at payment.</strong> Instant token issued. Single-use token prevents queue-jumping.
                 </span>
               </div>
 
@@ -544,14 +561,14 @@ export function CanteenView({
               <button
                 onClick={handleCheckout}
                 disabled={isSubmitting}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3.5 rounded-2xl bg-white hover:bg-zinc-200 text-black font-black text-xs transition shadow-xl shadow-white/10 active:scale-98 flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   'Issuing Token...'
                 ) : (
                   <>
                     <span>Prepay & Get Token (₹{cartTotal})</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 text-black" />
                   </>
                 )}
               </button>

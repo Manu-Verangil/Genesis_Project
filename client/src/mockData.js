@@ -24,7 +24,19 @@ export const initialData = {
       avgWaitTimeMinutes: 5,
       activeOrdersCount: 2,
       counterSpeed: "Fast"
-    }
+    },
+    {
+      "id": "canteen-3",
+      "name": "Canteen 3 (Amrita Courtyard & Executive Diner)",
+      "code": "C3",
+      "location": "South Academic Quadrangle & PG Block, Amrita Ettimadai",
+      "timings": "08:00 AM - 10:00 PM",
+      "status": "open",
+      "crowdLevel": "Low",
+      "avgWaitTimeMinutes": 6,
+      "activeOrdersCount": 3,
+      "counterSpeed": "Fast"
+}
   ],
   menuItems: [
     {
@@ -43,6 +55,19 @@ export const initialData = {
     {
       "id": "c2_m001",
       "canteenId": "canteen-2",
+      "name": "Plain Roast",
+      "description": "Crispy golden crepe served with coconut chutney & sambar.",
+      "category": "Main Course",
+      "price": 55,
+      "prepTimeMinutes": 3,
+      "stock": 25,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m001",
+      "canteenId": "canteen-3",
       "name": "Plain Roast",
       "description": "Crispy golden crepe served with coconut chutney & sambar.",
       "category": "Main Course",
@@ -80,6 +105,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m002",
+      "canteenId": "canteen-3",
+      "name": "Ghee Roast",
+      "description": "Crispy roast enriched with aromatic pure ghee.",
+      "category": "Main Course",
+      "price": 70,
+      "prepTimeMinutes": 3,
+      "stock": 20,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m003",
       "canteenId": "canteen-1",
       "name": "Masala Roast",
@@ -95,6 +133,19 @@ export const initialData = {
     {
       "id": "c2_m003",
       "canteenId": "canteen-2",
+      "name": "Masala Roast",
+      "description": "Crisp roast filled with seasoned potato masala.",
+      "category": "Main Course",
+      "price": 75,
+      "prepTimeMinutes": 4,
+      "stock": 18,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m003",
+      "canteenId": "canteen-3",
       "name": "Masala Roast",
       "description": "Crisp roast filled with seasoned potato masala.",
       "category": "Main Course",
@@ -132,6 +183,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m004",
+      "canteenId": "canteen-3",
+      "name": "Podi Roast",
+      "description": "Crispy roast coated with spicy gunpowder & ghee.",
+      "category": "Main Course",
+      "price": 65,
+      "prepTimeMinutes": 3,
+      "stock": 15,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m005",
       "canteenId": "canteen-1",
       "name": "Butter Roast",
@@ -147,6 +211,19 @@ export const initialData = {
     {
       "id": "c2_m005",
       "canteenId": "canteen-2",
+      "name": "Butter Roast",
+      "description": "Rich golden crepe roasted in pure dairy butter.",
+      "category": "Main Course",
+      "price": 70,
+      "prepTimeMinutes": 3,
+      "stock": 15,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m005",
+      "canteenId": "canteen-3",
       "name": "Butter Roast",
       "description": "Rich golden crepe roasted in pure dairy butter.",
       "category": "Main Course",
@@ -184,6 +261,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m006",
+      "canteenId": "canteen-3",
+      "name": "Egg Dosa",
+      "description": "Dosa topped with seasoned beaten egg & pepper.",
+      "category": "Main Course",
+      "price": 50,
+      "prepTimeMinutes": 4,
+      "stock": 16,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m007",
       "canteenId": "canteen-1",
       "name": "Egg Roast Dosa",
@@ -199,6 +289,19 @@ export const initialData = {
     {
       "id": "c2_m007",
       "canteenId": "canteen-2",
+      "name": "Egg Roast Dosa",
+      "description": "Crisp roast layered with spicy egg masala roast.",
+      "category": "Main Course",
+      "price": 70,
+      "prepTimeMinutes": 4,
+      "stock": 12,
+      "isVeg": false,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m007",
+      "canteenId": "canteen-3",
       "name": "Egg Roast Dosa",
       "description": "Crisp roast layered with spicy egg masala roast.",
       "category": "Main Course",
@@ -236,6 +339,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m008",
+      "canteenId": "canteen-3",
+      "name": "Schezwan Roast",
+      "description": "Spicy fusion roast spread with Schezwan sauce.",
+      "category": "Main Course",
+      "price": 85,
+      "prepTimeMinutes": 4,
+      "stock": 10,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m009",
       "canteenId": "canteen-1",
       "name": "Cheese Roast",
@@ -251,6 +367,19 @@ export const initialData = {
     {
       "id": "c2_m009",
       "canteenId": "canteen-2",
+      "name": "Cheese Roast",
+      "description": "Loaded with melted mozzarella and cheddar cheese.",
+      "category": "Main Course",
+      "price": 85,
+      "prepTimeMinutes": 4,
+      "stock": 12,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m009",
+      "canteenId": "canteen-3",
       "name": "Cheese Roast",
       "description": "Loaded with melted mozzarella and cheddar cheese.",
       "category": "Main Course",
@@ -288,6 +417,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m010",
+      "canteenId": "canteen-3",
+      "name": "Onion Roast",
+      "description": "Dosa studded with caramelized diced onions.",
+      "category": "Main Course",
+      "price": 75,
+      "prepTimeMinutes": 4,
+      "stock": 14,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m011",
       "canteenId": "canteen-1",
       "name": "Paneer Keema Roast",
@@ -303,6 +445,19 @@ export const initialData = {
     {
       "id": "c2_m011",
       "canteenId": "canteen-2",
+      "name": "Paneer Keema Roast",
+      "description": "Stuffed with spiced minced cottage cheese bhurji.",
+      "category": "Main Course",
+      "price": 90,
+      "prepTimeMinutes": 5,
+      "stock": 10,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m011",
+      "canteenId": "canteen-3",
       "name": "Paneer Keema Roast",
       "description": "Stuffed with spiced minced cottage cheese bhurji.",
       "category": "Main Course",
@@ -340,6 +495,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m012",
+      "canteenId": "canteen-3",
+      "name": "Ghee Masala Roast",
+      "description": "Ghee roast stuffed with aromatic potato masala.",
+      "category": "Main Course",
+      "price": 95,
+      "prepTimeMinutes": 4,
+      "stock": 12,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m013",
       "canteenId": "canteen-1",
       "name": "Mushroom Roast",
@@ -355,6 +523,19 @@ export const initialData = {
     {
       "id": "c2_m013",
       "canteenId": "canteen-2",
+      "name": "Mushroom Roast",
+      "description": "Stuffed with saut\u00e9ed spiced button mushrooms.",
+      "category": "Main Course",
+      "price": 85,
+      "prepTimeMinutes": 5,
+      "stock": 10,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m013",
+      "canteenId": "canteen-3",
       "name": "Mushroom Roast",
       "description": "Stuffed with saut\u00e9ed spiced button mushrooms.",
       "category": "Main Course",
@@ -392,6 +573,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m014",
+      "canteenId": "canteen-3",
+      "name": "Chapathi (1)",
+      "description": "Soft whole wheat flatbread made fresh on tawa.",
+      "category": "Main Course",
+      "price": 15,
+      "prepTimeMinutes": 2,
+      "stock": 40,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m015",
       "canteenId": "canteen-1",
       "name": "Parotta (1)",
@@ -407,6 +601,19 @@ export const initialData = {
     {
       "id": "c2_m015",
       "canteenId": "canteen-2",
+      "name": "Parotta (1)",
+      "description": "Flaky multi-layered Malabar parotta.",
+      "category": "Main Course",
+      "price": 20,
+      "prepTimeMinutes": 2,
+      "stock": 35,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m015",
+      "canteenId": "canteen-3",
       "name": "Parotta (1)",
       "description": "Flaky multi-layered Malabar parotta.",
       "category": "Main Course",
@@ -444,6 +651,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m016",
+      "canteenId": "canteen-3",
+      "name": "Battura (1)",
+      "description": "Large puffy golden deep-fried bread.",
+      "category": "Main Course",
+      "price": 20,
+      "prepTimeMinutes": 3,
+      "stock": 25,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m017",
       "canteenId": "canteen-1",
       "name": "Chicken Fried Rice",
@@ -459,6 +679,19 @@ export const initialData = {
     {
       "id": "c2_m017",
       "canteenId": "canteen-2",
+      "name": "Chicken Fried Rice",
+      "description": "Wok-tossed basmati rice with chicken, egg & scallions.",
+      "category": "Main Course",
+      "price": 130,
+      "prepTimeMinutes": 6,
+      "stock": 20,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m017",
+      "canteenId": "canteen-3",
       "name": "Chicken Fried Rice",
       "description": "Wok-tossed basmati rice with chicken, egg & scallions.",
       "category": "Main Course",
@@ -496,6 +729,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m018",
+      "canteenId": "canteen-3",
+      "name": "Egg Noodles",
+      "description": "Stir-fried noodles with egg ribbons & veggies.",
+      "category": "Main Course",
+      "price": 90,
+      "prepTimeMinutes": 5,
+      "stock": 15,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m019",
       "canteenId": "canteen-1",
       "name": "Chicken Sandwich",
@@ -511,6 +757,19 @@ export const initialData = {
     {
       "id": "c2_m019",
       "canteenId": "canteen-2",
+      "name": "Chicken Sandwich",
+      "description": "Toasted triple-decker with shredded chicken mayo.",
+      "category": "Main Course",
+      "price": 150,
+      "prepTimeMinutes": 4,
+      "stock": 10,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m019",
+      "canteenId": "canteen-3",
       "name": "Chicken Sandwich",
       "description": "Toasted triple-decker with shredded chicken mayo.",
       "category": "Main Course",
@@ -548,6 +807,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m020",
+      "canteenId": "canteen-3",
+      "name": "Fried Chicken Momos (6 pcs)",
+      "description": "Crispy fried chicken dumplings with spicy dip.",
+      "category": "Main Course",
+      "price": 130,
+      "prepTimeMinutes": 6,
+      "stock": 12,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m021",
       "canteenId": "canteen-1",
       "name": "Chicken Spring Roll (5 pcs)",
@@ -563,6 +835,19 @@ export const initialData = {
     {
       "id": "c2_m021",
       "canteenId": "canteen-2",
+      "name": "Chicken Spring Roll (5 pcs)",
+      "description": "Crispy rolls filled with minced chicken & veggies.",
+      "category": "Main Course",
+      "price": 130,
+      "prepTimeMinutes": 5,
+      "stock": 10,
+      "isVeg": false,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1544025162-d76694265947?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m021",
+      "canteenId": "canteen-3",
       "name": "Chicken Spring Roll (5 pcs)",
       "description": "Crispy rolls filled with minced chicken & veggies.",
       "category": "Main Course",
@@ -600,6 +885,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m022",
+      "canteenId": "canteen-3",
+      "name": "Veg Gobi Fried Rice",
+      "description": "Wok-tossed rice with crunchy cauliflower florets.",
+      "category": "Main Course",
+      "price": 120,
+      "prepTimeMinutes": 5,
+      "stock": 15,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m023",
       "canteenId": "canteen-1",
       "name": "Chicken Curry",
@@ -615,6 +913,19 @@ export const initialData = {
     {
       "id": "c2_m023",
       "canteenId": "canteen-2",
+      "name": "Chicken Curry",
+      "description": "Tender chicken simmered in South Indian gravy.",
+      "category": "Curries",
+      "price": 130,
+      "prepTimeMinutes": 3,
+      "stock": 20,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m023",
+      "canteenId": "canteen-3",
       "name": "Chicken Curry",
       "description": "Tender chicken simmered in South Indian gravy.",
       "category": "Curries",
@@ -652,6 +963,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m024",
+      "canteenId": "canteen-3",
+      "name": "Channa Masala",
+      "description": "Chickpeas cooked in tangy tomato-onion gravy.",
+      "category": "Curries",
+      "price": 45,
+      "prepTimeMinutes": 2,
+      "stock": 25,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m025",
       "canteenId": "canteen-1",
       "name": "Egg Masala Curry",
@@ -667,6 +991,19 @@ export const initialData = {
     {
       "id": "c2_m025",
       "canteenId": "canteen-2",
+      "name": "Egg Masala Curry",
+      "description": "Boiled eggs cooked in rich onion-tomato masala.",
+      "category": "Curries",
+      "price": 70,
+      "prepTimeMinutes": 3,
+      "stock": 15,
+      "isVeg": false,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m025",
+      "canteenId": "canteen-3",
       "name": "Egg Masala Curry",
       "description": "Boiled eggs cooked in rich onion-tomato masala.",
       "category": "Curries",
@@ -704,6 +1041,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m026",
+      "canteenId": "canteen-3",
+      "name": "Egg Roast Gravy",
+      "description": "Roasted eggs in caramelized shallots & spices.",
+      "category": "Curries",
+      "price": 65,
+      "prepTimeMinutes": 3,
+      "stock": 16,
+      "isVeg": false,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m027",
       "canteenId": "canteen-1",
       "name": "Aloo Mutter",
@@ -719,6 +1069,19 @@ export const initialData = {
     {
       "id": "c2_m027",
       "canteenId": "canteen-2",
+      "name": "Aloo Mutter",
+      "description": "Potatoes & peas in aromatic spiced gravy.",
+      "category": "Curries",
+      "price": 50,
+      "prepTimeMinutes": 2,
+      "stock": 18,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m027",
+      "canteenId": "canteen-3",
       "name": "Aloo Mutter",
       "description": "Potatoes & peas in aromatic spiced gravy.",
       "category": "Curries",
@@ -756,6 +1119,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m028",
+      "canteenId": "canteen-3",
+      "name": "Paneer Butter Masala",
+      "description": "Cottage cheese in creamy butter tomato gravy.",
+      "category": "Curries",
+      "price": 95,
+      "prepTimeMinutes": 4,
+      "stock": 16,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m029",
       "canteenId": "canteen-1",
       "name": "Tandoori Chicken (Full)",
@@ -771,6 +1147,19 @@ export const initialData = {
     {
       "id": "c2_m029",
       "canteenId": "canteen-2",
+      "name": "Tandoori Chicken (Full)",
+      "description": "Whole roasted chicken marinated in Kashmiri spices.",
+      "category": "Today's Special",
+      "price": 510,
+      "prepTimeMinutes": 12,
+      "stock": 6,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m029",
+      "canteenId": "canteen-3",
       "name": "Tandoori Chicken (Full)",
       "description": "Whole roasted chicken marinated in Kashmiri spices.",
       "category": "Today's Special",
@@ -808,6 +1197,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m030",
+      "canteenId": "canteen-3",
+      "name": "Tandoori Chicken (Half)",
+      "description": "Half roasted tandoori chicken with mint dip.",
+      "category": "Today's Special",
+      "price": 260,
+      "prepTimeMinutes": 10,
+      "stock": 10,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m031",
       "canteenId": "canteen-1",
       "name": "Tandoori Chicken (Quarter)",
@@ -823,6 +1225,19 @@ export const initialData = {
     {
       "id": "c2_m031",
       "canteenId": "canteen-2",
+      "name": "Tandoori Chicken (Quarter)",
+      "description": "Quarter portion succulent tandoori chicken.",
+      "category": "Today's Special",
+      "price": 145,
+      "prepTimeMinutes": 8,
+      "stock": 15,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m031",
+      "canteenId": "canteen-3",
       "name": "Tandoori Chicken (Quarter)",
       "description": "Quarter portion succulent tandoori chicken.",
       "category": "Today's Special",
@@ -860,6 +1275,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m032",
+      "canteenId": "canteen-3",
+      "name": "Chicken 65",
+      "description": "Deep-fried spicy boneless chicken with curry leaves.",
+      "category": "Today's Special",
+      "price": 170,
+      "prepTimeMinutes": 6,
+      "stock": 18,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m033",
       "canteenId": "canteen-1",
       "name": "Curry Roast Chicken",
@@ -875,6 +1303,19 @@ export const initialData = {
     {
       "id": "c2_m033",
       "canteenId": "canteen-2",
+      "name": "Curry Roast Chicken",
+      "description": "Kerala-style spicy pan-roasted chicken.",
+      "category": "Today's Special",
+      "price": 140,
+      "prepTimeMinutes": 6,
+      "stock": 12,
+      "isVeg": false,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m033",
+      "canteenId": "canteen-3",
       "name": "Curry Roast Chicken",
       "description": "Kerala-style spicy pan-roasted chicken.",
       "category": "Today's Special",
@@ -912,6 +1353,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m034",
+      "canteenId": "canteen-3",
+      "name": "Bread Omelette",
+      "description": "Toasted bread wrapped in fluffy country omelette.",
+      "category": "Egg Items",
+      "price": 45,
+      "prepTimeMinutes": 3,
+      "stock": 30,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m035",
       "canteenId": "canteen-1",
       "name": "Boiled Egg",
@@ -927,6 +1381,19 @@ export const initialData = {
     {
       "id": "c2_m035",
       "canteenId": "canteen-2",
+      "name": "Boiled Egg",
+      "description": "Fresh hard-boiled egg with pepper & salt.",
+      "category": "Egg Items",
+      "price": 12,
+      "prepTimeMinutes": 1,
+      "stock": 40,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m035",
+      "canteenId": "canteen-3",
       "name": "Boiled Egg",
       "description": "Fresh hard-boiled egg with pepper & salt.",
       "category": "Egg Items",
@@ -964,6 +1431,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m036",
+      "canteenId": "canteen-3",
+      "name": "Double Omelette",
+      "description": "Two-egg fluffy omelette with onions & pepper.",
+      "category": "Egg Items",
+      "price": 35,
+      "prepTimeMinutes": 3,
+      "stock": 25,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m037",
       "canteenId": "canteen-1",
       "name": "Single Omelette",
@@ -979,6 +1459,19 @@ export const initialData = {
     {
       "id": "c2_m037",
       "canteenId": "canteen-2",
+      "name": "Single Omelette",
+      "description": "Single egg country omelette with green chillies.",
+      "category": "Egg Items",
+      "price": 20,
+      "prepTimeMinutes": 2,
+      "stock": 25,
+      "isVeg": false,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m037",
+      "canteenId": "canteen-3",
       "name": "Single Omelette",
       "description": "Single egg country omelette with green chillies.",
       "category": "Egg Items",
@@ -1016,6 +1509,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m038",
+      "canteenId": "canteen-3",
+      "name": "Half Boil (Bullseye)",
+      "description": "Sunny-side up egg with runny yolk & pepper.",
+      "category": "Egg Items",
+      "price": 20,
+      "prepTimeMinutes": 2,
+      "stock": 25,
+      "isVeg": false,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m039",
       "canteenId": "canteen-1",
       "name": "Black Forest Cake",
@@ -1031,6 +1537,19 @@ export const initialData = {
     {
       "id": "c2_m039",
       "canteenId": "canteen-2",
+      "name": "Black Forest Cake",
+      "description": "Chocolate sponge layered with cream & cherries.",
+      "category": "Bakes & Snacks",
+      "price": 80,
+      "prepTimeMinutes": 1,
+      "stock": 15,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m039",
+      "canteenId": "canteen-3",
       "name": "Black Forest Cake",
       "description": "Chocolate sponge layered with cream & cherries.",
       "category": "Bakes & Snacks",
@@ -1068,6 +1587,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m040",
+      "canteenId": "canteen-3",
+      "name": "White Forest Cake",
+      "description": "Vanilla cake with white chocolate curls & cream.",
+      "category": "Bakes & Snacks",
+      "price": 80,
+      "prepTimeMinutes": 1,
+      "stock": 12,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m041",
       "canteenId": "canteen-1",
       "name": "Choco Pastry",
@@ -1083,6 +1615,19 @@ export const initialData = {
     {
       "id": "c2_m041",
       "canteenId": "canteen-2",
+      "name": "Choco Pastry",
+      "description": "Decadent chocolate pastry slice.",
+      "category": "Bakes & Snacks",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 20,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m041",
+      "canteenId": "canteen-3",
       "name": "Choco Pastry",
       "description": "Decadent chocolate pastry slice.",
       "category": "Bakes & Snacks",
@@ -1120,6 +1665,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m042",
+      "canteenId": "canteen-3",
+      "name": "Almond Pastry",
+      "description": "Soft sponge garnished with toasted almonds.",
+      "category": "Bakes & Snacks",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 15,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m043",
       "canteenId": "canteen-1",
       "name": "Vanilla Pastry",
@@ -1135,6 +1693,19 @@ export const initialData = {
     {
       "id": "c2_m043",
       "canteenId": "canteen-2",
+      "name": "Vanilla Pastry",
+      "description": "Light sponge cake with vanilla frosting.",
+      "category": "Bakes & Snacks",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 18,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m043",
+      "canteenId": "canteen-3",
       "name": "Vanilla Pastry",
       "description": "Light sponge cake with vanilla frosting.",
       "category": "Bakes & Snacks",
@@ -1172,6 +1743,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m044",
+      "canteenId": "canteen-3",
+      "name": "Brownie",
+      "description": "Fudgy dark chocolate brownie.",
+      "category": "Bakes & Snacks",
+      "price": 20,
+      "prepTimeMinutes": 1,
+      "stock": 20,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m045",
       "canteenId": "canteen-1",
       "name": "Honey Cake",
@@ -1187,6 +1771,19 @@ export const initialData = {
     {
       "id": "c2_m045",
       "canteenId": "canteen-2",
+      "name": "Honey Cake",
+      "description": "Bakery sponge soaked in honey syrup with jam glaze.",
+      "category": "Bakes & Snacks",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 18,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m045",
+      "canteenId": "canteen-3",
       "name": "Honey Cake",
       "description": "Bakery sponge soaked in honey syrup with jam glaze.",
       "category": "Bakes & Snacks",
@@ -1224,6 +1821,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m046",
+      "canteenId": "canteen-3",
+      "name": "Apple Cake",
+      "description": "Spiced sponge baked with apple essence.",
+      "category": "Bakes & Snacks",
+      "price": 20,
+      "prepTimeMinutes": 1,
+      "stock": 14,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m047",
       "canteenId": "canteen-1",
       "name": "Tea Cake",
@@ -1239,6 +1849,19 @@ export const initialData = {
     {
       "id": "c2_m047",
       "canteenId": "canteen-2",
+      "name": "Tea Cake",
+      "description": "Dense buttery pound cake slice for tea.",
+      "category": "Bakes & Snacks",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 16,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m047",
+      "canteenId": "canteen-3",
       "name": "Tea Cake",
       "description": "Dense buttery pound cake slice for tea.",
       "category": "Bakes & Snacks",
@@ -1276,6 +1899,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m048",
+      "canteenId": "canteen-3",
+      "name": "Cream Bun",
+      "description": "Soft fresh bakery bun with buttercream.",
+      "category": "Bakes & Snacks",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 25,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m049",
       "canteenId": "canteen-1",
       "name": "Sweet Roll",
@@ -1291,6 +1927,19 @@ export const initialData = {
     {
       "id": "c2_m049",
       "canteenId": "canteen-2",
+      "name": "Sweet Roll",
+      "description": "Rolled pastry dusted with sugar.",
+      "category": "Bakes & Snacks",
+      "price": 20,
+      "prepTimeMinutes": 1,
+      "stock": 20,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m049",
+      "canteenId": "canteen-3",
       "name": "Sweet Roll",
       "description": "Rolled pastry dusted with sugar.",
       "category": "Bakes & Snacks",
@@ -1328,6 +1977,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m050",
+      "canteenId": "canteen-3",
+      "name": "Choco Roll",
+      "description": "Rolled sponge filled with chocolate ganache.",
+      "category": "Bakes & Snacks",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 15,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m051",
       "canteenId": "canteen-1",
       "name": "Viva Roll",
@@ -1343,6 +2005,19 @@ export const initialData = {
     {
       "id": "c2_m051",
       "canteenId": "canteen-2",
+      "name": "Viva Roll",
+      "description": "Crispy rolled wafer snack filled with cocoa.",
+      "category": "Bakes & Snacks",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 18,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m051",
+      "canteenId": "canteen-3",
       "name": "Viva Roll",
       "description": "Crispy rolled wafer snack filled with cocoa.",
       "category": "Bakes & Snacks",
@@ -1380,6 +2055,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m052",
+      "canteenId": "canteen-3",
+      "name": "Winkies Cake",
+      "description": "Soft packaged centre-filled cream cake.",
+      "category": "Bakes & Snacks",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 25,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m053",
       "canteenId": "canteen-1",
       "name": "Egg Puff",
@@ -1395,6 +2083,19 @@ export const initialData = {
     {
       "id": "c2_m053",
       "canteenId": "canteen-2",
+      "name": "Egg Puff",
+      "description": "Flaky puff stuffed with spiced boiled egg.",
+      "category": "Bakes & Snacks",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 25,
+      "isVeg": false,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m053",
+      "canteenId": "canteen-3",
       "name": "Egg Puff",
       "description": "Flaky puff stuffed with spiced boiled egg.",
       "category": "Bakes & Snacks",
@@ -1432,6 +2133,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m054",
+      "canteenId": "canteen-3",
+      "name": "Dill Puff",
+      "description": "Crisp puff stuffed with potato & dill greens.",
+      "category": "Bakes & Snacks",
+      "price": 20,
+      "prepTimeMinutes": 1,
+      "stock": 15,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m055",
       "canteenId": "canteen-1",
       "name": "Kaya Bajji",
@@ -1447,6 +2161,19 @@ export const initialData = {
     {
       "id": "c2_m055",
       "canteenId": "canteen-2",
+      "name": "Kaya Bajji",
+      "description": "Crispy deep-fried raw banana fritters.",
+      "category": "Bakes & Snacks",
+      "price": 15,
+      "prepTimeMinutes": 2,
+      "stock": 22,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m055",
+      "canteenId": "canteen-3",
       "name": "Kaya Bajji",
       "description": "Crispy deep-fried raw banana fritters.",
       "category": "Bakes & Snacks",
@@ -1484,6 +2211,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m056",
+      "canteenId": "canteen-3",
+      "name": "Ulundu Vada",
+      "description": "Crispy golden medu vada with coconut chutney.",
+      "category": "Bakes & Snacks",
+      "price": 15,
+      "prepTimeMinutes": 2,
+      "stock": 25,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m057",
       "canteenId": "canteen-1",
       "name": "Cookies Pack",
@@ -1499,6 +2239,19 @@ export const initialData = {
     {
       "id": "c2_m057",
       "canteenId": "canteen-2",
+      "name": "Cookies Pack",
+      "description": "Crisp buttery bakery cookies pack.",
+      "category": "Bakes & Snacks",
+      "price": 10,
+      "prepTimeMinutes": 1,
+      "stock": 35,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m057",
+      "canteenId": "canteen-3",
       "name": "Cookies Pack",
       "description": "Crisp buttery bakery cookies pack.",
       "category": "Bakes & Snacks",
@@ -1536,6 +2289,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m058",
+      "canteenId": "canteen-3",
+      "name": "Pringles (Can)",
+      "description": "Classic salted stackable potato crisps.",
+      "category": "Bakes & Snacks",
+      "price": 55,
+      "prepTimeMinutes": 1,
+      "stock": 15,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m059",
       "canteenId": "canteen-1",
       "name": "Pringles (Large)",
@@ -1551,6 +2317,19 @@ export const initialData = {
     {
       "id": "c2_m059",
       "canteenId": "canteen-2",
+      "name": "Pringles (Large)",
+      "description": "Large can of crispy salted potato chips.",
+      "category": "Bakes & Snacks",
+      "price": 110,
+      "prepTimeMinutes": 1,
+      "stock": 12,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m059",
+      "canteenId": "canteen-3",
       "name": "Pringles (Large)",
       "description": "Large can of crispy salted potato chips.",
       "category": "Bakes & Snacks",
@@ -1588,6 +2367,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m060",
+      "canteenId": "canteen-3",
+      "name": "Badhusha",
+      "description": "Flaky South Indian sweet in sugar glaze.",
+      "category": "Bakes & Snacks",
+      "price": 20,
+      "prepTimeMinutes": 1,
+      "stock": 15,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m061",
       "canteenId": "canteen-1",
       "name": "Chandrakala",
@@ -1603,6 +2395,19 @@ export const initialData = {
     {
       "id": "c2_m061",
       "canteenId": "canteen-2",
+      "name": "Chandrakala",
+      "description": "Crispy pastry stuffed with mawa & dry fruits.",
+      "category": "Bakes & Snacks",
+      "price": 30,
+      "prepTimeMinutes": 1,
+      "stock": 12,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m061",
+      "canteenId": "canteen-3",
       "name": "Chandrakala",
       "description": "Crispy pastry stuffed with mawa & dry fruits.",
       "category": "Bakes & Snacks",
@@ -1640,6 +2445,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m062",
+      "canteenId": "canteen-3",
+      "name": "Tea (Chai)",
+      "description": "Hot brewed milk tea with cardamom.",
+      "category": "Hot Drinks",
+      "price": 15,
+      "prepTimeMinutes": 2,
+      "stock": 60,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m063",
       "canteenId": "canteen-1",
       "name": "Filter Coffee",
@@ -1655,6 +2473,19 @@ export const initialData = {
     {
       "id": "c2_m063",
       "canteenId": "canteen-2",
+      "name": "Filter Coffee",
+      "description": "Authentic frothy South Indian filter coffee.",
+      "category": "Hot Drinks",
+      "price": 25,
+      "prepTimeMinutes": 2,
+      "stock": 50,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m063",
+      "canteenId": "canteen-3",
       "name": "Filter Coffee",
       "description": "Authentic frothy South Indian filter coffee.",
       "category": "Hot Drinks",
@@ -1692,6 +2523,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m064",
+      "canteenId": "canteen-3",
+      "name": "Black Tea",
+      "description": "Strong fresh black tea.",
+      "category": "Hot Drinks",
+      "price": 15,
+      "prepTimeMinutes": 2,
+      "stock": 30,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m065",
       "canteenId": "canteen-1",
       "name": "Black Coffee",
@@ -1707,6 +2551,19 @@ export const initialData = {
     {
       "id": "c2_m065",
       "canteenId": "canteen-2",
+      "name": "Black Coffee",
+      "description": "Rich dark roasted black coffee.",
+      "category": "Hot Drinks",
+      "price": 15,
+      "prepTimeMinutes": 2,
+      "stock": 30,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m065",
+      "canteenId": "canteen-3",
       "name": "Black Coffee",
       "description": "Rich dark roasted black coffee.",
       "category": "Hot Drinks",
@@ -1744,6 +2601,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m066",
+      "canteenId": "canteen-3",
+      "name": "Sukku Coffee",
+      "description": "Dry ginger, coriander & pepper herbal coffee.",
+      "category": "Hot Drinks",
+      "price": 15,
+      "prepTimeMinutes": 2,
+      "stock": 25,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m067",
       "canteenId": "canteen-1",
       "name": "Hot Badam Milk",
@@ -1759,6 +2629,19 @@ export const initialData = {
     {
       "id": "c2_m067",
       "canteenId": "canteen-2",
+      "name": "Hot Badam Milk",
+      "description": "Warm milk flavored with almonds & saffron.",
+      "category": "Hot Drinks",
+      "price": 40,
+      "prepTimeMinutes": 2,
+      "stock": 25,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m067",
+      "canteenId": "canteen-3",
       "name": "Hot Badam Milk",
       "description": "Warm milk flavored with almonds & saffron.",
       "category": "Hot Drinks",
@@ -1796,6 +2679,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m068",
+      "canteenId": "canteen-3",
+      "name": "Hot Milk",
+      "description": "Fresh boiled pure cow milk.",
+      "category": "Hot Drinks",
+      "price": 12,
+      "prepTimeMinutes": 2,
+      "stock": 35,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m069",
       "canteenId": "canteen-1",
       "name": "Boost",
@@ -1811,6 +2707,19 @@ export const initialData = {
     {
       "id": "c2_m069",
       "canteenId": "canteen-2",
+      "name": "Boost",
+      "description": "Chocolate malt energy milk drink.",
+      "category": "Hot Drinks",
+      "price": 40,
+      "prepTimeMinutes": 2,
+      "stock": 25,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m069",
+      "canteenId": "canteen-3",
       "name": "Boost",
       "description": "Chocolate malt energy milk drink.",
       "category": "Hot Drinks",
@@ -1848,6 +2757,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m070",
+      "canteenId": "canteen-3",
+      "name": "Bournvita",
+      "description": "Rich Cadbury Bournvita chocolate milk.",
+      "category": "Hot Drinks",
+      "price": 40,
+      "prepTimeMinutes": 2,
+      "stock": 25,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m071",
       "canteenId": "canteen-1",
       "name": "Horlicks",
@@ -1863,6 +2785,19 @@ export const initialData = {
     {
       "id": "c2_m071",
       "canteenId": "canteen-2",
+      "name": "Horlicks",
+      "description": "Nutritious warm malted grain drink.",
+      "category": "Hot Drinks",
+      "price": 40,
+      "prepTimeMinutes": 2,
+      "stock": 20,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m071",
+      "canteenId": "canteen-3",
       "name": "Horlicks",
       "description": "Nutritious warm malted grain drink.",
       "category": "Hot Drinks",
@@ -1900,6 +2835,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m072",
+      "canteenId": "canteen-3",
+      "name": "Chocos (Milk Bowl)",
+      "description": "Kellogg's Chocos in warm sweet milk.",
+      "category": "Hot Drinks",
+      "price": 40,
+      "prepTimeMinutes": 2,
+      "stock": 18,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m073",
       "canteenId": "canteen-1",
       "name": "Cornflakes (Milk Bowl)",
@@ -1915,6 +2863,19 @@ export const initialData = {
     {
       "id": "c2_m073",
       "canteenId": "canteen-2",
+      "name": "Cornflakes (Milk Bowl)",
+      "description": "Crispy golden cornflakes in warm sweet milk.",
+      "category": "Hot Drinks",
+      "price": 40,
+      "prepTimeMinutes": 2,
+      "stock": 18,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m073",
+      "canteenId": "canteen-3",
       "name": "Cornflakes (Milk Bowl)",
       "description": "Crispy golden cornflakes in warm sweet milk.",
       "category": "Hot Drinks",
@@ -1952,6 +2913,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m074",
+      "canteenId": "canteen-3",
+      "name": "Tata Tea",
+      "description": "Quick service hot Tata milk tea.",
+      "category": "Hot Drinks",
+      "price": 10,
+      "prepTimeMinutes": 2,
+      "stock": 30,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m075",
       "canteenId": "canteen-1",
       "name": "Tata Coffee",
@@ -1967,6 +2941,19 @@ export const initialData = {
     {
       "id": "c2_m075",
       "canteenId": "canteen-2",
+      "name": "Tata Coffee",
+      "description": "Quick service Tata Grand instant coffee.",
+      "category": "Hot Drinks",
+      "price": 20,
+      "prepTimeMinutes": 2,
+      "stock": 30,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m075",
+      "canteenId": "canteen-3",
       "name": "Tata Coffee",
       "description": "Quick service Tata Grand instant coffee.",
       "category": "Hot Drinks",
@@ -2004,6 +2991,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m076",
+      "canteenId": "canteen-3",
+      "name": "Grape Juice",
+      "description": "Fresh chilled black grape juice with lime.",
+      "category": "Juices & Milkshakes",
+      "price": 45,
+      "prepTimeMinutes": 3,
+      "stock": 25,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m077",
       "canteenId": "canteen-1",
       "name": "Orange Juice",
@@ -2019,6 +3019,19 @@ export const initialData = {
     {
       "id": "c2_m077",
       "canteenId": "canteen-2",
+      "name": "Orange Juice",
+      "description": "Cold-pressed fresh orange juice.",
+      "category": "Juices & Milkshakes",
+      "price": 65,
+      "prepTimeMinutes": 3,
+      "stock": 20,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m077",
+      "canteenId": "canteen-3",
       "name": "Orange Juice",
       "description": "Cold-pressed fresh orange juice.",
       "category": "Juices & Milkshakes",
@@ -2056,6 +3069,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m078",
+      "canteenId": "canteen-3",
+      "name": "Mosambi Juice",
+      "description": "Fresh sweet lime juice with rock salt.",
+      "category": "Juices & Milkshakes",
+      "price": 55,
+      "prepTimeMinutes": 3,
+      "stock": 22,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m079",
       "canteenId": "canteen-1",
       "name": "Watermelon Juice",
@@ -2071,6 +3097,19 @@ export const initialData = {
     {
       "id": "c2_m079",
       "canteenId": "canteen-2",
+      "name": "Watermelon Juice",
+      "description": "Chilled hydrating fresh watermelon juice.",
+      "category": "Juices & Milkshakes",
+      "price": 25,
+      "prepTimeMinutes": 3,
+      "stock": 30,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m079",
+      "canteenId": "canteen-3",
       "name": "Watermelon Juice",
       "description": "Chilled hydrating fresh watermelon juice.",
       "category": "Juices & Milkshakes",
@@ -2108,6 +3147,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m080",
+      "canteenId": "canteen-3",
+      "name": "Muskmelon Juice",
+      "description": "Sweet fragrant cantaloupe melon juice.",
+      "category": "Juices & Milkshakes",
+      "price": 35,
+      "prepTimeMinutes": 3,
+      "stock": 20,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m081",
       "canteenId": "canteen-1",
       "name": "Papaya Juice",
@@ -2123,6 +3175,19 @@ export const initialData = {
     {
       "id": "c2_m081",
       "canteenId": "canteen-2",
+      "name": "Papaya Juice",
+      "description": "Thick natural golden papaya juice.",
+      "category": "Juices & Milkshakes",
+      "price": 35,
+      "prepTimeMinutes": 3,
+      "stock": 18,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m081",
+      "canteenId": "canteen-3",
       "name": "Papaya Juice",
       "description": "Thick natural golden papaya juice.",
       "category": "Juices & Milkshakes",
@@ -2160,6 +3225,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m082",
+      "canteenId": "canteen-3",
+      "name": "Mango Juice",
+      "description": "Thick sweet mango juice served chilled.",
+      "category": "Juices & Milkshakes",
+      "price": 40,
+      "prepTimeMinutes": 3,
+      "stock": 25,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m083",
       "canteenId": "canteen-1",
       "name": "Mixed Fruit Juice",
@@ -2175,6 +3253,19 @@ export const initialData = {
     {
       "id": "c2_m083",
       "canteenId": "canteen-2",
+      "name": "Mixed Fruit Juice",
+      "description": "Blend of orange, apple, grape & pineapple.",
+      "category": "Juices & Milkshakes",
+      "price": 55,
+      "prepTimeMinutes": 4,
+      "stock": 20,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m083",
+      "canteenId": "canteen-3",
       "name": "Mixed Fruit Juice",
       "description": "Blend of orange, apple, grape & pineapple.",
       "category": "Juices & Milkshakes",
@@ -2212,6 +3303,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m084",
+      "canteenId": "canteen-3",
+      "name": "Sapota Juice (Chikoo)",
+      "description": "Rich creamy natural sapodilla shake.",
+      "category": "Juices & Milkshakes",
+      "price": 40,
+      "prepTimeMinutes": 3,
+      "stock": 15,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m085",
       "canteenId": "canteen-1",
       "name": "Apple Juice",
@@ -2227,6 +3331,19 @@ export const initialData = {
     {
       "id": "c2_m085",
       "canteenId": "canteen-2",
+      "name": "Apple Juice",
+      "description": "Fresh crisp apple juice.",
+      "category": "Juices & Milkshakes",
+      "price": 75,
+      "prepTimeMinutes": 4,
+      "stock": 15,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m085",
+      "canteenId": "canteen-3",
       "name": "Apple Juice",
       "description": "Fresh crisp apple juice.",
       "category": "Juices & Milkshakes",
@@ -2264,6 +3381,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m086",
+      "canteenId": "canteen-3",
+      "name": "Lime Juice",
+      "description": "Zesty sweet & tangy fresh lime juice.",
+      "category": "Juices & Milkshakes",
+      "price": 25,
+      "prepTimeMinutes": 2,
+      "stock": 35,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m087",
       "canteenId": "canteen-1",
       "name": "Rose Milk",
@@ -2279,6 +3409,19 @@ export const initialData = {
     {
       "id": "c2_m087",
       "canteenId": "canteen-2",
+      "name": "Rose Milk",
+      "description": "Chilled fragrant pink rose milk.",
+      "category": "Juices & Milkshakes",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 40,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m087",
+      "canteenId": "canteen-3",
       "name": "Rose Milk",
       "description": "Chilled fragrant pink rose milk.",
       "category": "Juices & Milkshakes",
@@ -2316,6 +3459,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m088",
+      "canteenId": "canteen-3",
+      "name": "Badam Milk (Chilled)",
+      "description": "Cold sweet almond milk with nuts.",
+      "category": "Juices & Milkshakes",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 30,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m089",
       "canteenId": "canteen-1",
       "name": "Pista Milk (Chilled)",
@@ -2331,6 +3487,19 @@ export const initialData = {
     {
       "id": "c2_m089",
       "canteenId": "canteen-2",
+      "name": "Pista Milk (Chilled)",
+      "description": "Cold pistachio flavored sweet milk.",
+      "category": "Juices & Milkshakes",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 25,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m089",
+      "canteenId": "canteen-3",
       "name": "Pista Milk (Chilled)",
       "description": "Cold pistachio flavored sweet milk.",
       "category": "Juices & Milkshakes",
@@ -2368,6 +3537,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m090",
+      "canteenId": "canteen-3",
+      "name": "Butter Milk (Sambharam)",
+      "description": "Spiced buttermilk with ginger & curry leaves.",
+      "category": "Juices & Milkshakes",
+      "price": 15,
+      "prepTimeMinutes": 1,
+      "stock": 45,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m091",
       "canteenId": "canteen-1",
       "name": "Curd (Cup)",
@@ -2383,6 +3565,19 @@ export const initialData = {
     {
       "id": "c2_m091",
       "canteenId": "canteen-2",
+      "name": "Curd (Cup)",
+      "description": "Thick homestyle creamy curd cup.",
+      "category": "Juices & Milkshakes",
+      "price": 12,
+      "prepTimeMinutes": 1,
+      "stock": 35,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m091",
+      "canteenId": "canteen-3",
       "name": "Curd (Cup)",
       "description": "Thick homestyle creamy curd cup.",
       "category": "Juices & Milkshakes",
@@ -2420,6 +3615,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m092",
+      "canteenId": "canteen-3",
+      "name": "Milky Mist Yogurt",
+      "description": "Packaged flavored creamy yogurt cup.",
+      "category": "Juices & Milkshakes",
+      "price": 40,
+      "prepTimeMinutes": 1,
+      "stock": 25,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m093",
       "canteenId": "canteen-1",
       "name": "Apple Milkshake",
@@ -2435,6 +3643,19 @@ export const initialData = {
     {
       "id": "c2_m093",
       "canteenId": "canteen-2",
+      "name": "Apple Milkshake",
+      "description": "Thick shake with fresh apples & ice cream.",
+      "category": "Juices & Milkshakes",
+      "price": 70,
+      "prepTimeMinutes": 4,
+      "stock": 16,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m093",
+      "canteenId": "canteen-3",
       "name": "Apple Milkshake",
       "description": "Thick shake with fresh apples & ice cream.",
       "category": "Juices & Milkshakes",
@@ -2472,6 +3693,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m094",
+      "canteenId": "canteen-3",
+      "name": "Banana Milkshake",
+      "description": "Rich shake with ripe bananas & honey.",
+      "category": "Juices & Milkshakes",
+      "price": 70,
+      "prepTimeMinutes": 4,
+      "stock": 18,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m095",
       "canteenId": "canteen-1",
       "name": "Dragon Fruit Milkshake",
@@ -2487,6 +3721,19 @@ export const initialData = {
     {
       "id": "c2_m095",
       "canteenId": "canteen-2",
+      "name": "Dragon Fruit Milkshake",
+      "description": "Exotic pink dragon fruit milkshake.",
+      "category": "Juices & Milkshakes",
+      "price": 100,
+      "prepTimeMinutes": 5,
+      "stock": 10,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m095",
+      "canteenId": "canteen-3",
       "name": "Dragon Fruit Milkshake",
       "description": "Exotic pink dragon fruit milkshake.",
       "category": "Juices & Milkshakes",
@@ -2524,6 +3771,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m096",
+      "canteenId": "canteen-3",
+      "name": "Vanilla Cone",
+      "description": "Crisp cone with smooth vanilla ice cream.",
+      "category": "Ice Creams",
+      "price": 30,
+      "prepTimeMinutes": 1,
+      "stock": 25,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m097",
       "canteenId": "canteen-1",
       "name": "Butterscotch Cone",
@@ -2539,6 +3799,19 @@ export const initialData = {
     {
       "id": "c2_m097",
       "canteenId": "canteen-2",
+      "name": "Butterscotch Cone",
+      "description": "Cone with butterscotch ice cream & praline.",
+      "category": "Ice Creams",
+      "price": 40,
+      "prepTimeMinutes": 1,
+      "stock": 22,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m097",
+      "canteenId": "canteen-3",
       "name": "Butterscotch Cone",
       "description": "Cone with butterscotch ice cream & praline.",
       "category": "Ice Creams",
@@ -2576,6 +3849,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m098",
+      "canteenId": "canteen-3",
+      "name": "Black Currant Cone",
+      "description": "Tangy berry black currant ice cream cone.",
+      "category": "Ice Creams",
+      "price": 40,
+      "prepTimeMinutes": 1,
+      "stock": 20,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m099",
       "canteenId": "canteen-1",
       "name": "Strawberry Cone",
@@ -2591,6 +3877,19 @@ export const initialData = {
     {
       "id": "c2_m099",
       "canteenId": "canteen-2",
+      "name": "Strawberry Cone",
+      "description": "Sweet strawberry ice cream in wafer cone.",
+      "category": "Ice Creams",
+      "price": 30,
+      "prepTimeMinutes": 1,
+      "stock": 22,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m099",
+      "canteenId": "canteen-3",
       "name": "Strawberry Cone",
       "description": "Sweet strawberry ice cream in wafer cone.",
       "category": "Ice Creams",
@@ -2628,6 +3927,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m100",
+      "canteenId": "canteen-3",
+      "name": "Red Velvet Cone",
+      "description": "Red velvet ice cream with cake crumble.",
+      "category": "Ice Creams",
+      "price": 40,
+      "prepTimeMinutes": 1,
+      "stock": 18,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m101",
       "canteenId": "canteen-1",
       "name": "Milky Mist Pista Badam Cone",
@@ -2643,6 +3955,19 @@ export const initialData = {
     {
       "id": "c2_m101",
       "canteenId": "canteen-2",
+      "name": "Milky Mist Pista Badam Cone",
+      "description": "Pistachio almond ice cream cone.",
+      "category": "Ice Creams",
+      "price": 45,
+      "prepTimeMinutes": 1,
+      "stock": 18,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m101",
+      "canteenId": "canteen-3",
       "name": "Milky Mist Pista Badam Cone",
       "description": "Pistachio almond ice cream cone.",
       "category": "Ice Creams",
@@ -2680,6 +4005,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m102",
+      "canteenId": "canteen-3",
+      "name": "Milky Mist Butterscotch Cone",
+      "description": "Creamy butterscotch cone with crunch.",
+      "category": "Ice Creams",
+      "price": 45,
+      "prepTimeMinutes": 1,
+      "stock": 20,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m103",
       "canteenId": "canteen-1",
       "name": "Milky Mist Capello Choco Cone",
@@ -2695,6 +4033,19 @@ export const initialData = {
     {
       "id": "c2_m103",
       "canteenId": "canteen-2",
+      "name": "Milky Mist Capello Choco Cone",
+      "description": "Chocolate cone with chocolate fudge core.",
+      "category": "Ice Creams",
+      "price": 55,
+      "prepTimeMinutes": 1,
+      "stock": 15,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m103",
+      "canteenId": "canteen-3",
       "name": "Milky Mist Capello Choco Cone",
       "description": "Chocolate cone with chocolate fudge core.",
       "category": "Ice Creams",
@@ -2732,6 +4083,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m104",
+      "canteenId": "canteen-3",
+      "name": "Milky Mist Malai Kulfi",
+      "description": "Cardamom malai kulfi on a stick.",
+      "category": "Ice Creams",
+      "price": 40,
+      "prepTimeMinutes": 1,
+      "stock": 22,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m105",
       "canteenId": "canteen-1",
       "name": "Milky Mist Vanilla Sandwich",
@@ -2747,6 +4111,19 @@ export const initialData = {
     {
       "id": "c2_m105",
       "canteenId": "canteen-2",
+      "name": "Milky Mist Vanilla Sandwich",
+      "description": "Chocolate biscuit sandwich with vanilla ice cream.",
+      "category": "Ice Creams",
+      "price": 40,
+      "prepTimeMinutes": 1,
+      "stock": 16,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m105",
+      "canteenId": "canteen-3",
       "name": "Milky Mist Vanilla Sandwich",
       "description": "Chocolate biscuit sandwich with vanilla ice cream.",
       "category": "Ice Creams",
@@ -2784,6 +4161,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m106",
+      "canteenId": "canteen-3",
+      "name": "Milky Mist Crunchy Chocobar",
+      "description": "Vanilla bar dipped in crunchy chocolate shell.",
+      "category": "Ice Creams",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 25,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m107",
       "canteenId": "canteen-1",
       "name": "Nutty Bar",
@@ -2799,6 +4189,19 @@ export const initialData = {
     {
       "id": "c2_m107",
       "canteenId": "canteen-2",
+      "name": "Nutty Bar",
+      "description": "Ice cream bar coated in chocolate & peanuts.",
+      "category": "Ice Creams",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 20,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m107",
+      "canteenId": "canteen-3",
       "name": "Nutty Bar",
       "description": "Ice cream bar coated in chocolate & peanuts.",
       "category": "Ice Creams",
@@ -2836,6 +4239,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m108",
+      "canteenId": "canteen-3",
+      "name": "Casatta Slice",
+      "description": "Multi-layered ice cream slice on sponge cake.",
+      "category": "Ice Creams",
+      "price": 60,
+      "prepTimeMinutes": 1,
+      "stock": 12,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m109",
       "canteenId": "canteen-1",
       "name": "Pal Ice (Milk Popsicle)",
@@ -2851,6 +4267,19 @@ export const initialData = {
     {
       "id": "c2_m109",
       "canteenId": "canteen-2",
+      "name": "Pal Ice (Milk Popsicle)",
+      "description": "Traditional creamy frozen milk lolly.",
+      "category": "Ice Creams",
+      "price": 25,
+      "prepTimeMinutes": 1,
+      "stock": 25,
+      "isVeg": true,
+      "popular": false,
+      "imageUrl": "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m109",
+      "canteenId": "canteen-3",
       "name": "Pal Ice (Milk Popsicle)",
       "description": "Traditional creamy frozen milk lolly.",
       "category": "Ice Creams",
@@ -2888,6 +4317,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m110",
+      "canteenId": "canteen-3",
+      "name": "Baskin Robbins Hazelnuts",
+      "description": "Premium scoop loaded with roasted hazelnuts.",
+      "category": "Ice Creams",
+      "price": 90,
+      "prepTimeMinutes": 1,
+      "stock": 14,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m111",
       "canteenId": "canteen-1",
       "name": "Baskin Robbins Cookies N Cream",
@@ -2914,6 +4356,19 @@ export const initialData = {
       "imageUrl": "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=500&auto=format&fit=crop&q=80"
 },
     {
+      "id": "c3_m111",
+      "canteenId": "canteen-3",
+      "name": "Baskin Robbins Cookies N Cream",
+      "description": "Vanilla cream with crunchy Oreo bits.",
+      "category": "Ice Creams",
+      "price": 90,
+      "prepTimeMinutes": 1,
+      "stock": 15,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=500&auto=format&fit=crop&q=80"
+},
+    {
       "id": "c1_m112",
       "canteenId": "canteen-1",
       "name": "Baskin Robbins Honey Nut Crunch",
@@ -2929,6 +4384,19 @@ export const initialData = {
     {
       "id": "c2_m112",
       "canteenId": "canteen-2",
+      "name": "Baskin Robbins Honey Nut Crunch",
+      "description": "Honey ice cream with caramelized praline.",
+      "category": "Ice Creams",
+      "price": 90,
+      "prepTimeMinutes": 1,
+      "stock": 14,
+      "isVeg": true,
+      "popular": true,
+      "imageUrl": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80"
+},
+    {
+      "id": "c3_m112",
+      "canteenId": "canteen-3",
       "name": "Baskin Robbins Honey Nut Crunch",
       "description": "Honey ice cream with caramelized praline.",
       "category": "Ice Creams",

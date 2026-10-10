@@ -59,6 +59,8 @@ export function App() {
   const handleNavigateToCanteen = (canteenLocId) => {
     if (canteenLocId === 'loc-2') {
       setSelectedCanteenId('canteen-2');
+    } else if (canteenLocId === 'loc-3') {
+      setSelectedCanteenId('canteen-3');
     } else {
       setSelectedCanteenId('canteen-1');
     }

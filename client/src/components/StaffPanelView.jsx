@@ -406,7 +406,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                         isSelected ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-400'
                       }`}
                     >
-                      {c.id === 'canteen-1' ? 'C1' : 'C2'}
+                      {c.code || (c.id === 'canteen-1' ? 'C1' : c.id === 'canteen-2' ? 'C2' : 'C3')}
                     </span>
                   </button>
                 );

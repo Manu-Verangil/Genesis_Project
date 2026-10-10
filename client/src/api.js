@@ -3,7 +3,7 @@ import { initialData } from './mockData';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Local storage key for persistent client-side state
-const STORAGE_KEY = 'smart_campus_hub_amrita_state_v7';
+const STORAGE_KEY = 'smart_campus_hub_amrita_state_v8';
 
 function getLocalState() {
   try {
