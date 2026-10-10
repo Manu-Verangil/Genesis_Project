@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Shield,
   TrendingUp,
@@ -7,6 +7,7 @@ import {
   Search,
   MapPin,
   Plus,
+  Minus,
   CheckCircle,
   XCircle,
   Clock,
@@ -24,16 +25,17 @@ import {
   Eye,
   X,
   Edit2,
+  Trash2,
   PlusCircle,
   Upload,
   Link,
-  Minus,
   Package,
-  Flame,
-  Store,
   Utensils,
-  ChefHat,
-  Trash2
+  Store,
+  Flame,
+  DollarSign,
+  Tag,
+  RefreshCw
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -52,44 +54,16 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
   const [adminLightboxImage, setAdminLightboxImage] = useState(null);
   const [expandedIssueHistoryId, setExpandedIssueHistoryId] = useState(null);
 
-  // Admin Canteen & Menu Management States
-  const [adminSelectedCanteenId, setAdminSelectedCanteenId] = useState(
-    canteens?.[0]?.id || 'canteen-1'
-  );
-  const [canteenFilterCategory, setCanteenFilterCategory] = useState('All');
-  const [canteenSearchQuery, setCanteenSearchQuery] = useState('');
-
-  // Modals for Canteen & Dish Operations
-  const [isCreateCanteenModalOpen, setIsCreateCanteenModalOpen] = useState(false);
+  // Menu & Canteen Admin States
+  const [adminCanteenFilter, setAdminCanteenFilter] = useState('All');
+  const [adminCategoryFilter, setAdminCategoryFilter] = useState('All');
+  const [adminMenuSearch, setAdminMenuSearch] = useState('');
   const [isAddDishModalOpen, setIsAddDishModalOpen] = useState(false);
-  const [isEditDishModalOpen, setIsEditDishModalOpen] = useState(false);
   const [editingDish, setEditingDish] = useState(null);
-
-  // Forms
-  const [dishForm, setDishForm] = useState({
-    name: '',
-    category: 'Main Course',
-    price: 60,
-    prepTimeMinutes: 4,
-    stock: 20,
-    isVeg: true,
-    description: '',
-    imageUrl: ''
-  });
+  const [isAddCanteenModalOpen, setIsAddCanteenModalOpen] = useState(false);
   const [dishImageMode, setDishImageMode] = useState('upload'); // 'upload' | 'url'
-  const adminAddDishFileRef = useRef(null);
-  const adminEditDishFileRef = useRef(null);
-
-  const [canteenForm, setCanteenForm] = useState({
-    name: '',
-    code: '',
-    location: '',
-    timings: '08:00 AM - 10:00 PM',
-    counterSpeed: 'Fast',
-    crowdLevel: 'Low',
-    avgWaitTimeMinutes: 5,
-    seedStarterMenu: true
-  });
+  const adminDishFileInputRef = useRef(null);
+  const adminEditDishFileInputRef = useRef(null);
 
   const categoriesList = [
     'Main Course',
@@ -101,6 +75,31 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
     'Juices & Milkshakes',
     'Ice Creams'
   ];
+
+  // Dish Form State (for Add & Edit)
+  const [dishForm, setDishForm] = useState({
+    name: '',
+    canteenId: canteens[0]?.id || 'canteen-1',
+    category: 'Main Course',
+    price: 60,
+    prepTimeMinutes: 4,
+    stock: 20,
+    isVeg: true,
+    description: '',
+    imageUrl: ''
+  });
+
+  // Canteen / Store Creation Form State
+  const [canteenForm, setCanteenForm] = useState({
+    name: '',
+    code: '',
+    location: '',
+    timings: '08:00 AM - 10:00 PM',
+    crowdLevel: 'Low',
+    avgWaitTimeMinutes: 5,
+    counterSpeed: 'Fast',
+    image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500&auto=format&fit=crop&q=80'
+  });
 
   // New Map Location Form
   const [newMapLoc, setNewMapLoc] = useState({
@@ -177,103 +176,23 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
     }
   };
 
-  // Admin image file upload handler
-  const handleAdminImageUpload = (e) => {
+  // Handle dish file upload from local system
+  const handleImageFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file (PNG, JPG, JPEG, WEBP).');
+      alert('Please select an image file (PNG, JPG, WEBP, etc.)');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image file size exceeds 5MB. Please choose a smaller file.');
+      alert('Image file size exceeds 5MB. Please choose a smaller image.');
       return;
     }
     const reader = new FileReader();
-    reader.onload = (loadEvt) => {
-      setDishForm((prev) => ({ ...prev, imageUrl: loadEvt.target.result }));
+    reader.onload = (loadEvent) => {
+      setDishForm((prev) => ({ ...prev, imageUrl: loadEvent.target.result }));
     };
     reader.readAsDataURL(file);
-  };
-
-  // Open Create Canteen Modal
-  const openCreateCanteenModal = () => {
-    setCanteenForm({
-      name: '',
-      code: '',
-      location: '',
-      timings: '08:00 AM - 10:00 PM',
-      counterSpeed: 'Fast',
-      crowdLevel: 'Low',
-      avgWaitTimeMinutes: 5,
-      seedStarterMenu: true
-    });
-    setIsCreateCanteenModalOpen(true);
-  };
-
-  // Save New Canteen / Store Outlet
-  const handleSaveNewCanteen = async (e) => {
-    e.preventDefault();
-    if (!canteenForm.name.trim()) return alert('Please enter a canteen or store name');
-    try {
-      const canteenId = `canteen-${Date.now()}`;
-      const payload = {
-        id: canteenId,
-        name: canteenForm.name.trim(),
-        code: canteenForm.code.trim().toUpperCase() || `C${(canteens || []).length + 1}`,
-        location: canteenForm.location.trim() || 'Amrita Campus Quadrangle',
-        timings: canteenForm.timings || '08:00 AM - 10:00 PM',
-        status: 'open',
-        crowdLevel: canteenForm.crowdLevel || 'Low',
-        avgWaitTimeMinutes: Number(canteenForm.avgWaitTimeMinutes) || 5,
-        activeOrdersCount: 0,
-        counterSpeed: canteenForm.counterSpeed || 'Fast'
-      };
-
-      const res = await api.addCanteen(payload);
-      if (res.success) {
-        // Auto-seed starter menu if requested
-        if (canteenForm.seedStarterMenu) {
-          const starterTemplates = [
-            { name: "Kumbakonam Filter Coffee", cat: "Hot Drinks", price: 20, prep: 2, veg: true, img: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=80", desc: "Fresh decoction chicory brewed coffee with frothy milk." },
-            { name: "Special Cardamom Tea", cat: "Hot Drinks", price: 15, prep: 2, veg: true, img: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500&auto=format&fit=crop&q=80", desc: "Aromatic black tea infused with fresh cardamom pods." },
-            { name: "Ghee Roast Dosa", cat: "Main Course", price: 70, prep: 4, veg: true, img: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=500&auto=format&fit=crop&q=80", desc: "Crispy crepe roasted in pure cow ghee with coconut chutney & sambar." },
-            { name: "Paneer Butter Masala", cat: "Curries", price: 95, prep: 4, veg: true, img: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=500&auto=format&fit=crop&q=80", desc: "Soft cottage cheese simmered in rich creamy tomato butter gravy." },
-            { name: "South Indian Special Meals", cat: "Main Course", price: 85, prep: 3, veg: true, img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80", desc: "Steamed ponni rice, sambar, rasam, kootu, poriyal, papad & curd." },
-            { name: "Veg Fried Rice", cat: "Main Course", price: 110, prep: 5, veg: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500&auto=format&fit=crop&q=80", desc: "Wok-tossed fragrant basmati rice with crunchy seasonal veggies." },
-            { name: "Egg Roast Dosa", cat: "Egg Items", price: 65, prep: 4, veg: false, img: "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&auto=format&fit=crop&q=80", desc: "Crisp dosa layered with spicy egg masala roast & pepper." },
-            { name: "Double Egg Omelette", cat: "Egg Items", price: 35, prep: 3, veg: false, img: "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&auto=format&fit=crop&q=80", desc: "Country-style two-egg fluffy omelette with onions and green chillies." },
-            { name: "Crispy Veg Samosa (2 pcs)", cat: "Bakes & Snacks", price: 30, prep: 1, veg: true, img: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500&auto=format&fit=crop&q=80", desc: "Golden flaky triangles stuffed with spiced cumin potato & peas." },
-            { name: "Fresh Lime Soda", cat: "Juices & Milkshakes", price: 30, prep: 2, veg: true, img: "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80", desc: "Chilled sparkling soda with freshly squeezed lime and mint." },
-            { name: "Oreo Thickshake", cat: "Juices & Milkshakes", price: 75, prep: 3, veg: true, img: "https://images.unsplash.com/photo-1553787499-6f9133860278?w=500&auto=format&fit=crop&q=80", desc: "Blended vanilla ice cream, whole milk, and crushed Oreo cookies." },
-            { name: "Butterscotch Scoop", cat: "Ice Creams", price: 45, prep: 1, veg: true, img: "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?w=500&auto=format&fit=crop&q=80", desc: "Creamy butterscotch ice cream with crunchy praline crunch." }
-          ];
-
-          for (const t of starterTemplates) {
-            await api.addMenuItem({
-              canteenId: canteenId,
-              name: t.name,
-              category: t.cat,
-              price: t.price,
-              prepTimeMinutes: t.prep,
-              stock: 25,
-              isVeg: t.veg,
-              description: t.desc,
-              imageUrl: t.img,
-              popular: true
-            });
-          }
-        }
-
-        setIsCreateCanteenModalOpen(false);
-        setAdminSelectedCanteenId(canteenId);
-        await fetchAdminData();
-        if (onDataUpdated) onDataUpdated();
-        alert(`Success! "${payload.name}" has been added with all full facilities (ordering, live queue, stock, staff terminal)!`);
-      }
-    } catch (err) {
-      alert('Error creating canteen: ' + err.message);
-    }
   };
 
   // Open Add Dish Modal
@@ -282,6 +201,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
     setDishImageMode('upload');
     setDishForm({
       name: '',
+      canteenId: adminCanteenFilter !== 'All' ? adminCanteenFilter : canteens[0]?.id || 'canteen-1',
       category: 'Main Course',
       price: 60,
       prepTimeMinutes: 4,
@@ -293,82 +213,71 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
     setIsAddDishModalOpen(true);
   };
 
-  // Save New Dish
-  const handleSaveNewDish = async (e) => {
-    e.preventDefault();
-    if (!dishForm.name.trim()) return alert('Please enter a dish name');
-    try {
-      const fallback = dishForm.isVeg
-        ? 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80'
-        : 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500&auto=format&fit=crop&q=80';
-      const payload = {
-        canteenId: adminSelectedCanteenId,
-        name: dishForm.name.trim(),
-        category: dishForm.category,
-        price: Number(dishForm.price),
-        stock: Number(dishForm.stock),
-        prepTimeMinutes: Number(dishForm.prepTimeMinutes),
-        isVeg: dishForm.isVeg,
-        description: dishForm.description,
-        imageUrl: dishForm.imageUrl?.trim() || fallback,
-        popular: false
-      };
-      const res = await api.addMenuItem(payload);
-      if (res.success) {
-        setIsAddDishModalOpen(false);
-        await fetchAdminData();
-        if (onDataUpdated) onDataUpdated();
-      }
-    } catch (err) {
-      alert('Error adding dish: ' + err.message);
-    }
-  };
-
   // Open Edit Dish Modal
-  const openEditDishModal = (dish) => {
-    setEditingDish(dish);
-    const isUpload = dish.imageUrl?.startsWith('data:');
-    setDishImageMode(isUpload ? 'upload' : (dish.imageUrl ? 'url' : 'upload'));
+  const openEditDishModal = (item) => {
+    setEditingDish(item);
+    const isDataImg = item.imageUrl && item.imageUrl.startsWith('data:');
+    setDishImageMode(isDataImg ? 'upload' : (item.imageUrl ? 'url' : 'upload'));
     setDishForm({
-      name: dish.name,
-      category: dish.category || 'Main Course',
-      price: dish.price,
-      prepTimeMinutes: dish.prepTimeMinutes || 4,
-      stock: dish.stock,
-      isVeg: dish.isVeg,
-      description: dish.description || '',
-      imageUrl: dish.imageUrl || ''
+      name: item.name,
+      canteenId: item.canteenId,
+      category: item.category || 'Main Course',
+      price: item.price,
+      prepTimeMinutes: item.prepTimeMinutes || 4,
+      stock: item.stock,
+      isVeg: item.isVeg,
+      description: item.description || '',
+      imageUrl: item.imageUrl || ''
     });
-    setIsEditDishModalOpen(true);
   };
 
-  // Save Edit Dish
-  const handleSaveEditDish = async (e) => {
+  // Save Dish (Add or Edit)
+  const handleSaveDish = async (e) => {
     e.preventDefault();
-    if (!editingDish) return;
+    if (!dishForm.name.trim()) return alert('Please enter dish name');
+
+    const defaultFallback = dishForm.isVeg
+      ? 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80'
+      : 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500&auto=format&fit=crop&q=80';
+
     try {
-      const fallback = dishForm.isVeg
-        ? 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80'
-        : 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500&auto=format&fit=crop&q=80';
-      const updates = {
-        name: dishForm.name.trim(),
-        category: dishForm.category,
-        price: Number(dishForm.price),
-        stock: Number(dishForm.stock),
-        prepTimeMinutes: Number(dishForm.prepTimeMinutes),
-        isVeg: dishForm.isVeg,
-        description: dishForm.description,
-        imageUrl: dishForm.imageUrl?.trim() || fallback
-      };
-      const res = await api.updateMenuItem(editingDish.id, updates);
-      if (res.success) {
-        setEditingDish(null);
-        setIsEditDishModalOpen(false);
-        await fetchAdminData();
-        if (onDataUpdated) onDataUpdated();
+      if (editingDish) {
+        const updates = {
+          name: dishForm.name.trim(),
+          canteenId: dishForm.canteenId,
+          category: dishForm.category,
+          price: Number(dishForm.price),
+          stock: Number(dishForm.stock),
+          prepTimeMinutes: Number(dishForm.prepTimeMinutes),
+          isVeg: dishForm.isVeg,
+          description: dishForm.description,
+          imageUrl: dishForm.imageUrl?.trim() || defaultFallback
+        };
+        const res = await api.updateMenuItem(editingDish.id, updates);
+        if (res.success) {
+          setEditingDish(null);
+          fetchAdminData();
+          onDataUpdated();
+        }
+      } else {
+        const payload = {
+          ...dishForm,
+          name: dishForm.name.trim(),
+          price: Number(dishForm.price),
+          stock: Number(dishForm.stock),
+          prepTimeMinutes: Number(dishForm.prepTimeMinutes),
+          imageUrl: dishForm.imageUrl?.trim() || defaultFallback,
+          popular: false
+        };
+        const res = await api.addMenuItem(payload);
+        if (res.success) {
+          setIsAddDishModalOpen(false);
+          fetchAdminData();
+          onDataUpdated();
+        }
       }
     } catch (err) {
-      alert('Error updating dish: ' + err.message);
+      alert('Error saving dish: ' + err.message);
     }
   };
 
@@ -379,35 +288,35 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       const res = await api.updateMenuItem(item.id, { stock: newStock });
       if (res.success) {
         setMenuItems((prev) => prev.map((m) => (m.id === item.id ? { ...m, stock: newStock } : m)));
-        if (onDataUpdated) onDataUpdated();
+        onDataUpdated();
       }
     } catch (err) {
-      alert('Error adjusting stock: ' + err.message);
+      alert('Error updating stock: ' + err.message);
     }
   };
 
-  // Toggle in-stock / out-of-stock
-  const handleToggleStock = async (item) => {
-    const target = item.stock > 0 ? 0 : 15;
+  // Toggle in-stock / out-of-stock instantly
+  const handleToggleStockStatus = async (item) => {
+    const targetStock = item.stock > 0 ? 0 : 15;
     try {
-      const res = await api.updateMenuItem(item.id, { stock: target });
+      const res = await api.updateMenuItem(item.id, { stock: targetStock });
       if (res.success) {
-        setMenuItems((prev) => prev.map((m) => (m.id === item.id ? { ...m, stock: target } : m)));
-        if (onDataUpdated) onDataUpdated();
+        setMenuItems((prev) => prev.map((m) => (m.id === item.id ? { ...m, stock: targetStock } : m)));
+        onDataUpdated();
       }
     } catch (err) {
       alert('Error toggling stock: ' + err.message);
     }
   };
 
-  // Delete dish from catalog
+  // Delete dish from menu
   const handleDeleteDish = async (item) => {
-    if (!window.confirm(`Are you sure you want to remove "${item.name}" from the menu catalog?`)) return;
+    if (!window.confirm(`Are you sure you want to remove "${item.name}" from the menu?`)) return;
     try {
       const res = await api.deleteMenuItem(item.id);
       if (res.success) {
         setMenuItems((prev) => prev.filter((m) => m.id !== item.id));
-        if (onDataUpdated) onDataUpdated();
+        onDataUpdated();
       }
     } catch (err) {
       alert('Error deleting dish: ' + err.message);
@@ -415,17 +324,70 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
   };
 
   // Update Canteen Crowd Level
-  const handleUpdateCrowd = async (canteenId, level) => {
+  const handleUpdateCanteenCrowd = async (canteenId, level) => {
     try {
       const res = await api.updateCrowdLevel(canteenId, level);
       if (res.success) {
+        onDataUpdated();
         fetchAdminData();
-        if (onDataUpdated) onDataUpdated();
       }
     } catch (err) {
       alert('Error updating crowd: ' + err.message);
     }
   };
+
+  // Create New Canteen / Store
+  const handleCreateCanteen = async (e) => {
+    e.preventDefault();
+    if (!canteenForm.name.trim()) return alert('Please enter outlet name');
+
+    try {
+      const slugCode = canteenForm.code.trim().toUpperCase() || `C${canteens.length + 1}`;
+      const payload = {
+        name: canteenForm.name.trim(),
+        code: slugCode,
+        location: canteenForm.location.trim() || 'Central Amenities Quad, Amrita Ettimadai',
+        timings: canteenForm.timings.trim() || '08:00 AM - 10:00 PM',
+        crowdLevel: canteenForm.crowdLevel || 'Low',
+        avgWaitTimeMinutes: Number(canteenForm.avgWaitTimeMinutes) || 5,
+        counterSpeed: canteenForm.counterSpeed || 'Fast',
+        image: canteenForm.image || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500&auto=format&fit=crop&q=80'
+      };
+
+      const res = await api.addCanteen(payload);
+      if (res.success) {
+        alert(`🎉 New Dining Outlet "${payload.name}" successfully created and activated! It is now available across the student menu, staff station terminal, and admin management.`);
+        setIsAddCanteenModalOpen(false);
+        setCanteenForm({
+          name: '',
+          code: '',
+          location: '',
+          timings: '08:00 AM - 10:00 PM',
+          crowdLevel: 'Low',
+          avgWaitTimeMinutes: 5,
+          counterSpeed: 'Fast',
+          image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500&auto=format&fit=crop&q=80'
+        });
+        onDataUpdated();
+        fetchAdminData();
+      }
+    } catch (err) {
+      alert('Error creating canteen: ' + err.message);
+    }
+  };
+
+  // Filtered menu dishes for Admin panel
+  const filteredAdminMenuItems = useMemo(() => {
+    return menuItems.filter((item) => {
+      if (adminCanteenFilter !== 'All' && item.canteenId !== adminCanteenFilter) return false;
+      if (adminCategoryFilter !== 'All' && item.category !== adminCategoryFilter) return false;
+      if (adminMenuSearch) {
+        const q = adminMenuSearch.toLowerCase();
+        return item.name.toLowerCase().includes(q) || item.description?.toLowerCase().includes(q) || item.category?.toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [menuItems, adminCanteenFilter, adminCategoryFilter, adminMenuSearch]);
 
   // Add new map location (Slide 6: Add stores and canteens to map)
   const handleAddMapLoc = async (e) => {
@@ -561,13 +523,17 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
         <button
           onClick={() => setActiveTab('menu')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
             activeTab === 'menu'
               ? 'bg-indigo-600 text-white shadow-md'
               : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
           }`}
         >
-          Menu Management
+          <Utensils className="w-3.5 h-3.5" />
+          <span>Canteens & Menu Governance</span>
+          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-950/60 font-mono">
+            {canteens.length} Outlets
+          </span>
         </button>
 
         <button
@@ -1099,1040 +1065,422 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
         </div>
       )}
 
-      {/* TAB 4: CANTEEN & MENU MANAGEMENT (ADMIN) */}
+      {/* TAB 4: CANTEENS & MENU GOVERNANCE */}
       {activeTab === 'menu' && (
-        <div className="space-y-5">
-          {/* Top Bar: Canteen Switcher & Action Buttons */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col gap-4">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-6">
+          {/* SECTION A: REGISTERED CAMPUS DINING OUTLETS & REAL-TIME CROWD CALIBRATION */}
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-32 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
+                <div className="flex items-center gap-2">
+                  <span className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl">
                     <Store className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-base text-white">
-                      Canteen & Food Outlet Operations
-                    </h4>
-                    <p className="text-xs text-slate-400">
-                      Manage menus across campus canteens or launch new food stores with full ordering facilities.
-                    </p>
-                  </div>
+                  </span>
+                  <h3 className="text-lg font-bold text-white tracking-tight">
+                    Registered Dining Outlets & Campus Stores
+                  </h3>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    {canteens.length} Active Outlets
+                  </span>
                 </div>
+                <p className="text-xs text-slate-400 mt-1">
+                  Manage active dining halls, kiosks, and food courts. Calibrate live kitchen crowd load, wait times, and launch new food stores.
+                </p>
               </div>
 
-              {/* Actions: Create Canteen & Add Dish */}
-              <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={openCreateCanteenModal}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-xs transition shadow-lg shadow-indigo-600/30 flex items-center gap-2 active:scale-98"
+                  onClick={() => setIsAddCanteenModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2"
                 >
                   <PlusCircle className="w-4 h-4" />
-                  <span>Create New Canteen / Store</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={openAddDishModal}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs transition shadow-lg shadow-emerald-600/30 flex items-center gap-2 active:scale-98"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Dish to Menu</span>
+                  <span>+ Register New Canteen / Store</span>
                 </button>
               </div>
             </div>
 
-            {/* Canteen Selector Pills */}
-            <div className="pt-3 border-t border-slate-800/80 flex items-center gap-2 overflow-x-auto pb-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
-                Outlets:
-              </span>
-              {(canteens || []).map((c) => {
-                const isSelected = (adminSelectedCanteenId || canteens?.[0]?.id) === c.id;
+            {/* Outlets Grid Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {canteens.map((c) => {
+                const outletDishCount = menuItems.filter((m) => m.canteenId === c.id).length;
+                const isFiltered = adminCanteenFilter === c.id;
                 return (
-                  <button
+                  <div
                     key={c.id}
-                    onClick={() => setAdminSelectedCanteenId(c.id)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
-                      isSelected
-                        ? 'bg-white text-slate-950 shadow-md font-extrabold scale-[1.02]'
-                        : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-800/70'
+                    className={`rounded-2xl border p-4 transition-all duration-200 relative flex flex-col justify-between ${
+                      isFiltered
+                        ? 'bg-slate-800/90 border-indigo-500/80 shadow-lg shadow-indigo-500/10'
+                        : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'
                     }`}
                   >
-                    <span>{c.name}</span>
-                    <span
-                      className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md ${
-                        isSelected ? 'bg-slate-950 text-white' : 'bg-slate-800 text-slate-400'
-                      }`}
-                    >
-                      {c.code || (c.id === 'canteen-1' ? 'C1' : c.id === 'canteen-2' ? 'C2' : c.id === 'canteen-3' ? 'C3' : 'IT')}
-                    </span>
-                  </button>
+                    <div>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-mono font-black text-amber-400">
+                            {c.code || (c.id === 'canteen-1' ? 'C1' : c.id === 'canteen-2' ? 'C2' : c.id === 'canteen-3' ? 'C3' : 'CT')}
+                          </span>
+                          <div>
+                            <h4 className="font-bold text-sm text-white line-clamp-1">{c.name}</h4>
+                            <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-slate-500" />
+                              <span className="line-clamp-1">{c.location || 'Campus Quad'}</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 my-3 text-[11px] bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                        <div>
+                          <div className="text-slate-400 text-[10px]">Catalog Dishes</div>
+                          <div className="font-bold text-slate-200">{outletDishCount} items</div>
+                        </div>
+                        <div>
+                          <div className="text-slate-400 text-[10px]">Avg Wait Time</div>
+                          <div className="font-bold text-slate-200">{c.avgWaitTimeMinutes || 5} mins</div>
+                        </div>
+                      </div>
+
+                      {/* Live Crowd Level Switcher */}
+                      <div className="mt-2">
+                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium mb-1.5">
+                          <span>Live Crowd Status</span>
+                          <span
+                            className={`font-bold uppercase px-1.5 py-0.5 rounded text-[10px] ${
+                              c.crowdLevel === 'Rush Hour' || c.crowdLevel === 'High'
+                                ? 'bg-rose-500/20 text-rose-300'
+                                : c.crowdLevel === 'Busy' || c.crowdLevel === 'Moderate'
+                                ? 'bg-amber-500/20 text-amber-300'
+                                : 'bg-emerald-500/20 text-emerald-300'
+                            }`}
+                          >
+                            {c.crowdLevel || 'Low'}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-1">
+                          {['Low', 'Moderate', 'Busy', 'Rush Hour'].map((lvl) => (
+                            <button
+                              key={lvl}
+                              type="button"
+                              onClick={() => handleUpdateCanteenCrowd(c.id, lvl)}
+                              className={`py-1 rounded-lg text-[9px] font-bold transition ${
+                                (c.crowdLevel || 'Low') === lvl
+                                  ? 'bg-indigo-600 text-white shadow-sm'
+                                  : 'bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700'
+                              }`}
+                            >
+                              {lvl === 'Rush Hour' ? 'Rush' : lvl}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAdminCanteenFilter(isFiltered ? 'All' : c.id);
+                        }}
+                        className={`w-full py-1.5 px-2 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1.5 ${
+                          isFiltered
+                            ? 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-300'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                        }`}
+                      >
+                        <Utensils className="w-3 h-3" />
+                        <span>{isFiltered ? 'Viewing Menu' : 'Manage Dishes'}</span>
+                      </button>
+                    </div>
+                  </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Active Canteen Status & Crowd Calibrator */}
-          {(() => {
-            const currentCanteen =
-              (canteens || []).find((c) => c.id === (adminSelectedCanteenId || canteens?.[0]?.id)) ||
-              (canteens || [])[0];
-            if (!currentCanteen) return null;
-
-            const cDishes = menuItems.filter((i) => i.canteenId === currentCanteen.id);
-            const inStockCount = cDishes.filter((i) => i.stock > 0).length;
-            const outOfStockCount = cDishes.filter((i) => i.stock <= 0).length;
-
-            return (
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-extrabold text-base text-white">{currentCanteen.name}</h4>
-                      <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
-                        {currentCanteen.status || 'open'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {currentCanteen.location} • Timings: {currentCanteen.timings} • Service: {currentCanteen.counterSpeed || 'Fast'}
-                    </p>
-                  </div>
-
-                  {/* Summary Metric Counters */}
-                  <div className="flex items-center gap-2">
-                    <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-center">
-                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Total Dishes</span>
-                      <span className="text-sm font-black font-mono text-white">{cDishes.length}</span>
-                    </div>
-                    <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-center">
-                      <span className="text-[10px] text-slate-500 block uppercase font-bold">In Stock</span>
-                      <span className="text-sm font-black font-mono text-emerald-400">{inStockCount}</span>
-                    </div>
-                    <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-center">
-                      <span className="text-[10px] text-slate-500 block uppercase font-bold">Out of Stock</span>
-                      <span className="text-sm font-black font-mono text-rose-400">{outOfStockCount}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Real-Time Crowd Calibration Buttons */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2 text-slate-300 font-semibold">
-                    <Users className="w-4 h-4 text-slate-400" />
-                    <span>Calibrate Live Crowd Level:</span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {['Low', 'Moderate', 'Busy', 'Rush Hour'].map((lvl) => {
-                      const isActive = currentCanteen.crowdLevel === lvl;
-                      return (
-                        <button
-                          key={lvl}
-                          type="button"
-                          onClick={() => handleUpdateCrowd(currentCanteen.id, lvl)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                            isActive
-                              ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
-                              : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
-                          }`}
-                        >
-                          <span>{lvl}</span>
-                          {isActive && <Check className="w-3.5 h-3.5" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+          {/* SECTION B: DISHES CATALOG & STAFF ACCESS POWERS */}
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+            {/* Header & Main Controls */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                  <Utensils className="w-5 h-5 text-amber-400" />
+                  <span>Menu Dishes Catalog & Kitchen Stock Governance</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Full staff access equipped: adjust stock quantities (-1, +1, +5, +15), instant in/out-of-stock toggles, upload dish images, edit pricing, or remove items.
+                </p>
               </div>
-            );
-          })()}
 
-          {/* Filter Bar & Search */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-              {['All', ...categoriesList].map((cat) => (
+              <div className="flex items-center gap-3">
                 <button
-                  key={cat}
-                  onClick={() => setCanteenFilterCategory(cat)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
-                    canteenFilterCategory === cat
-                      ? 'bg-indigo-600 text-white font-bold shadow-md'
-                      : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
+                  type="button"
+                  onClick={openAddDishModal}
+                  className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition flex items-center gap-2"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>+ Add Dish to Menu</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Filter Bar */}
+            <div className="space-y-3 mb-6 bg-slate-950/70 p-4 rounded-2xl border border-slate-800">
+              {/* Outlet Tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+                  Outlet:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAdminCanteenFilter('All')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition ${
+                    adminCanteenFilter === 'All'
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                      : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
                   }`}
                 >
-                  {cat}
+                  All Outlets ({menuItems.length})
                 </button>
-              ))}
-            </div>
-
-            <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search dishes..."
-                value={canteenSearchQuery}
-                onChange={(e) => setCanteenSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-              />
-            </div>
-          </div>
-
-          {/* Dishes Grid */}
-          {(() => {
-            const activeId = adminSelectedCanteenId || canteens?.[0]?.id || 'canteen-1';
-            const dishes = menuItems.filter((item) => {
-              if (item.canteenId !== activeId) return false;
-              if (canteenFilterCategory !== 'All' && item.category !== canteenFilterCategory) return false;
-              if (canteenSearchQuery) {
-                const q = canteenSearchQuery.toLowerCase();
-                return item.name.toLowerCase().includes(q) || item.category?.toLowerCase().includes(q);
-              }
-              return true;
-            });
-
-            if (dishes.length === 0) {
-              return (
-                <div className="py-16 text-center text-slate-400 bg-slate-900 border border-slate-800 rounded-3xl">
-                  <Package className="w-10 h-10 text-slate-600 mx-auto mb-2 opacity-50" />
-                  <p className="font-bold text-sm text-slate-300">No dishes in this canteen yet</p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Click "+ Add Dish to Menu" to start offering food at this outlet!
-                  </p>
-                </div>
-              );
-            }
-
-            return (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {dishes.map((item) => {
-                  const isOutOfStock = item.stock <= 0;
-                  const isLowStock = item.stock > 0 && item.stock <= 5;
-
+                {canteens.map((c) => {
+                  const count = menuItems.filter((m) => m.canteenId === c.id).length;
                   return (
-                    <div
-                      key={item.id}
-                      className={`p-4 rounded-3xl border transition-all duration-200 shadow-xl flex flex-col justify-between ${
-                        isOutOfStock
-                          ? 'bg-rose-950/20 border-rose-500/40 ring-1 ring-rose-500/20'
-                          : isLowStock
-                          ? 'bg-amber-950/20 border-amber-500/40'
-                          : 'bg-slate-900/90 border-slate-800/90 hover:border-slate-700'
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setAdminCanteenFilter(c.id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition ${
+                        adminCanteenFilter === c.id
+                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                          : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
                       }`}
                     >
-                      <div>
-                        <div className="flex items-start gap-3.5">
+                      {c.name} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Category & Search Filter */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2 border-t border-slate-800/80">
+                {/* Category Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+                    Category:
+                  </span>
+                  {['All', ...categoriesList].map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setAdminCategoryFilter(cat)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition ${
+                        adminCategoryFilter === cat
+                          ? 'bg-amber-500 text-slate-950 font-bold'
+                          : 'bg-slate-800/70 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Search Input */}
+                <div className="relative min-w-[220px]">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search dish or ingredient..."
+                    value={adminMenuSearch}
+                    onChange={(e) => setAdminMenuSearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  />
+                  {adminMenuSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setAdminMenuSearch('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Results Count Strip */}
+            <div className="flex items-center justify-between text-xs text-slate-400 mb-4 px-1">
+              <div>
+                Showing <span className="font-bold text-white">{filteredAdminMenuItems.length}</span> dishes matching active filters
+              </div>
+              {filteredAdminMenuItems.length === 0 && (
+                <div className="text-amber-400 text-xs">No menu dishes found for this filter combination.</div>
+              )}
+            </div>
+
+            {/* Dishes Catalog Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filteredAdminMenuItems.map((item) => {
+                const canteenObj = canteens.find((c) => c.id === item.canteenId);
+                const isOutOfStock = Number(item.stock) <= 0;
+                const isLowStock = !isOutOfStock && Number(item.stock) <= 5;
+
+                return (
+                  <div
+                    key={item.id}
+                    className="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition shadow-lg group relative"
+                  >
+                    <div>
+                      {/* Top Row: Image + Details */}
+                      <div className="flex items-start gap-3.5">
+                        <div className="relative shrink-0">
                           <img
                             src={item.imageUrl}
                             alt={item.name}
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = item.isVeg
-                                ? 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80'
-                                : 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500&auto=format&fit=crop&q=80';
-                            }}
-                            className="w-16 h-16 rounded-2xl object-cover border border-slate-800 shrink-0"
+                            className="w-20 h-20 rounded-xl object-cover bg-slate-900 border border-slate-800"
                           />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-1">
-                              <div className="flex items-center gap-1.5 truncate">
-                                <span
-                                  className={`w-2 h-2 rounded-full shrink-0 ${
-                                    item.isVeg ? 'bg-emerald-400' : 'bg-rose-400'
-                                  }`}
-                                />
-                                <h4 className="font-bold text-sm text-white truncate">{item.name}</h4>
-                              </div>
+                          <span
+                            className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-950 flex items-center justify-center text-[8px] font-bold ${
+                              item.isVeg ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'
+                            }`}
+                            title={item.isVeg ? 'Vegetarian' : 'Non-Vegetarian'}
+                          >
+                            ●
+                          </span>
+                        </div>
 
-                              {/* Edit & Delete Action Buttons */}
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => openEditDishModal(item)}
-                                  className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 transition"
-                                  title="Edit dish details"
-                                >
-                                  <Edit2 className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteDish(item)}
-                                  className="p-1 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 transition"
-                                  title="Delete dish"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className="font-bold text-sm text-white truncate" title={item.name}>
+                              {item.name}
+                            </h4>
+                          </div>
 
-                            <div className="text-[11px] text-slate-400 mt-0.5">
-                              {item.category} • <span className="font-mono font-bold text-slate-200">₹{item.price}</span>
-                            </div>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-amber-300 border border-slate-700">
+                              {canteenObj?.name || item.canteenId}
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-slate-800/80 text-slate-300">
+                              {item.category}
+                            </span>
+                          </div>
 
-                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                              <span
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                                  isOutOfStock
-                                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 animate-pulse'
-                                    : isLowStock
-                                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                }`}
-                              >
-                                {isOutOfStock ? 'Out of stock' : `${item.stock} in stock`}
-                              </span>
-
-                              {/* Quick in/out toggle */}
-                              <button
-                                type="button"
-                                onClick={() => handleToggleStock(item)}
-                                className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border transition ${
-                                  isOutOfStock
-                                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25'
-                                    : 'bg-rose-500/15 text-rose-300 border-rose-500/30 hover:bg-rose-500/25'
-                                }`}
-                              >
-                                {isOutOfStock ? 'Make In Stock' : 'Mark Out'}
-                              </button>
-                            </div>
+                          <div className="flex items-center gap-3 mt-2 text-xs">
+                            <span className="font-mono font-bold text-white text-sm">₹{item.price}</span>
+                            <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-slate-500" />
+                              ~{item.prepTimeMinutes || 4}m prep
+                            </span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Stock Quantity Adjuster */}
-                      <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
-                          <button
-                            type="button"
-                            onClick={() => handleAdjustStock(item, -1)}
-                            className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
+                      {/* Description if any */}
+                      {item.description && (
+                        <p className="text-[11px] text-slate-400 mt-2.5 line-clamp-2 leading-relaxed bg-slate-900/40 p-2 rounded-lg border border-slate-800/50">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Controls & Stock Management */}
+                    <div className="mt-4 pt-3 border-t border-slate-800/80 space-y-2.5">
+                      {/* Stock Status & Instant Toggle */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                              isOutOfStock
+                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                : isLowStock
+                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            }`}
                           >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="font-mono font-black text-sm text-white px-2 min-w-[2rem] text-center">
-                            {item.stock}
+                            {isOutOfStock ? 'Sold Out' : `${item.stock} in stock`}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => handleAdjustStock(item, 1)}
-                            className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
                         </div>
 
+                        {/* Instant In/Out-of-Stock Toggle */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStockStatus(item)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 ${
+                            isOutOfStock
+                              ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                              : 'bg-slate-800 hover:bg-rose-900/40 text-rose-400 hover:text-rose-300 border border-slate-700'
+                          }`}
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          <span>{isOutOfStock ? 'Restock (+15)' : 'Mark Out of Stock'}</span>
+                        </button>
+                      </div>
+
+                      {/* Stock Adjustment Buttons (-1, +1, +5, +15) */}
+                      <div className="flex items-center justify-between gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+                        <span className="text-[10px] text-slate-400 font-semibold px-1">Adjust:</span>
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
+                            disabled={Number(item.stock) <= 0}
+                            onClick={() => handleAdjustStock(item, -1)}
+                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-[11px] font-bold transition"
+                            title="Decrease by 1"
+                          >
+                            -1
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleAdjustStock(item, 1)}
+                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold transition"
+                            title="Increase by 1"
+                          >
+                            +1
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => handleAdjustStock(item, 5)}
-                            className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-300 text-xs font-mono font-bold transition border border-slate-700"
+                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold transition"
+                            title="Increase by 5"
                           >
                             +5
                           </button>
                           <button
                             type="button"
                             onClick={() => handleAdjustStock(item, 15)}
-                            className="px-2.5 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 hover:text-white text-emerald-300 text-xs font-mono font-bold transition border border-emerald-500/30"
+                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 font-mono text-[11px] font-bold transition"
+                            title="Batch restock 15 portions"
                           >
                             +15
                           </button>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
 
-          {/* =========================================================================
-              MODAL 1: CREATE NEW CANTEEN / STORE OUTLET (ADMIN)
-          ========================================================================= */}
-          {isCreateCanteenModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
-                <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
-                      <Store className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-extrabold text-base text-white">
-                        Create New Canteen / Store Outlet
-                      </h3>
-                      <p className="text-xs text-slate-400">
-                        Adds a fully functional food court or outlet across campus
-                      </p>
+                      {/* Edit & Delete Action Buttons */}
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => openEditDishModal(item)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 border border-slate-700/60"
+                        >
+                          <Edit2 className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Edit Dish</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDish(item)}
+                          className="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-bold transition flex items-center gap-1.5 border border-rose-500/30"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsCreateCanteenModalOpen(false)}
-                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <form onSubmit={handleSaveNewCanteen} className="mt-5 space-y-4 text-xs">
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1.5">Outlet / Canteen Name *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Amrita Fresh Bakery & Juice Lounge"
-                      value={canteenForm.name}
-                      onChange={(e) => setCanteenForm({ ...canteenForm, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-medium"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Short Badge / Code</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. BK, JL, C4"
-                        value={canteenForm.code}
-                        onChange={(e) => setCanteenForm({ ...canteenForm, code: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono uppercase focus:outline-none focus:border-indigo-500 font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Counter Speed</label>
-                      <select
-                        value={canteenForm.counterSpeed}
-                        onChange={(e) => setCanteenForm({ ...canteenForm, counterSpeed: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 font-medium"
-                      >
-                        <option value="Fast">Fast (~3-5 mins)</option>
-                        <option value="Normal">Normal (~8-10 mins)</option>
-                        <option value="Express">Express Snack Counter</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1.5">Campus Location / Zone *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. South Academic Quad, Adjacent to AB-4"
-                      value={canteenForm.location}
-                      onChange={(e) => setCanteenForm({ ...canteenForm, location: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Operating Timings</label>
-                      <input
-                        type="text"
-                        placeholder="08:00 AM - 10:00 PM"
-                        value={canteenForm.timings}
-                        onChange={(e) => setCanteenForm({ ...canteenForm, timings: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 font-medium"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Initial Crowd Level</label>
-                      <select
-                        value={canteenForm.crowdLevel}
-                        onChange={(e) => setCanteenForm({ ...canteenForm, crowdLevel: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 font-medium"
-                      >
-                        <option value="Low">Low</option>
-                        <option value="Moderate">Moderate</option>
-                        <option value="Busy">Busy</option>
-                        <option value="Rush Hour">Rush Hour</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Starter Menu Checkbox */}
-                  <div className="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      id="seedStarterMenu"
-                      checked={canteenForm.seedStarterMenu}
-                      onChange={(e) => setCanteenForm({ ...canteenForm, seedStarterMenu: e.target.checked })}
-                      className="mt-0.5 rounded text-indigo-600 focus:ring-0"
-                    />
-                    <label htmlFor="seedStarterMenu" className="cursor-pointer text-slate-200">
-                      <span className="font-bold block text-xs">Auto-seed starter campus menu (12 dishes)</span>
-                      <span className="text-[11px] text-slate-400 block mt-0.5 leading-relaxed">
-                        Instantly populates this new canteen with Filter Coffee, Tea, Samosa, Puff, Dosa, Meals, Juices, and Ice Creams so students can order right away!
-                      </span>
-                    </label>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsCreateCanteenModalOpen(false)}
-                      className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold transition"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold transition shadow-lg shadow-indigo-600/30"
-                    >
-                      Launch Canteen / Store
-                    </button>
-                  </div>
-                </form>
-              </div>
+                );
+              })}
             </div>
-          )}
-
-          {/* =========================================================================
-              MODAL 2: ADD NEW DISH (ADMIN - WITH SYSTEM FILE UPLOAD & URL)
-          ========================================================================= */}
-          {isAddDishModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
-                <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
-                      <PlusCircle className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-extrabold text-base text-white">Add New Dish to Menu</h3>
-                      <p className="text-xs text-slate-400">
-                        Adding dish to{' '}
-                        {(canteens || []).find((c) => c.id === adminSelectedCanteenId)?.name || 'Canteen'}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsAddDishModalOpen(false)}
-                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <form onSubmit={handleSaveNewDish} className="mt-5 space-y-4 text-xs">
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1.5">Dish Name *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Chettinad Paneer Wrap"
-                      value={dishForm.name}
-                      onChange={(e) => setDishForm({ ...dishForm, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Category *</label>
-                      <select
-                        value={dishForm.category}
-                        onChange={(e) => setDishForm({ ...dishForm, category: e.target.value })}
-                        className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-emerald-500 font-medium"
-                      >
-                        {categoriesList.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Price (₹) *</label>
-                      <input
-                        type="number"
-                        min="1"
-                        required
-                        value={dishForm.price}
-                        onChange={(e) => setDishForm({ ...dishForm, price: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono font-bold focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Initial Stock Count</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={dishForm.stock}
-                        onChange={(e) => setDishForm({ ...dishForm, stock: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Est. Prep Time (Mins)</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={dishForm.prepTimeMinutes}
-                        onChange={(e) => setDishForm({ ...dishForm, prepTimeMinutes: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1.5">Food Type</label>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setDishForm({ ...dishForm, isVeg: true })}
-                        className={`flex-1 py-2 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${
-                          dishForm.isVeg
-                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                            : 'bg-slate-950 border-slate-800 text-slate-400'
-                        }`}
-                      >
-                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                        <span>Pure Veg</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setDishForm({ ...dishForm, isVeg: false })}
-                        className={`flex-1 py-2 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${
-                          !dishForm.isVeg
-                            ? 'bg-rose-500/20 border-rose-500 text-rose-300'
-                            : 'bg-slate-950 border-slate-800 text-slate-400'
-                        }`}
-                      >
-                        <span className="w-2 h-2 rounded-full bg-rose-400" />
-                        <span>Non-Veg</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Dual Image Input */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-slate-300 font-bold">Dish Image</label>
-                      <div className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800 text-[11px]">
-                        <button
-                          type="button"
-                          onClick={() => setDishImageMode('upload')}
-                          className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
-                            dishImageMode === 'upload'
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                              : 'text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          <Upload className="w-3 h-3" />
-                          <span>Upload from System</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDishImageMode('url')}
-                          className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
-                            dishImageMode === 'url'
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                              : 'text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          <Link className="w-3 h-3" />
-                          <span>Image URL</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {dishImageMode === 'upload' ? (
-                      <div>
-                        <input
-                          ref={adminAddDishFileRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleAdminImageUpload}
-                          className="hidden"
-                        />
-                        <div
-                          onClick={() => adminAddDishFileRef.current?.click()}
-                          className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 group ${
-                            dishForm.imageUrl
-                              ? 'border-emerald-500/40 bg-emerald-950/20 hover:bg-emerald-950/30'
-                              : 'border-slate-800 bg-slate-950/70 hover:border-emerald-500/50 hover:bg-slate-950'
-                          }`}
-                        >
-                          {dishForm.imageUrl ? (
-                            <div className="flex items-center gap-3.5 w-full">
-                              <img
-                                src={dishForm.imageUrl}
-                                alt="Selected"
-                                className="w-16 h-16 rounded-xl object-cover border border-emerald-500/40 shrink-0 shadow-md"
-                              />
-                              <div className="text-left flex-1 min-w-0">
-                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 block">
-                                  ✓ Image Loaded From Device
-                                </span>
-                                <span className="text-xs text-slate-200 truncate block mt-0.5 font-medium">
-                                  Click to choose another photo
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDishForm((prev) => ({ ...prev, imageUrl: '' }));
-                                }}
-                                className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition duration-200">
-                                <Upload className="w-5 h-5" />
-                              </div>
-                              <div>
-                                <span className="font-bold text-slate-200 text-xs block">
-                                  Upload photo from your system / device
-                                </span>
-                                <span className="text-[11px] text-slate-500 block mt-0.5">
-                                  Click here to browse files (PNG, JPG, WEBP up to 5MB)
-                                </span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            placeholder="Paste direct web image link: https://..."
-                            value={dishForm.imageUrl}
-                            onChange={(e) => setDishForm({ ...dishForm, imageUrl: e.target.value })}
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 font-mono text-[11px]"
-                          />
-                          {dishForm.imageUrl && (
-                            <img
-                              src={dishForm.imageUrl}
-                              alt="Preview"
-                              onError={(e) => {
-                                e.currentTarget.onerror = null;
-                                e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80';
-                              }}
-                              className="w-10 h-10 rounded-xl object-cover border border-slate-800 shrink-0"
-                            />
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1.5">Short Description</label>
-                    <textarea
-                      rows="2"
-                      placeholder="Ingredients, accompaniments..."
-                      value={dishForm.description}
-                      onChange={(e) => setDishForm({ ...dishForm, description: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
-                    />
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsAddDishModalOpen(false)}
-                      className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold transition"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold transition shadow-lg shadow-emerald-500/20"
-                    >
-                      Save Dish to Menu
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* =========================================================================
-              MODAL 3: EDIT EXISTING DISH (ADMIN)
-          ========================================================================= */}
-          {isEditDishModalOpen && editingDish && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
-                <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400">
-                      <Edit2 className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-extrabold text-base text-white">Edit Dish Details</h3>
-                      <p className="text-xs text-slate-400">Update pricing, category or quantity</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditDishModalOpen(false);
-                      setEditingDish(null);
-                    }}
-                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <form onSubmit={handleSaveEditDish} className="mt-5 space-y-4 text-xs">
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1.5">Dish Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={dishForm.name}
-                      onChange={(e) => setDishForm({ ...dishForm, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-medium focus:outline-none focus:border-cyan-500"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Category</label>
-                      <select
-                        value={dishForm.category}
-                        onChange={(e) => setDishForm({ ...dishForm, category: e.target.value })}
-                        className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 font-medium"
-                      >
-                        {categoriesList.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Price (₹)</label>
-                      <input
-                        type="number"
-                        min="1"
-                        required
-                        value={dishForm.price}
-                        onChange={(e) => setDishForm({ ...dishForm, price: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono font-bold focus:outline-none focus:border-cyan-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Available Stock</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={dishForm.stock}
-                        onChange={(e) => setDishForm({ ...dishForm, stock: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono font-bold focus:outline-none focus:border-cyan-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1.5">Prep Time (Mins)</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={dishForm.prepTimeMinutes}
-                        onChange={(e) => setDishForm({ ...dishForm, prepTimeMinutes: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono focus:outline-none focus:border-cyan-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1.5">Food Type</label>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setDishForm({ ...dishForm, isVeg: true })}
-                        className={`flex-1 py-2 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${
-                          dishForm.isVeg
-                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                            : 'bg-slate-950 border-slate-800 text-slate-400'
-                        }`}
-                      >
-                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                        <span>Pure Veg</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setDishForm({ ...dishForm, isVeg: false })}
-                        className={`flex-1 py-2 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${
-                          !dishForm.isVeg
-                            ? 'bg-rose-500/20 border-rose-500 text-rose-300'
-                            : 'bg-slate-950 border-slate-800 text-slate-400'
-                        }`}
-                      >
-                        <span className="w-2 h-2 rounded-full bg-rose-400" />
-                        <span>Non-Veg</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Dual Image Input */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-slate-300 font-bold">Dish Image</label>
-                      <div className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800 text-[11px]">
-                        <button
-                          type="button"
-                          onClick={() => setDishImageMode('upload')}
-                          className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
-                            dishImageMode === 'upload'
-                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                              : 'text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          <Upload className="w-3 h-3" />
-                          <span>Upload from System</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDishImageMode('url')}
-                          className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
-                            dishImageMode === 'url'
-                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                              : 'text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          <Link className="w-3 h-3" />
-                          <span>Image URL</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {dishImageMode === 'upload' ? (
-                      <div>
-                        <input
-                          ref={adminEditDishFileRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleAdminImageUpload}
-                          className="hidden"
-                        />
-                        <div
-                          onClick={() => adminEditDishFileRef.current?.click()}
-                          className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 group ${
-                            dishForm.imageUrl
-                              ? 'border-cyan-500/40 bg-cyan-950/20 hover:bg-cyan-950/30'
-                              : 'border-slate-800 bg-slate-950/70 hover:border-cyan-500/50 hover:bg-slate-950'
-                          }`}
-                        >
-                          {dishForm.imageUrl ? (
-                            <div className="flex items-center gap-3.5 w-full">
-                              <img
-                                src={dishForm.imageUrl}
-                                alt="Selected"
-                                className="w-16 h-16 rounded-xl object-cover border border-cyan-500/40 shrink-0 shadow-md"
-                              />
-                              <div className="text-left flex-1 min-w-0">
-                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-cyan-400 block">
-                                  ✓ Dish Photo Selected
-                                </span>
-                                <span className="text-xs text-slate-200 truncate block mt-0.5 font-medium">
-                                  Click to choose another photo
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDishForm((prev) => ({ ...prev, imageUrl: '' }));
-                                }}
-                                className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-400 group-hover:scale-110 transition duration-200">
-                                <Upload className="w-5 h-5" />
-                              </div>
-                              <div>
-                                <span className="font-bold text-slate-200 text-xs block">
-                                  Upload photo from your system / device
-                                </span>
-                                <span className="text-[11px] text-slate-500 block mt-0.5">
-                                  Click here to browse files (PNG, JPG, WEBP up to 5MB)
-                                </span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            placeholder="Paste direct web image link: https://..."
-                            value={dishForm.imageUrl}
-                            onChange={(e) => setDishForm({ ...dishForm, imageUrl: e.target.value })}
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500 font-mono text-[11px]"
-                          />
-                          {dishForm.imageUrl && (
-                            <img
-                              src={dishForm.imageUrl}
-                              alt="Preview"
-                              onError={(e) => {
-                                e.currentTarget.onerror = null;
-                                e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80';
-                              }}
-                              className="w-10 h-10 rounded-xl object-cover border border-slate-800 shrink-0"
-                            />
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1.5">Short Description</label>
-                    <textarea
-                      rows="2"
-                      value={dishForm.description}
-                      onChange={(e) => setDishForm({ ...dishForm, description: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-500"
-                    />
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsEditDishModalOpen(false);
-                        setEditingDish(null);
-                      }}
-                      className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold transition"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold transition shadow-lg shadow-cyan-500/20"
-                    >
-                      Save Changes
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -2340,6 +1688,659 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 className="max-h-[75vh] w-auto max-w-full rounded-lg object-contain"
               />
             </div>
+          </div>
+        </div>
+      )}
+      {/* MODAL 1: REGISTER NEW CANTEEN / STORE */}
+      {isAddCanteenModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in"
+          onClick={() => setIsAddCanteenModalOpen(false)}
+        >
+          <div
+            className="relative max-w-xl w-full bg-slate-900 border border-slate-700/80 rounded-3xl overflow-hidden shadow-2xl p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl">
+                  <Store className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-base text-white">Register New Canteen or Store</h3>
+                  <p className="text-[11px] text-slate-400">
+                    Instantly activates across Student Menu, Kitchen KDS, and Admin controls.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddCanteenModalOpen(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateCanteen} className="space-y-4 pt-4 text-xs">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2">
+                  <label className="block text-slate-300 font-semibold mb-1">
+                    Canteen / Store Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Canteen 4 (PG Diner) or Nescafe Kiosk"
+                    value={canteenForm.name}
+                    onChange={(e) => setCanteenForm({ ...canteenForm, name: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Badge Code</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. C4 or NES"
+                    value={canteenForm.code}
+                    onChange={(e) => setCanteenForm({ ...canteenForm, code: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white uppercase placeholder-slate-500 font-mono focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Campus Location</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Academic Block 3 Ground Floor, Near Tech Quad"
+                  value={canteenForm.location}
+                  onChange={(e) => setCanteenForm({ ...canteenForm, location: e.target.value })}
+                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Operating Hours</label>
+                  <input
+                    type="text"
+                    value={canteenForm.timings}
+                    onChange={(e) => setCanteenForm({ ...canteenForm, timings: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Initial Crowd</label>
+                  <select
+                    value={canteenForm.crowdLevel}
+                    onChange={(e) => setCanteenForm({ ...canteenForm, crowdLevel: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Moderate">Moderate</option>
+                    <option value="Busy">Busy</option>
+                    <option value="Rush Hour">Rush Hour</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Avg Wait (mins)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={canteenForm.avgWaitTimeMinutes}
+                    onChange={(e) =>
+                      setCanteenForm({ ...canteenForm, avgWaitTimeMinutes: e.target.value })
+                    }
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Cover Image URL</label>
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                  value={canteenForm.image}
+                  onChange={(e) => setCanteenForm({ ...canteenForm, image: e.target.value })}
+                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsAddCanteenModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition flex items-center gap-2"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Create & Launch Outlet</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: ADD DISH TO MENU */}
+      {isAddDishModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in"
+          onClick={() => setIsAddDishModalOpen(false)}
+        >
+          <div
+            className="relative max-w-xl w-full bg-slate-900 border border-slate-700/80 rounded-3xl overflow-hidden shadow-2xl p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl">
+                  <Utensils className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-base text-white">Add New Food Item to Menu</h3>
+                  <p className="text-[11px] text-slate-400">
+                    Specify outlet, category, pricing, kitchen prep time, and upload photo.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddDishModalOpen(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveDish} className="space-y-4 pt-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Canteen / Outlet *</label>
+                  <select
+                    value={dishForm.canteenId}
+                    onChange={(e) => setDishForm({ ...dishForm, canteenId: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  >
+                    {canteens.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Category *</label>
+                  <select
+                    value={dishForm.category}
+                    onChange={(e) => setDishForm({ ...dishForm, category: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  >
+                    {categoriesList.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Dish Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Paneer Butter Masala Combo or Cold Coffee Shake"
+                  value={dishForm.name}
+                  onChange={(e) => setDishForm({ ...dishForm, name: e.target.value })}
+                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Price (₹) *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={dishForm.price}
+                    onChange={(e) => setDishForm({ ...dishForm, price: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Prep Time (mins)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={dishForm.prepTimeMinutes}
+                    onChange={(e) => setDishForm({ ...dishForm, prepTimeMinutes: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Initial Stock</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={dishForm.stock}
+                    onChange={(e) => setDishForm({ ...dishForm, stock: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Diet Classification */}
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1.5">Diet Type</label>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDishForm({ ...dishForm, isVeg: true })}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 ${
+                      dishForm.isVeg
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
+                        : 'bg-slate-800 border-slate-700 text-slate-400'
+                    }`}
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                    <span>Pure Vegetarian</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDishForm({ ...dishForm, isVeg: false })}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 ${
+                      !dishForm.isVeg
+                        ? 'bg-rose-500/20 border-rose-500 text-rose-300'
+                        : 'bg-slate-800 border-slate-700 text-slate-400'
+                    }`}
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                    <span>Non-Vegetarian</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Dish Image Source (Upload vs URL) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-slate-300 font-semibold">Dish Photo</label>
+                  <div className="flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+                    <button
+                      type="button"
+                      onClick={() => setDishImageMode('upload')}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
+                        dishImageMode === 'upload'
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Upload className="w-2.5 h-2.5" />
+                      <span>Upload File</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDishImageMode('url')}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
+                        dishImageMode === 'url'
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Link className="w-2.5 h-2.5" />
+                      <span>Image URL</span>
+                    </button>
+                  </div>
+                </div>
+
+                {dishImageMode === 'upload' ? (
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      ref={adminDishFileInputRef}
+                      onChange={handleImageFileUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => adminDishFileInputRef.current?.click()}
+                      className="flex-1 py-3 px-4 rounded-xl border-2 border-dashed border-slate-700 hover:border-indigo-500 bg-slate-800/60 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition flex items-center justify-center gap-2"
+                    >
+                      <Upload className="w-4 h-4 text-indigo-400" />
+                      <span>Choose Image from Computer</span>
+                    </button>
+                    {dishForm.imageUrl && (
+                      <div className="relative shrink-0">
+                        <img
+                          src={dishForm.imageUrl}
+                          alt="Dish preview"
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-700"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setDishForm({ ...dishForm, imageUrl: '' })}
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px]"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="url"
+                      placeholder="Paste image URL (https://...)"
+                      value={dishForm.imageUrl}
+                      onChange={(e) => setDishForm({ ...dishForm, imageUrl: e.target.value })}
+                      className="flex-1 p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    />
+                    {dishForm.imageUrl && (
+                      <img
+                        src={dishForm.imageUrl}
+                        alt="Preview"
+                        className="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Description / Ingredients</label>
+                <textarea
+                  rows="2"
+                  value={dishForm.description}
+                  onChange={(e) => setDishForm({ ...dishForm, description: e.target.value })}
+                  placeholder="Ingredients, accompaniments, allergens..."
+                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsAddDishModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition flex items-center gap-2"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Add Dish to Menu</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: EDIT DISH MODAL */}
+      {editingDish && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in"
+          onClick={() => setEditingDish(null)}
+        >
+          <div
+            className="relative max-w-xl w-full bg-slate-900 border border-slate-700/80 rounded-3xl overflow-hidden shadow-2xl p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 bg-amber-500/20 text-amber-400 rounded-xl">
+                  <Edit2 className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-base text-white">Edit Dish: {editingDish.name}</h3>
+                  <p className="text-[11px] text-slate-400">
+                    Update pricing, category, kitchen prep time, photo, or stock availability.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingDish(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveDish} className="space-y-4 pt-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Canteen / Outlet *</label>
+                  <select
+                    value={dishForm.canteenId}
+                    onChange={(e) => setDishForm({ ...dishForm, canteenId: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  >
+                    {canteens.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Category *</label>
+                  <select
+                    value={dishForm.category}
+                    onChange={(e) => setDishForm({ ...dishForm, category: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  >
+                    {categoriesList.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Dish Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={dishForm.name}
+                  onChange={(e) => setDishForm({ ...dishForm, name: e.target.value })}
+                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Price (₹) *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={dishForm.price}
+                    onChange={(e) => setDishForm({ ...dishForm, price: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Prep Time (mins)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={dishForm.prepTimeMinutes}
+                    onChange={(e) => setDishForm({ ...dishForm, prepTimeMinutes: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Stock Count</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={dishForm.stock}
+                    onChange={(e) => setDishForm({ ...dishForm, stock: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Diet Classification */}
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1.5">Diet Type</label>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDishForm({ ...dishForm, isVeg: true })}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 ${
+                      dishForm.isVeg
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
+                        : 'bg-slate-800 border-slate-700 text-slate-400'
+                    }`}
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                    <span>Pure Vegetarian</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDishForm({ ...dishForm, isVeg: false })}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 ${
+                      !dishForm.isVeg
+                        ? 'bg-rose-500/20 border-rose-500 text-rose-300'
+                        : 'bg-slate-800 border-slate-700 text-slate-400'
+                    }`}
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                    <span>Non-Vegetarian</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Dish Image Source (Upload vs URL) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-slate-300 font-semibold">Dish Photo</label>
+                  <div className="flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+                    <button
+                      type="button"
+                      onClick={() => setDishImageMode('upload')}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
+                        dishImageMode === 'upload'
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Upload className="w-2.5 h-2.5" />
+                      <span>Upload File</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDishImageMode('url')}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
+                        dishImageMode === 'url'
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Link className="w-2.5 h-2.5" />
+                      <span>Image URL</span>
+                    </button>
+                  </div>
+                </div>
+
+                {dishImageMode === 'upload' ? (
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      ref={adminEditDishFileInputRef}
+                      onChange={handleImageFileUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => adminEditDishFileInputRef.current?.click()}
+                      className="flex-1 py-3 px-4 rounded-xl border-2 border-dashed border-slate-700 hover:border-amber-500 bg-slate-800/60 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition flex items-center justify-center gap-2"
+                    >
+                      <Upload className="w-4 h-4 text-amber-400" />
+                      <span>Choose New Image from Computer</span>
+                    </button>
+                    {dishForm.imageUrl && (
+                      <div className="relative shrink-0">
+                        <img
+                          src={dishForm.imageUrl}
+                          alt="Dish preview"
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-700"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setDishForm({ ...dishForm, imageUrl: '' })}
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px]"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="url"
+                      placeholder="Paste image URL (https://...)"
+                      value={dishForm.imageUrl}
+                      onChange={(e) => setDishForm({ ...dishForm, imageUrl: e.target.value })}
+                      className="flex-1 p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    />
+                    {dishForm.imageUrl && (
+                      <img
+                        src={dishForm.imageUrl}
+                        alt="Preview"
+                        className="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Description / Ingredients</label>
+                <textarea
+                  rows="2"
+                  value={dishForm.description}
+                  onChange={(e) => setDishForm({ ...dishForm, description: e.target.value })}
+                  placeholder="Ingredients, accompaniments..."
+                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingDish(null)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 transition flex items-center gap-2"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

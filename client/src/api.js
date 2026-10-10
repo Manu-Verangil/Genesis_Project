@@ -22,12 +22,24 @@ function getLocalState() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const state = JSON.parse(saved);
-      // Ensure campusLocations & canteens always stay strictly synced with the latest real GPS coordinates
+      // Ensure campusLocations stay strictly synced with the latest real GPS coordinates
       state.campusLocations = initialData.campusLocations;
-      if (!state.canteens || state.canteens.length < initialData.canteens.length) {
+      // Preserve custom-created canteens while keeping base initial canteens updated
+      if (Array.isArray(state.canteens)) {
+        const customCanteens = state.canteens.filter(
+          (c) => !initialData.canteens.some((initC) => initC.id === c.id)
+        );
+        state.canteens = [...initialData.canteens, ...customCanteens];
+      } else {
         state.canteens = initialData.canteens;
       }
-      if (!state.menuItems || state.menuItems.length < initialData.menuItems.length) {
+      // Preserve custom-created menu items while keeping catalog fresh
+      if (Array.isArray(state.menuItems)) {
+        const customItems = state.menuItems.filter(
+          (m) => !initialData.menuItems.some((initM) => initM.id === m.id)
+        );
+        state.menuItems = [...initialData.menuItems, ...customItems];
+      } else {
         state.menuItems = initialData.menuItems;
       }
       return state;
@@ -104,18 +116,19 @@ export const api = {
         body: JSON.stringify(canteenData),
       }).then(handleResponse),
       (state) => {
+        const id = canteenData.id || `canteen-${Date.now()}`;
         const newCanteen = {
-          id: canteenData.id || `canteen-${Date.now()}`,
+          id,
           name: canteenData.name,
-          code: canteenData.code || `C${(state.canteens || []).length + 1}`,
-          location: canteenData.location || 'Campus Amenities Block',
+          code: canteenData.code || `C${state.canteens.length + 1}`,
+          location: canteenData.location || 'Central Campus, Amrita Ettimadai',
           timings: canteenData.timings || '08:00 AM - 10:00 PM',
           status: 'open',
           crowdLevel: canteenData.crowdLevel || 'Low',
           avgWaitTimeMinutes: Number(canteenData.avgWaitTimeMinutes) || 5,
           activeOrdersCount: 0,
           counterSpeed: canteenData.counterSpeed || 'Fast',
-          ...canteenData,
+          image: canteenData.image || '',
         };
         state.canteens.push(newCanteen);
         saveLocalState(state);
@@ -188,7 +201,7 @@ export const api = {
         method: 'DELETE',
       }).then(handleResponse),
       (state) => {
-        state.menuItems = (state.menuItems || []).filter((m) => m.id !== id);
+        state.menuItems = state.menuItems.filter((m) => m.id !== id);
         saveLocalState(state);
         return { success: true, id };
       }
@@ -415,20 +428,11 @@ export const api = {
 
   reportLostFound: (item) => {
     const isFormData = typeof FormData !== 'undefined' && item instanceof FormData;
-    let payload = item;
-    if (isFormData) {
-      payload = {};
-      for (const [key, value] of item.entries()) {
-        if (typeof value === 'string') {
-          payload[key] = value;
-        }
-      }
-    }
     return safeCall(
       fetch(`${API_BASE}/lost-found`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        headers: isFormData ? {} : { 'Content-Type': 'application/json' },
+        body: isFormData ? item : JSON.stringify(item),
       }).then(handleResponse),
       (state) => {
         let title = 'Lost/Found Item';

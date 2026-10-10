@@ -52,17 +52,17 @@ app.post("/api/canteens", (req, res) => {
     id: req.body.id || `canteen-${Date.now()}`,
     name: req.body.name,
     code: req.body.code || `C${db.canteens.length + 1}`,
-    location: req.body.location || "Campus Amenities Block",
+    location: req.body.location || "Central Campus, Amrita Ettimadai",
     timings: req.body.timings || "08:00 AM - 10:00 PM",
     status: "open",
     crowdLevel: req.body.crowdLevel || "Low",
     avgWaitTimeMinutes: parseInt(req.body.avgWaitTimeMinutes || 5, 10),
     activeOrdersCount: 0,
     counterSpeed: req.body.counterSpeed || "Fast",
-    ...req.body
+    image: req.body.image || ""
   };
   db.canteens.push(newCanteen);
-  res.status(201).json({ success: true, data: newCanteen });
+  res.json({ success: true, data: newCanteen });
 });
 
 app.put("/api/canteens/:id/crowd", (req, res) => {
@@ -134,9 +134,8 @@ app.put("/api/menu/:id", (req, res) => {
 
 app.delete("/api/menu/:id", (req, res) => {
   const { id } = req.params;
-  const initialLen = db.menuItems.length;
-  db.menuItems = db.menuItems.filter((i) => i.id !== id);
-  res.json({ success: db.menuItems.length < initialLen });
+  db.menuItems = db.menuItems.filter((m) => m.id !== id);
+  res.json({ success: true, data: { id } });
 });
 
 // "Notify Me" subscription when an item is out of stock (Slide 4)
