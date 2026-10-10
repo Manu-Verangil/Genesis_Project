@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { api } from '../api';
+import { UpiPaymentModal } from './UpiPaymentModal';
 
 export function CanteenView({
   canteens,
@@ -36,6 +37,7 @@ export function CanteenView({
   const [paymentMethod, setPaymentMethod] = useState('Wallet');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notifyState, setNotifyState] = useState({}); // itemId -> boolean
+  const [isUpiModalOpen, setIsUpiModalOpen] = useState(false);
 
   const currentCanteen = canteens.find((c) => c.id === selectedCanteenId) || canteens[0];
 
@@ -105,14 +107,26 @@ export function CanteenView({
   const handleCheckout = async () => {
     if (cart.length === 0) return;
 
-    if (paymentMethod === 'Wallet' && wallet && wallet.balance < cartTotal) {
+    if (paymentMethod === 'Wallet' && Number(wallet?.balance ?? 0) < cartTotal) {
+      const availableBal = Number(wallet?.balance ?? 0).toFixed(0);
       const confirmTopUp = window.confirm(
-        `Insufficient wallet balance (₹${wallet.balance.toFixed(0)} available, order is ₹${cartTotal}). Top up wallet now?`
+        `Insufficient wallet balance (₹${availableBal} available, order is ₹${cartTotal}). Top up wallet now?`
       );
       if (confirmTopUp) onOpenWallet();
       return;
     }
 
+    // For UPI — open the QR payment modal first; order is submitted after user confirms
+    if (paymentMethod === 'UPI') {
+      setIsUpiModalOpen(true);
+      return;
+    }
+
+    // Wallet payment — submit directly
+    await submitOrder();
+  };
+
+  const submitOrder = async () => {
     setIsSubmitting(true);
     try {
       const orderPayload = {
@@ -124,15 +138,17 @@ export function CanteenView({
           price: i.price,
           prepTimeMinutes: i.prepTimeMinutes
         })),
-        paymentMethod
+        paymentMethod,
+        totalAmount: cartTotal,
+        canteenName: currentCanteen?.name || 'Campus Canteen'
       };
 
       const res = await api.createOrder(orderPayload);
       if (res.success) {
         confetti({
-          particleCount: 80,
-          spread: 60,
-          origin: { y: 0.6 }
+          particleCount: 90,
+          spread: 65,
+          origin: { y: 0.5 }
         });
 
         setCart([]);
@@ -144,8 +160,11 @@ export function CanteenView({
       alert('Order placement error: ' + err.message);
     } finally {
       setIsSubmitting(false);
+      setIsUpiModalOpen(false);
     }
   };
+
+
 
   // Crowd level badge
   const getCrowdMonochrome = (crowd) => {
@@ -526,7 +545,7 @@ export function CanteenView({
                       Campus Wallet
                     </span>
                     <span className={`font-black mt-1 ${paymentMethod === 'Wallet' ? 'text-[#B0003A]' : 'text-slate-800'}`}>
-                      ₹{wallet ? wallet.balance.toFixed(0) : '0'} Bal
+                      ₹{Number(wallet?.balance ?? 0).toFixed(0)} Bal
                     </span>
                   </button>
 
@@ -565,6 +584,11 @@ export function CanteenView({
               >
                 {isSubmitting ? (
                   'Issuing Token...'
+                ) : paymentMethod === 'UPI' ? (
+                  <>
+                    <span>Pay ₹{cartTotal} via UPI</span>
+                    <ArrowRight className="w-4 h-4 text-white" />
+                  </>
                 ) : (
                   <>
                     <span>Prepay & Get Token (₹{cartTotal})</span>
@@ -576,6 +600,16 @@ export function CanteenView({
           )}
         </div>
       </div>
+
+      {/* UPI Payment QR Modal */}
+      <UpiPaymentModal
+        isOpen={isUpiModalOpen}
+        onClose={() => setIsUpiModalOpen(false)}
+        cart={cart}
+        cartTotal={cartTotal}
+        canteenName={currentCanteen?.name || 'Campus Canteen'}
+        onConfirm={submitOrder}
+      />
     </div>
   );
 }

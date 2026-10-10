@@ -403,7 +403,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                         isSelected ? 'bg-white/20 text-white' : 'bg-[#E8E3D7] text-slate-700'
                       }`}
                     >
-                      {c.code || (c.id === 'canteen-1' ? 'C1' : c.id === 'canteen-2' ? 'C2' : 'C3')}
+                      {c.code || (c.id === 'canteen-1' ? 'MAIN' : c.id === 'canteen-2' ? 'IT' : 'MBA')}
                     </span>
                   </button>
                 );

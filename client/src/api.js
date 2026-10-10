@@ -3,7 +3,7 @@ import { initialData } from './mockData';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Local storage key for persistent client-side state
-const STORAGE_KEY = 'smart_campus_hub_amrita_state_v9';
+const STORAGE_KEY = 'smart_campus_hub_amrita_state_v10';
 
 function getLocalState() {
   try {
@@ -14,7 +14,8 @@ function getLocalState() {
       'smart_campus_hub_amrita_state_v5',
       'smart_campus_hub_amrita_state_v6',
       'smart_campus_hub_amrita_state_v7',
-      'smart_campus_hub_amrita_state_v8'
+      'smart_campus_hub_amrita_state_v8',
+      'smart_campus_hub_amrita_state_v9'
     ].forEach(k => {
       try { localStorage.removeItem(k); } catch (e) {}
     });
@@ -52,6 +53,9 @@ function getLocalState() {
         state.menuItems = [...activeBaseItems, ...customItems];
       } else {
         state.menuItems = initialData.menuItems.filter((m) => !deletedIds.has(m.canteenId));
+      }
+      if (!state.wallet || typeof state.wallet.balance !== 'number') {
+        state.wallet = JSON.parse(JSON.stringify(initialData.wallet || { balance: 425, transactions: [] }));
       }
       return state;
     }
@@ -314,11 +318,13 @@ export const api = {
         body: JSON.stringify(orderData),
       }).then(handleResponse),
       (state) => {
-        const canteenCode = orderData.canteenId === 'canteen-2' ? 'C2' : 'C1';
+        const canteen = state.canteens.find((c) => c.id === orderData.canteenId);
+        const canteenCode = canteen?.code || (orderData.canteenId === 'canteen-2' ? 'C2' : 'C1');
         const num = Math.floor(100 + Math.random() * 900);
         const newOrder = {
           id: `ord-${Date.now()}`,
           token: `${canteenCode}-${num}`,
+          canteenName: orderData.canteenName || (canteen ? canteen.name : 'Campus Canteen'),
           status: 'cooking',
           createdAt: new Date().toISOString(),
           isCurrentUser: true,
@@ -393,7 +399,7 @@ export const api = {
   getWallet: () =>
     safeCall(
       fetch(`${API_BASE}/wallet`).then(handleResponse),
-      (state) => state.wallet
+      (state) => state.wallet || initialData.wallet || { balance: 425, transactions: [] }
     ),
 
   topUpWallet: (amount) =>
@@ -497,7 +503,7 @@ export const api = {
           }
 
           // Relational update for Canteens, Staff view, and Orders
-          const relatedCanteenId = loc.relatedCanteenId || (id === 'loc-1' ? 'canteen-1' : id === 'loc-2' ? 'canteen-2' : id === 'loc-3' ? 'canteen-3' : id === 'loc-it' ? 'canteen-it' : null);
+          const relatedCanteenId = loc.relatedCanteenId || (id === 'loc-1' ? 'canteen-1' : (id === 'loc-it' || id === 'loc-2') ? 'canteen-2' : (id === 'loc-mba' || id === 'loc-3') ? 'canteen-3' : null);
           if (relatedCanteenId) {
             const canteen = state.canteens.find(c => c.id === relatedCanteenId);
             if (canteen) {

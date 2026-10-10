@@ -81,7 +81,7 @@ export function Navbar({
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#198754]/30 hover:bg-[#198754]/45 border border-[#198754]/50 text-white text-xs font-bold transition shadow-sm shrink-0"
               >
                 <Wallet className="w-3.5 h-3.5 text-[#A3D9B5]" />
-                <span>₹{wallet.balance.toFixed(0)}</span>
+                <span>₹{Number(wallet?.balance ?? 0).toFixed(0)}</span>
               </button>
             )}
 
