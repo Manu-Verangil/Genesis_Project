@@ -124,6 +124,17 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
   const [isAddDishModalOpen, setIsAddDishModalOpen] = useState(false);
   const [editingDish, setEditingDish] = useState(null);
   const [isAddCanteenModalOpen, setIsAddCanteenModalOpen] = useState(false);
+  const [editingCanteen, setEditingCanteen] = useState(null);
+  const [editCanteenForm, setEditCanteenForm] = useState({
+    name: '',
+    code: '',
+    location: '',
+    timings: '08:00 AM - 10:00 PM',
+    crowdLevel: 'Low',
+    avgWaitTimeMinutes: 5,
+    counterSpeed: 'Fast',
+    image: ''
+  });
   const [dishImageMode, setDishImageMode] = useState('upload'); // 'upload' | 'url'
   const adminDishFileInputRef = useRef(null);
   const adminEditDishFileInputRef = useRef(null);
@@ -465,6 +476,51 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       }
     } catch (err) {
       alert('Error deleting canteen: ' + err.message);
+    }
+  };
+
+  // Open Edit Canteen Modal
+  const openEditCanteenModal = (canteen) => {
+    setEditingCanteen(canteen);
+    setEditCanteenForm({
+      name: canteen.name || '',
+      code: canteen.code || '',
+      location: canteen.location || '',
+      timings: canteen.timings || '08:00 AM - 10:00 PM',
+      crowdLevel: canteen.crowdLevel || 'Low',
+      avgWaitTimeMinutes: canteen.avgWaitTimeMinutes || 5,
+      counterSpeed: canteen.counterSpeed || 'Fast',
+      image: canteen.image || ''
+    });
+  };
+
+  // Save Edit Canteen (Renaming and Details)
+  const handleSaveEditCanteen = async (e) => {
+    e.preventDefault();
+    if (!editingCanteen) return;
+    if (!editCanteenForm.name.trim()) return alert('Please enter outlet name');
+
+    try {
+      const updates = {
+        name: editCanteenForm.name.trim(),
+        code: editCanteenForm.code.trim().toUpperCase() || editingCanteen.code,
+        location: editCanteenForm.location.trim() || editingCanteen.location,
+        timings: editCanteenForm.timings.trim() || editingCanteen.timings,
+        crowdLevel: editCanteenForm.crowdLevel,
+        avgWaitTimeMinutes: Number(editCanteenForm.avgWaitTimeMinutes) || 5,
+        counterSpeed: editCanteenForm.counterSpeed,
+        image: editCanteenForm.image.trim() || editingCanteen.image
+      };
+
+      const res = await api.updateCanteen(editingCanteen.id, updates);
+      if (res.success) {
+        alert(`🎉 Outlet "${updates.name}" successfully updated! Name and settings are now active across all student and staff stations.`);
+        setEditingCanteen(null);
+        onDataUpdated();
+        fetchAdminData();
+      }
+    } catch (err) {
+      alert('Error updating canteen: ' + err.message);
     }
   };
 
@@ -1442,14 +1498,24 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                           </div>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteCanteen(c)}
-                          title={`Delete ${c.name}`}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition shrink-0"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => openEditCanteenModal(c)}
+                            title={`Edit ${c.name} name & details`}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 transition shrink-0"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCanteen(c)}
+                            title={`Delete ${c.name}`}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition shrink-0"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 my-3 text-[11px] bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
@@ -1498,7 +1564,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                    <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-1.5">
                       <button
                         type="button"
                         onClick={() => {
@@ -1516,12 +1582,21 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
                       <button
                         type="button"
+                        onClick={() => openEditCanteenModal(c)}
+                        title={`Edit ${c.name} name & details`}
+                        className="py-1.5 px-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-bold transition flex items-center justify-center gap-1 border border-amber-500/30 shrink-0"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                        <span>Edit Name</span>
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => handleDeleteCanteen(c)}
                         title={`Delete ${c.name}`}
-                        className="py-1.5 px-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-[11px] font-bold transition flex items-center justify-center gap-1 border border-rose-500/30 shrink-0"
+                        className="py-1.5 px-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-[11px] font-bold transition flex items-center justify-center gap-1 border border-rose-500/30 shrink-0"
                       >
                         <Trash2 className="w-3 h-3" />
-                        <span>Delete</span>
                       </button>
                     </div>
                   </div>
@@ -3102,6 +3177,141 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                 >
                   <Edit2 className="w-4 h-4" />
                   <span>Save Changes</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: EDIT CANTEEN / STORE DETAILS & RENAME */}
+      {editingCanteen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in"
+          onClick={() => setEditingCanteen(null)}
+        >
+          <div
+            className="relative max-w-xl w-full bg-slate-900 border border-slate-700/80 rounded-3xl overflow-hidden shadow-2xl p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 bg-amber-500/20 text-amber-400 rounded-xl">
+                  <Edit2 className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-base text-white">Edit Canteen / Store Details</h3>
+                  <p className="text-[11px] text-slate-400">
+                    Rename outlet, update badge code, location, timings, and operational settings.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingCanteen(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditCanteen} className="space-y-4 pt-4 text-xs">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2">
+                  <label className="block text-slate-300 font-semibold mb-1">
+                    Canteen / Store Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Canteen 1 (Central Dining Hall)"
+                    value={editCanteenForm.name}
+                    onChange={(e) => setEditCanteenForm({ ...editCanteenForm, name: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Badge Code</label>
+                  <input
+                    type="text"
+                    value={editCanteenForm.code}
+                    onChange={(e) => setEditCanteenForm({ ...editCanteenForm, code: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white uppercase font-mono focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Campus Location</label>
+                <input
+                  type="text"
+                  value={editCanteenForm.location}
+                  onChange={(e) => setEditCanteenForm({ ...editCanteenForm, location: e.target.value })}
+                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Operating Hours</label>
+                  <input
+                    type="text"
+                    value={editCanteenForm.timings}
+                    onChange={(e) => setEditCanteenForm({ ...editCanteenForm, timings: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Live Crowd</label>
+                  <select
+                    value={editCanteenForm.crowdLevel}
+                    onChange={(e) => setEditCanteenForm({ ...editCanteenForm, crowdLevel: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Moderate">Moderate</option>
+                    <option value="Busy">Busy</option>
+                    <option value="Rush Hour">Rush Hour</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Avg Wait (mins)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={editCanteenForm.avgWaitTimeMinutes}
+                    onChange={(e) => setEditCanteenForm({ ...editCanteenForm, avgWaitTimeMinutes: e.target.value })}
+                    className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Cover Image URL</label>
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                  value={editCanteenForm.image}
+                  onChange={(e) => setEditCanteenForm({ ...editCanteenForm, image: e.target.value })}
+                  className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingCanteen(null)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/25 transition flex items-center gap-2"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  <span>Save Outlet Changes</span>
                 </button>
               </div>
             </form>

@@ -35,6 +35,14 @@ function getLocalState() {
       } else {
         state.canteens = activeBaseCanteens;
       }
+      // Apply any saved canteen edits (name, location, code, timings, image, etc.)
+      if (state.customCanteenUpdates && Array.isArray(state.canteens)) {
+        state.canteens.forEach((c) => {
+          if (state.customCanteenUpdates[c.id]) {
+            Object.assign(c, state.customCanteenUpdates[c.id]);
+          }
+        });
+      }
       // Preserve custom-created menu items while filtering out dishes from deleted canteens
       if (Array.isArray(state.menuItems)) {
         const customItems = state.menuItems.filter(
@@ -170,6 +178,28 @@ export const api = {
       (state) => {
         const canteen = state.canteens.find((c) => c.id === canteenId);
         if (canteen) canteen.crowdLevel = crowdLevel;
+        saveLocalState(state);
+        return canteen;
+      }
+    ),
+
+  updateCanteen: (canteenId, updates) =>
+    safeCall(
+      fetch(`${API_BASE}/canteens/${canteenId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      }).then(handleResponse),
+      (state) => {
+        const canteen = state.canteens.find((c) => c.id === canteenId);
+        if (canteen) {
+          Object.assign(canteen, updates);
+        }
+        if (!state.customCanteenUpdates) state.customCanteenUpdates = {};
+        state.customCanteenUpdates[canteenId] = {
+          ...(state.customCanteenUpdates[canteenId] || {}),
+          ...updates,
+        };
         saveLocalState(state);
         return canteen;
       }

@@ -1136,6 +1136,17 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                       </button>
                     </div>
                   </div>
+
+                  {/* Prominent Edit Dish Details Button */}
+                  <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+                    <button
+                      onClick={() => openEditModal(item)}
+                      className="w-full py-1.5 px-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-cyan-300 hover:text-cyan-200 text-xs font-bold transition flex items-center justify-center gap-1.5 border border-slate-700/60 shadow-sm"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>Edit Dish Name & Details</span>
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -1673,6 +1684,17 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     </p>
                   </div>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-bold mb-1.5">Description & Ingredients</label>
+                <textarea
+                  rows="2"
+                  placeholder="Ingredients, accompaniments, spices..."
+                  value={itemForm.description || ''}
+                  onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 font-medium"
+                />
               </div>
 
               <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
