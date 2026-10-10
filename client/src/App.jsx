@@ -65,12 +65,10 @@ export function App() {
   };
 
   const handleNavigateToCanteen = (canteenLocId) => {
-    if (canteenLocId === 'loc-2' || canteenLocId === 'canteen-2') {
+    if (canteenLocId === 'loc-it' || canteenLocId === 'canteen-it' || canteenLocId === 'canteen-2' || canteenLocId === 'loc-2') {
       setSelectedCanteenId('canteen-2');
-    } else if (canteenLocId === 'loc-3' || canteenLocId === 'canteen-3') {
+    } else if (canteenLocId === 'loc-mba' || canteenLocId === 'canteen-mba' || canteenLocId === 'canteen-3' || canteenLocId === 'loc-3') {
       setSelectedCanteenId('canteen-3');
-    } else if (canteenLocId === 'loc-it' || canteenLocId === 'canteen-it') {
-      setSelectedCanteenId('canteen-it');
     } else {
       setSelectedCanteenId('canteen-1');
     }

@@ -3,7 +3,7 @@ import { initialData } from './mockData';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Local storage key for persistent client-side state
-const STORAGE_KEY = 'smart_campus_hub_amrita_state_v9';
+const STORAGE_KEY = 'smart_campus_hub_amrita_state_v10';
 
 function getLocalState() {
   try {
@@ -14,7 +14,8 @@ function getLocalState() {
       'smart_campus_hub_amrita_state_v5',
       'smart_campus_hub_amrita_state_v6',
       'smart_campus_hub_amrita_state_v7',
-      'smart_campus_hub_amrita_state_v8'
+      'smart_campus_hub_amrita_state_v8',
+      'smart_campus_hub_amrita_state_v9'
     ].forEach(k => {
       try { localStorage.removeItem(k); } catch (e) {}
     });
@@ -497,7 +498,7 @@ export const api = {
           }
 
           // Relational update for Canteens, Staff view, and Orders
-          const relatedCanteenId = loc.relatedCanteenId || (id === 'loc-1' ? 'canteen-1' : id === 'loc-2' ? 'canteen-2' : id === 'loc-3' ? 'canteen-3' : id === 'loc-it' ? 'canteen-it' : null);
+          const relatedCanteenId = loc.relatedCanteenId || (id === 'loc-1' ? 'canteen-1' : (id === 'loc-it' || id === 'loc-2') ? 'canteen-2' : (id === 'loc-mba' || id === 'loc-3') ? 'canteen-3' : null);
           if (relatedCanteenId) {
             const canteen = state.canteens.find(c => c.id === relatedCanteenId);
             if (canteen) {

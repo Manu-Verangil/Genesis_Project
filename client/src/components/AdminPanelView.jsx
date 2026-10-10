@@ -589,7 +589,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
       ...loc,
       lat,
       lng,
-      relatedCanteenId: loc.relatedCanteenId || (loc.id === 'loc-1' ? 'canteen-1' : loc.id === 'loc-2' ? 'canteen-2' : loc.id === 'loc-3' ? 'canteen-3' : loc.id === 'loc-it' ? 'canteen-it' : '')
+      relatedCanteenId: loc.relatedCanteenId || (loc.id === 'loc-1' ? 'canteen-1' : (loc.id === 'loc-it' || loc.id === 'loc-2') ? 'canteen-2' : (loc.id === 'loc-mba' || loc.id === 'loc-3') ? 'canteen-3' : '')
     });
     setIsAddingNewLoc(false);
     setIsMapModalOpen(true);
@@ -1488,7 +1488,7 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2">
                           <span className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-mono font-black text-[#A41034]">
-                            {c.code || (c.id === 'canteen-1' ? 'C1' : c.id === 'canteen-2' ? 'C2' : c.id === 'canteen-3' ? 'C3' : 'CT')}
+                            {c.code || (c.id === 'canteen-1' ? 'MAIN' : c.id === 'canteen-2' ? 'IT' : c.id === 'canteen-3' ? 'MBA' : 'CT')}
                           </span>
                           <div>
                             <h4 className="font-bold text-sm text-slate-900 line-clamp-1">{c.name}</h4>
