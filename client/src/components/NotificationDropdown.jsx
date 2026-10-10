@@ -16,15 +16,15 @@ export function NotificationDropdown({ isOpen, onClose, notifications, onNotific
 
   return (
     <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 animate-in fade-in slide-in-from-top-2 text-slate-800">
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div className="flex items-center justify-between pb-3 border-b border-[#E8E3D7]">
         <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-[#A41034]" />
+          <Bell className="w-4 h-4 text-[#B0003A]" />
           <h4 className="font-bold text-sm text-slate-900">Campus Live Alerts</h4>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleMarkAllRead}
-            className="text-[11px] text-[#A41034] hover:text-[#880E2D] font-semibold transition"
+            className="text-[11px] text-[#B0003A] hover:text-[#8F002E] font-semibold transition"
           >
             Mark all read
           </button>
@@ -53,18 +53,18 @@ export function NotificationDropdown({ isOpen, onClose, notifications, onNotific
                 key={n.id}
                 className={`p-3 rounded-xl border text-xs transition ${
                   n.read
-                    ? 'bg-slate-50 border-slate-200 text-slate-600'
-                    : 'bg-rose-50/50 border-rose-200 text-slate-900 shadow-xs'
+                    ? 'bg-slate-50 border-[#E8E3D7] text-slate-600'
+                    : 'bg-[#FFF0F4] border-[#F8C0CE] text-slate-900 shadow-xs'
                 }`}
               >
                 <div className="flex items-start gap-2.5">
                   <div
                     className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${
                       isStock
-                        ? 'bg-emerald-100 text-emerald-700'
+                        ? 'bg-[#E8F5E9] text-[#198754]'
                         : isOrder
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-rose-100 text-[#A41034]'
+                        ? 'bg-[#FFF2E6] text-[#FD7E14]'
+                        : 'bg-[#FFF0F4] text-[#B0003A]'
                     }`}
                   >
                     {isStock ? (

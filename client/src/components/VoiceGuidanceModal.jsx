@@ -125,15 +125,15 @@ export function VoiceGuidanceModal({ isOpen, onClose, onNavigate, onAskStatus })
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in">
       <div className="relative w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 overflow-hidden text-slate-800">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="flex items-center justify-between pb-4 border-b border-[#E8E3D7]">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#A41034] text-white shadow-sm">
-              <Sparkles className="w-5 h-5" />
+            <div className="p-2.5 rounded-xl bg-[#6F42C1] text-white shadow-sm">
+              <Sparkles className="w-5 h-5 text-[#D4A017]" />
             </div>
             <div>
               <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
                 Voice Guidance Assistant
-                <span className="text-xs px-2 py-0.5 rounded-full bg-rose-50 text-[#A41034] font-medium border border-rose-200">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#F3EEF9] text-[#6F42C1] font-bold border border-[#C8B3E6]">
                   Multilingual AI
                 </span>
               </h3>
@@ -149,12 +149,12 @@ export function VoiceGuidanceModal({ isOpen, onClose, onNavigate, onAskStatus })
         </div>
 
         {/* Assistant Response Box */}
-        <div className="my-5 p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3">
-          <div className="p-2 rounded-lg bg-rose-50 text-[#A41034] shrink-0 mt-0.5">
+        <div className="my-5 p-4 rounded-xl bg-slate-50 border border-[#E8E3D7] flex items-start gap-3">
+          <div className="p-2 rounded-lg bg-[#F3EEF9] text-[#6F42C1] shrink-0 mt-0.5">
             <Volume2 className="w-4 h-4" />
           </div>
           <div className="flex-1 text-sm text-slate-700 leading-relaxed">
-            <p className="font-bold text-[#A41034] text-xs mb-1">Smart Campus Hub Guide:</p>
+            <p className="font-bold text-[#6F42C1] text-xs mb-1">Smart Campus Hub Guide:</p>
             {assistantReply}
           </div>
         </div>
@@ -165,24 +165,24 @@ export function VoiceGuidanceModal({ isOpen, onClose, onNavigate, onAskStatus })
             onClick={toggleListening}
             className={`relative p-5 rounded-full text-white shadow-xl transition-all duration-300 transform active:scale-95 ${
               isListening
-                ? 'bg-rose-600 shadow-rose-600/50 ring-8 ring-rose-500/20 animate-pulse'
-                : 'bg-[#A41034] hover:bg-[#880E2D] shadow-[#A41034]/30 ring-4 ring-[#A41034]/20'
+                ? 'bg-[#DC3545] shadow-[#DC3545]/50 ring-8 ring-[#DC3545]/20 animate-pulse'
+                : 'bg-[#6F42C1] hover:bg-[#59339d] shadow-[#6F42C1]/30 ring-4 ring-[#6F42C1]/20'
             }`}
           >
-            {isListening ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7" />}
+            {isListening ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7 text-[#D4A017]" />}
           </button>
           <span className="mt-3 text-sm font-semibold text-slate-700">
             {isListening ? 'Listening... Speak now!' : 'Click to Speak a Command'}
           </span>
           {transcript && (
-            <p className="mt-1 text-xs text-[#A41034] font-mono italic max-w-sm text-center">
+            <p className="mt-1 text-xs text-[#6F42C1] font-mono italic max-w-sm text-center">
               "{transcript}"
             </p>
           )}
         </div>
 
         {/* Quick Voice Command Prompts */}
-        <div className="mt-4 pt-4 border-t border-slate-100">
+        <div className="mt-4 pt-4 border-t border-[#E8E3D7]">
           <div className="flex items-center justify-between mb-2.5">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
               Or Try A Voice Prompt (One-Click)
@@ -193,10 +193,10 @@ export function VoiceGuidanceModal({ isOpen, onClose, onNavigate, onAskStatus })
               <button
                 key={idx}
                 onClick={() => handleVoiceCommand(q.cmd)}
-                className="text-left text-xs p-2.5 rounded-lg bg-slate-50 hover:bg-rose-50 hover:border-rose-200 border border-slate-200 text-slate-700 hover:text-[#A41034] transition group flex items-center justify-between shadow-2xs"
+                className="text-left text-xs p-2.5 rounded-lg bg-slate-50 hover:bg-[#F3EEF9] hover:border-[#C8B3E6] border border-[#E8E3D7] text-slate-700 hover:text-[#6F42C1] transition group flex items-center justify-between shadow-2xs"
               >
                 <span className="font-medium">{q.label}</span>
-                <span className="opacity-0 group-hover:opacity-100 text-[#A41034] font-bold transition">→</span>
+                <span className="opacity-0 group-hover:opacity-100 text-[#6F42C1] font-bold transition">→</span>
               </button>
             ))}
           </div>

@@ -46,13 +46,13 @@ export function Navbar({
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-[#A41034] shadow-md border-b border-[#880E2D] text-white">
+    <header className="sticky top-0 z-40 bg-[#B0003A] shadow-md border-b border-[#8F002E] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between min-h-[4rem] py-2 gap-3">
           {/* Logo & Platform Title */}
           <div className="flex items-center gap-3 shrink-0">
             <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/25 p-0.5 shadow-sm flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5 text-amber-300" />
+              <Sparkles className="w-5 h-5 text-[#D4A017]" />
             </div>
             <div className="flex flex-col justify-center min-w-0">
               <div className="flex items-center gap-2">
@@ -77,7 +77,7 @@ export function Navbar({
               title="Voice Guidance Assistant"
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 text-xs font-semibold transition group shadow-sm shrink-0"
             >
-              <Mic className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition" />
+              <Mic className="w-3.5 h-3.5 text-[#D4A017] group-hover:scale-110 transition" />
               <span className="hidden sm:inline">Voice Guide</span>
             </button>
 
@@ -85,10 +85,10 @@ export function Navbar({
             {currentRole === 'student' && wallet && (
               <button
                 onClick={onOpenWallet}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/40 border border-emerald-300/40 text-emerald-100 text-xs font-bold transition shadow-sm shrink-0"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#198754]/30 hover:bg-[#198754]/45 border border-[#198754]/50 text-white text-xs font-bold transition shadow-sm shrink-0"
               >
-                <Wallet className="w-3.5 h-3.5 text-emerald-300" />
-                <span>₹{wallet.balance.toFixed(0)}</span>
+                <Wallet className="w-3.5 h-3.5 text-[#A3D9B5]" />
+                <span>₹{Number(wallet?.balance ?? 0).toFixed(0)}</span>
               </button>
             )}
 
@@ -101,7 +101,7 @@ export function Navbar({
               >
                 <Bell className="w-4 h-4 shrink-0" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 text-slate-900 text-[9px] font-black flex items-center justify-center animate-pulse">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#D4A017] text-slate-900 text-[9px] font-black flex items-center justify-center animate-pulse">
                     {unreadCount}
                   </span>
                 )}
@@ -145,7 +145,7 @@ export function Navbar({
 
       {/* Main Navigation Sub-Bar (Dedicated Amrita-style Navigation Row) */}
       {currentRole === 'student' && (
-        <div className="bg-[#8B0D2A] border-t border-rose-900/50 shadow-inner">
+        <div className="bg-[#8F002E] border-t border-[#730025] shadow-inner">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="flex items-center gap-1 sm:gap-2 py-2 overflow-x-auto scrollbar-thin">
               {navItems.map((item) => {
@@ -157,7 +157,7 @@ export function Navbar({
                     onClick={() => setActiveTab(item.id)}
                     className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition shrink-0 ${
                       isActive
-                        ? 'bg-white text-[#A41034] font-bold shadow-sm'
+                        ? 'bg-white text-[#B0003A] font-bold shadow-sm'
                         : 'text-white/85 hover:text-white hover:bg-white/10'
                     }`}
                   >
@@ -167,7 +167,7 @@ export function Navbar({
                       <span
                         className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold ${
                           isActive
-                            ? 'bg-[#A41034]/15 text-[#A41034]'
+                            ? 'bg-[#B0003A]/15 text-[#B0003A]'
                             : 'bg-white/20 text-white'
                         }`}
                       >
