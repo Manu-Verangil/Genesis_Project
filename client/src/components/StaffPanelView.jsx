@@ -361,19 +361,19 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       {/* =========================================================================
           OPERATIONAL CONTROL HEADER & STATION SWITCHER (Amrita Campus Theme)
       ========================================================================= */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden">
+      <div className="bg-white border border-[#E8E3D7] rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-200 text-[#A41034] flex items-center justify-center shrink-0 shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-[#FFF0F4] border border-[#F8C0CE] text-[#B0003A] flex items-center justify-center shrink-0 shadow-sm">
               <ChefHat className="w-6 h-6" />
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2.5">
-                <h2 className="text-lg sm:text-xl font-extrabold text-[#A41034] tracking-tight">
+                <h2 className="text-lg sm:text-xl font-extrabold text-[#B0003A] tracking-tight">
                   Canteen Kitchen & Counter Operations
                 </h2>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-[#A41034] text-[11px] font-bold tracking-wide">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FFF0F4] border border-[#F8C0CE] text-[#B0003A] text-[11px] font-bold tracking-wide">
+                  <span className="w-2 h-2 rounded-full bg-[#198754] animate-pulse" />
                   <span>LIVE KDS TERMINAL</span>
                 </div>
               </div>
@@ -384,7 +384,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
           </div>
 
           <div className="flex items-center gap-3 self-start lg:self-center">
-            <div className="bg-slate-100 p-1.5 rounded-2xl border border-slate-200 flex items-center gap-1 shadow-inner">
+            <div className="bg-[#FAF7F0] p-1.5 rounded-2xl border border-[#E8E3D7] flex items-center gap-1 shadow-inner">
               {canteens.map((c) => {
                 const isSelected = selectedCanteenId === c.id;
                 return (
@@ -393,14 +393,14 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     onClick={() => setSelectedCanteenId(c.id)}
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
                       isSelected
-                        ? 'bg-[#A41034] text-white shadow-sm font-extrabold'
+                        ? 'bg-[#B0003A] text-white shadow-sm font-extrabold'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                     }`}
                   >
                     <span>{c.name}</span>
                     <span
                       className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono font-bold ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+                        isSelected ? 'bg-white/20 text-white' : 'bg-[#E8E3D7] text-slate-700'
                       }`}
                     >
                       {c.code || (c.id === 'canteen-1' ? 'C1' : c.id === 'canteen-2' ? 'C2' : 'C3')}
@@ -414,17 +414,17 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
               onClick={() => fetchStaffData(true)}
               disabled={isRefreshing}
               title="Manual Data Sync"
-              className="p-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition active:scale-95 disabled:opacity-50"
+              className="p-2.5 rounded-2xl bg-[#FAF7F0] hover:bg-[#E8E3D7] text-slate-700 border border-[#E8E3D7] transition active:scale-95 disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-[#A41034]' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-[#B0003A]' : ''}`} />
             </button>
           </div>
         </div>
 
         {/* Real-Time Crowd Flow Calibrator */}
-        <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="mt-5 pt-4 border-t border-[#E8E3D7]/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-rose-50 border border-rose-200 text-[#A41034]">
+            <div className="p-1.5 rounded-lg bg-[#FFF0F4] border border-[#F8C0CE] text-[#B0003A]">
               <Users className="w-4 h-4" />
             </div>
             <div>
@@ -449,8 +449,8 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   onClick={() => handleUpdateCrowd(level)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1.5 ${
                     isActive
-                      ? 'bg-[#A41034] text-white border-[#A41034] font-bold shadow-sm'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      ? 'bg-[#B0003A] text-white border-[#B0003A] font-bold shadow-sm'
+                      : 'bg-[#FAF7F0] text-slate-700 border-[#E8E3D7] hover:bg-[#E8E3D7]'
                   }`}
                 >
                   <span>{level}</span>
@@ -472,7 +472,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
           OPERATIONAL METRICS RIBBON
       ========================================================================= */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+        <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
           <div>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               Total In Kitchen
@@ -482,54 +482,54 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
             </div>
             <div className="text-[10px] text-slate-500 mt-0.5 font-medium">Pending collection</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#FAF7F0] text-slate-600 border border-[#E8E3D7] flex items-center justify-center">
             <Layers className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+        <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
           <div>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               Cooking / Prep
             </div>
-            <div className="text-2xl font-black font-mono text-[#A41034] mt-0.5">
+            <div className="text-2xl font-black font-mono text-[#FD7E14] mt-0.5">
               {stats.cooking}
             </div>
-            <div className="text-[10px] text-rose-600/80 mt-0.5 font-medium">In preparation</div>
+            <div className="text-[10px] text-[#FD7E14] mt-0.5 font-medium">In preparation</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 text-[#A41034] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#FFF2E6] border border-[#FECB9F] text-[#FD7E14] flex items-center justify-center">
             <Flame className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+        <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
           <div>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               Ready At Counter
             </div>
-            <div className="text-2xl font-black font-mono text-emerald-700 mt-0.5">
+            <div className="text-2xl font-black font-mono text-[#198754] mt-0.5">
               {stats.ready + stats.serving}
             </div>
-            <div className="text-[10px] text-emerald-600 mt-0.5 font-medium">Awaiting pickup</div>
+            <div className="text-[10px] text-[#198754] mt-0.5 font-medium">Awaiting pickup</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#E8F5E9] border border-[#A3D9B5] text-[#198754] flex items-center justify-center">
             <Bell className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+        <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
           <div>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               Total Menu Items
             </div>
-            <div className="text-2xl font-black font-mono text-blue-700 mt-0.5">
+            <div className="text-2xl font-black font-mono text-[#0D6EFD] mt-0.5">
               {menuItems.length}
             </div>
             <div className="text-[10px] text-slate-500 mt-0.5 font-medium">
               {stats.lowStock > 0 ? `${stats.lowStock} low stock` : 'Active on counter'}
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#EBF3FE] border border-[#A2C8FD] text-[#0D6EFD] flex items-center justify-center">
             <Package className="w-5 h-5" />
           </div>
         </div>
@@ -538,21 +538,21 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       {/* =========================================================================
           PRIMARY NAVIGATION TABS
       ========================================================================= */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E3D7] pb-3">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab('orders')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
               activeTab === 'orders'
-                ? 'bg-[#A41034] text-white shadow-sm font-extrabold'
-                : 'bg-white text-slate-700 hover:bg-slate-100/80 border border-slate-200'
+                ? 'bg-[#B0003A] text-white shadow-sm font-extrabold'
+                : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
             }`}
           >
             <Clock className="w-4 h-4" />
             <span>Active Kitchen Queue</span>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                activeTab === 'orders' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+                activeTab === 'orders' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
               }`}
             >
               {activeOrders.length}
@@ -563,15 +563,15 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
             onClick={() => setActiveTab('verify')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
               activeTab === 'verify'
-                ? 'bg-[#A41034] text-white shadow-sm font-extrabold'
-                : 'bg-white text-slate-700 hover:bg-slate-100/80 border border-slate-200'
+                ? 'bg-[#B0003A] text-white shadow-sm font-extrabold'
+                : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
             }`}
           >
             <QrCode className="w-4 h-4" />
             <span>Pickup Token Scanner</span>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                activeTab === 'verify' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+                activeTab === 'verify' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
               }`}
             >
               Verify
@@ -582,15 +582,15 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
             onClick={() => setActiveTab('stock')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
               activeTab === 'stock'
-                ? 'bg-[#A41034] text-white shadow-sm font-extrabold'
-                : 'bg-white text-slate-700 hover:bg-slate-100/80 border border-slate-200'
+                ? 'bg-[#B0003A] text-white shadow-sm font-extrabold'
+                : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
             }`}
           >
             <Package className="w-4 h-4" />
             <span>Menu & Live Stock Management</span>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                activeTab === 'stock' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+                activeTab === 'stock' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
               }`}
             >
               {menuItems.length}
@@ -599,7 +599,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
         </div>
 
         <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-slate-500 font-medium">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          <span className="w-2 h-2 rounded-full bg-[#198754] animate-ping" />
           <span>Polling: 4s</span>
         </div>
       </div>
@@ -609,7 +609,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       ========================================================================= */}
       {activeTab === 'orders' && (
         <div className="space-y-4">
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+          <div className="bg-white border border-[#E8E3D7] rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
             <div className="flex flex-wrap items-center gap-1.5">
               {[
                 { id: 'all', label: 'All Active', count: activeOrders.length },
@@ -622,13 +622,13 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   onClick={() => setOrderStatusFilter(f.id)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 ${
                     orderStatusFilter === f.id
-                      ? 'bg-[#A41034] text-white shadow-sm font-bold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      ? 'bg-[#B0003A] text-white shadow-sm font-bold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-[#FAF7F0]'
                   }`}
                 >
                   <span>{f.label}</span>
                   <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                    orderStatusFilter === f.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                    orderStatusFilter === f.id ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-600'
                   }`}>
                     {f.count}
                   </span>
@@ -643,7 +643,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                 placeholder="Search token, student or item..."
                 value={orderSearchQuery}
                 onChange={(e) => setOrderSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034] focus:bg-white"
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#B0003A] focus:bg-white"
               />
             </div>
           </div>
@@ -659,19 +659,21 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   key={order.id}
                   className={`rounded-2xl p-5 border transition-all duration-200 flex flex-col justify-between shadow-sm hover:shadow-md bg-white ${
                     isServing
-                      ? 'border-blue-300 ring-1 ring-blue-200 bg-blue-50/20'
+                      ? 'border-[#0D6EFD]/50 ring-1 ring-[#0D6EFD]/20 bg-[#EBF3FE]/30'
                       : isReady
-                      ? 'border-emerald-300 ring-1 ring-emerald-200 bg-emerald-50/20'
-                      : 'border-slate-200/90'
+                      ? 'border-[#198754]/50 ring-1 ring-[#198754]/20 bg-[#E8F5E9]/30'
+                      : isCooking
+                      ? 'border-[#FD7E14]/50 ring-1 ring-[#FD7E14]/20 bg-[#FFF2E6]/30'
+                      : 'border-[#E8E3D7]'
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#E8E3D7]/60">
                       <div className="flex items-center gap-2">
-                        <span className="text-2xl font-black font-mono text-[#A41034] tracking-wider">
+                        <span className="text-2xl font-black font-mono text-[#B0003A] tracking-wider">
                           {order.token}
                         </span>
-                        <span className="text-[10px] font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 font-semibold">
+                        <span className="text-[10px] font-mono text-slate-600 bg-[#FAF7F0] px-2 py-0.5 rounded-md border border-[#E8E3D7] font-semibold">
                           {getElapsedMinutes(order.createdAt)}
                         </span>
                       </div>
@@ -679,15 +681,15 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                       <div
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1 ${
                           isServing
-                            ? 'bg-blue-50 text-blue-800 border border-blue-200'
+                            ? 'bg-[#EBF3FE] text-[#0D6EFD] border border-[#A2C8FD]'
                             : isReady
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                            : 'bg-amber-50 text-amber-800 border border-amber-200'
+                            ? 'bg-[#E8F5E9] text-[#198754] border border-[#A3D9B5]'
+                            : 'bg-[#FFF2E6] text-[#FD7E14] border border-[#FECB9F]'
                         }`}
                       >
-                        {isServing && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
-                        {isReady && <Bell className="w-3 h-3 text-emerald-600" />}
-                        {isCooking && <Flame className="w-3 h-3 text-amber-600" />}
+                        {isServing && <span className="w-1.5 h-1.5 rounded-full bg-[#0D6EFD] animate-pulse" />}
+                        {isReady && <Bell className="w-3 h-3 text-[#198754]" />}
+                        {isCooking && <Flame className="w-3 h-3 text-[#FD7E14]" />}
                         <span>{order.status}</span>
                       </div>
                     </div>
@@ -699,7 +701,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                       </div>
                     </div>
 
-                    <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                    <div className="mt-3 pt-3 border-t border-[#E8E3D7]/60 space-y-2">
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                         Kitchen Items ({order.items.reduce((s, i) => s + i.quantity, 0)} total):
                       </div>
@@ -707,12 +709,12 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                         {order.items.map((item, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center justify-between bg-slate-50 border border-slate-100 px-2.5 py-1.5 rounded-lg text-xs"
+                            className="flex items-center justify-between bg-[#FAF7F0] border border-[#E8E3D7] px-2.5 py-1.5 rounded-lg text-xs"
                           >
                             <span className="font-semibold text-slate-800 truncate pr-2">
                               {item.name}
                             </span>
-                            <span className="font-mono font-black text-[#A41034] shrink-0">
+                            <span className="font-mono font-black text-[#B0003A] shrink-0">
                               ×{item.quantity}
                             </span>
                           </div>
@@ -721,11 +723,11 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     </div>
                   </div>
 
-                  <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center gap-2">
+                  <div className="mt-5 pt-3.5 border-t border-[#E8E3D7]/60 flex items-center gap-2">
                     {isCooking && (
                       <button
                         onClick={() => handleUpdateStatus(order.id, 'ready')}
-                        className="flex-1 py-2.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+                        className="flex-1 py-2.5 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
                       >
                         <Bell className="w-4 h-4" />
                         <span>Mark Ready For Pickup</span>
@@ -736,7 +738,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                       <>
                         <button
                           onClick={() => handleUpdateStatus(order.id, 'serving')}
-                          className="flex-1 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+                          className="flex-1 py-2.5 rounded-xl bg-[#198754] hover:bg-[#146c43] active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
                         >
                           <CheckCircle className="w-4 h-4" />
                           <span>Hand Over / Serving</span>
@@ -746,7 +748,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                             setTokenInput(order.token);
                             setActiveTab('verify');
                           }}
-                          className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition"
+                          className="p-2.5 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] text-slate-700 border border-[#E8E3D7] transition"
                           title="Verify token at pickup scanner"
                         >
                           <QrCode className="w-4 h-4" />
@@ -757,9 +759,9 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     {isServing && (
                       <button
                         onClick={() => handleUpdateStatus(order.id, 'collected')}
-                        className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-98 text-slate-800 font-bold text-xs border border-slate-200 transition flex items-center justify-center gap-1.5 shadow-sm"
+                        className="flex-1 py-2.5 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] active:scale-98 text-slate-800 font-bold text-xs border border-[#E8E3D7] transition flex items-center justify-center gap-1.5 shadow-sm"
                       >
-                        <CheckCheck className="w-4 h-4 text-emerald-600" />
+                        <CheckCheck className="w-4 h-4 text-[#198754]" />
                         <span>Complete & Collected</span>
                       </button>
                     )}
@@ -770,8 +772,8 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
           </div>
 
           {filteredOrders.length === 0 && (
-            <div className="py-16 text-center bg-white border border-slate-200/90 rounded-2xl p-8 shadow-sm">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center mx-auto mb-3">
+            <div className="py-16 text-center bg-white border border-[#E8E3D7] rounded-2xl p-8 shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-[#E8F5E9] border border-[#A3D9B5] text-[#198754] flex items-center justify-center mx-auto mb-3">
                 <CheckCircle className="w-7 h-7" />
               </div>
               <h3 className="text-base font-bold text-slate-900">Kitchen Queue Is Caught Up!</h3>
@@ -788,12 +790,12 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       ========================================================================= */}
       {activeTab === 'verify' && (
         <div className="max-w-xl mx-auto space-y-6">
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-sm relative overflow-hidden">
-            <div className="text-center pb-5 border-b border-slate-100">
-              <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-200 text-[#A41034] flex items-center justify-center mx-auto mb-3 shadow-sm">
+          <div className="bg-white border border-[#E8E3D7] rounded-2xl p-6 sm:p-7 shadow-sm relative overflow-hidden">
+            <div className="text-center pb-5 border-b border-[#E8E3D7]/60">
+              <div className="w-12 h-12 rounded-xl bg-[#FFF0F4] border border-[#F8C0CE] text-[#B0003A] flex items-center justify-center mx-auto mb-3 shadow-sm">
                 <QrCode className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-extrabold text-[#A41034]">
+              <h3 className="text-lg font-extrabold text-[#B0003A]">
                 Single-Use Pickup Token Verification Window
               </h3>
               <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto font-medium">
@@ -812,11 +814,11 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     placeholder="e.g. C1-047"
                     value={tokenInput}
                     onChange={(e) => setTokenInput(e.target.value.toUpperCase())}
-                    className="flex-1 px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 font-mono text-lg font-bold tracking-widest placeholder-slate-400 focus:outline-none focus:border-[#A41034] focus:bg-white transition"
+                    className="flex-1 px-4 py-3 bg-[#FAF7F0] border-2 border-[#E8E3D7] rounded-xl text-slate-900 font-mono text-lg font-bold tracking-widest placeholder-slate-400 focus:outline-none focus:border-[#B0003A] focus:bg-white transition"
                   />
                   <button
                     type="submit"
-                    className="px-6 py-3 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-extrabold text-xs transition shadow-sm flex items-center gap-2 active:scale-98"
+                    className="px-6 py-3 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] text-white font-extrabold text-xs transition shadow-sm flex items-center gap-2 active:scale-98"
                   >
                     <ShieldCheck className="w-4 h-4" />
                     <span>Verify Pass</span>
@@ -838,8 +840,8 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                         onClick={() => setTokenInput(ord.token)}
                         className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition flex items-center gap-1.5 ${
                           ord.status === 'ready' || ord.status === 'serving'
-                            ? 'bg-rose-50 border-rose-200 text-[#A41034] hover:bg-rose-100'
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                            ? 'bg-[#FFF0F4] border-[#F8C0CE] text-[#B0003A] hover:bg-[#FFF0F4]/80'
+                            : 'bg-[#FAF7F0] border-[#E8E3D7] text-slate-600 hover:text-slate-900 hover:bg-[#E8E3D7]'
                         }`}
                       >
                         <span>{ord.token}</span>
@@ -857,16 +859,16 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
               <div
                 className={`mt-6 p-5 rounded-2xl border text-xs transition-all duration-300 ${
                   verificationResult.success
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-sm'
-                    : 'bg-rose-50 border-rose-200 text-rose-900 shadow-sm'
+                    ? 'bg-[#E8F5E9] border-[#A3D9B5] text-[#198754] shadow-sm'
+                    : 'bg-[#FCE8E6] border-[#F5B0A9] text-[#DC3545] shadow-sm'
                 }`}
               >
                 <div className="flex items-start gap-3.5">
                   <div
                     className={`p-2 rounded-xl mt-0.5 shrink-0 ${
                       verificationResult.success
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-rose-100 text-[#A41034]'
+                        ? 'bg-[#E8F5E9] text-[#198754]'
+                        : 'bg-[#FCE8E6] text-[#DC3545]'
                     }`}
                   >
                     {verificationResult.success ? (
@@ -891,24 +893,24 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     </p>
 
                     {verificationResult.data && (
-                      <div className="mt-4 pt-3 border-t border-emerald-200/80 space-y-2 text-xs">
+                      <div className="mt-4 pt-3 border-t border-[#A3D9B5]/80 space-y-2 text-xs">
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="bg-white p-2.5 rounded-xl border border-emerald-100">
-                            <span className="text-[10px] text-emerald-700 block font-bold">Student</span>
+                          <div className="bg-white p-2.5 rounded-xl border border-[#A3D9B5]">
+                            <span className="text-[10px] text-[#198754] block font-bold">Student</span>
                             <span className="font-bold text-slate-900">
                               {verificationResult.data.studentName}
                             </span>
                           </div>
-                          <div className="bg-white p-2.5 rounded-xl border border-emerald-100">
-                            <span className="text-[10px] text-emerald-700 block font-bold">Roll Number</span>
+                          <div className="bg-white p-2.5 rounded-xl border border-[#A3D9B5]">
+                            <span className="text-[10px] text-[#198754] block font-bold">Roll Number</span>
                             <span className="font-mono font-bold text-slate-900">
                               {verificationResult.data.studentRoll}
                             </span>
                           </div>
                         </div>
 
-                        <div className="bg-white p-2.5 rounded-xl border border-emerald-100">
-                          <span className="text-[10px] text-emerald-700 block mb-1 font-bold">
+                        <div className="bg-white p-2.5 rounded-xl border border-[#A3D9B5]">
+                          <span className="text-[10px] text-[#198754] block mb-1 font-bold">
                             Dispatched Items:
                           </span>
                           <div className="font-semibold text-slate-800">
@@ -933,14 +935,14 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       {activeTab === 'stock' && (
         <div className="space-y-4">
           {/* Header Controls: Categories, Search, and Add Item Button */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-white border border-[#E8E3D7] rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2.5">
                 <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-                  <Package className="w-4 h-4 text-[#A41034]" />
+                  <Package className="w-4 h-4 text-[#B0003A]" />
                   <span>Live Kitchen Stock & Menu Editor</span>
                 </h3>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-rose-50 text-[#A41034] border border-rose-200">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-[#FFF0F4] text-[#B0003A] border border-[#F8C0CE]">
                   {filteredMenuItems.length} Items Listed
                 </span>
               </div>
@@ -953,7 +955,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
             <div className="flex flex-wrap items-center gap-2.5">
               <button
                 onClick={openAddModal}
-                className="px-4 py-2 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-extrabold text-xs transition shadow-sm flex items-center gap-1.5 active:scale-98"
+                className="px-4 py-2 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] text-white font-extrabold text-xs transition shadow-sm flex items-center gap-1.5 active:scale-98"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>Add Item to Menu</span>
@@ -966,22 +968,22 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   placeholder="Filter dishes..."
                   value={stockSearchQuery}
                   onChange={(e) => setStockSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034] focus:bg-white"
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#B0003A] focus:bg-white"
                 />
               </div>
             </div>
           </div>
 
           {/* Category Filter Chips */}
-          <div className="flex flex-wrap items-center gap-1.5 bg-white p-2 rounded-2xl border border-slate-200/90 shadow-sm">
+          <div className="flex flex-wrap items-center gap-1.5 bg-white p-2 rounded-2xl border border-[#E8E3D7] shadow-sm">
             {stockCategories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setStockCategoryFilter(cat)}
                 className={`px-3 py-1 rounded-xl text-xs font-semibold transition ${
                   stockCategoryFilter === cat
-                    ? 'bg-[#A41034] text-white shadow-sm font-bold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-[#B0003A] text-white shadow-sm font-bold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-[#FAF7F0]'
                 }`}
               >
                 {cat}
@@ -1000,10 +1002,10 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   key={item.id}
                   className={`p-4 rounded-2xl border transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between bg-white ${
                     isOutOfStock
-                      ? 'border-rose-200 bg-rose-50/20'
+                      ? 'border-[#F5B0A9] bg-[#FCE8E6]/20'
                       : isLowStock
-                      ? 'border-amber-200 bg-amber-50/20'
-                      : 'border-slate-200/90'
+                      ? 'border-[#FECB9F] bg-[#FFF2E6]/20'
+                      : 'border-[#E8E3D7]'
                   }`}
                 >
                   <div>
@@ -1017,14 +1019,14 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                             ? 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80'
                             : 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500&auto=format&fit=crop&q=80';
                         }}
-                        className="w-16 h-16 rounded-xl object-cover border border-slate-200 shrink-0"
+                        className="w-16 h-16 rounded-xl object-cover border border-[#E8E3D7] shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
                           <div className="flex items-center gap-1.5 truncate">
                             <span
                               className={`w-2 h-2 rounded-full shrink-0 ${
-                                item.isVeg ? 'bg-emerald-500' : 'bg-rose-500'
+                                item.isVeg ? 'bg-[#198754]' : 'bg-[#DC3545]'
                               }`}
                             />
                             <h4 className="font-bold text-sm text-slate-900 truncate">{item.name}</h4>
@@ -1033,7 +1035,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                           {/* Quick Edit Item Button */}
                           <button
                             onClick={() => openEditModal(item)}
-                            className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-[#A41034] transition shrink-0"
+                            className="p-1 rounded-lg bg-[#FAF7F0] hover:bg-[#E8E3D7] text-slate-600 hover:text-[#B0003A] transition shrink-0"
                             title="Edit dish details & price"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -1041,17 +1043,17 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                         </div>
 
                         <div className="text-[11px] text-slate-500 mt-0.5 font-medium">
-                          {item.category} • <span className="font-mono font-bold text-[#A41034]">₹{item.price}</span>
+                          {item.category} • <span className="font-mono font-bold text-[#B0003A]">₹{item.price}</span>
                         </div>
 
                         <div className="mt-2 flex flex-wrap items-center gap-1.5">
                           <span
                             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
                               isOutOfStock
-                                ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                ? 'bg-[#FCE8E6] text-[#DC3545] border border-[#F5B0A9]'
                                 : isLowStock
-                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                ? 'bg-[#FFF2E6] text-[#FD7E14] border border-[#FECB9F]'
+                                : 'bg-[#E8F5E9] text-[#198754] border border-[#A3D9B5]'
                             }`}
                           >
                             {isOutOfStock ? (
@@ -1077,8 +1079,8 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                             onClick={() => handleToggleStockStatus(item)}
                             className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border transition ${
                               isOutOfStock
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                                : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                                ? 'bg-[#E8F5E9] text-[#198754] border-[#A3D9B5] hover:bg-[#E8F5E9]/80'
+                                : 'bg-[#FCE8E6] text-[#DC3545] border-[#F5B0A9] hover:bg-[#FCE8E6]/80'
                             }`}
                           >
                             {isOutOfStock ? 'Make In Stock' : 'Mark Out'}
@@ -1089,8 +1091,8 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   </div>
 
                   {/* Stock Quantity Adjuster & Quick Batch Buttons */}
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                  <div className="mt-4 pt-3 border-t border-[#E8E3D7]/60 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 bg-[#FAF7F0] p-1 rounded-xl border border-[#E8E3D7]">
                       <button
                         onClick={() => handleAdjustStock(item, -1)}
                         title="Reduce 1"
@@ -1115,14 +1117,14 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleAdjustStock(item, 5)}
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-[#A41034] hover:text-white text-slate-700 text-xs font-mono font-bold transition border border-slate-200"
+                        className="px-2.5 py-1.5 rounded-xl bg-[#FAF7F0] hover:bg-[#B0003A] hover:text-white text-slate-700 text-xs font-mono font-bold transition border border-[#E8E3D7]"
                         title="Restock +5 portions"
                       >
                         +5
                       </button>
                       <button
                         onClick={() => handleAdjustStock(item, 15)}
-                        className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-[#A41034] hover:text-white text-[#A41034] text-xs font-mono font-bold transition border border-rose-200"
+                        className="px-2.5 py-1.5 rounded-xl bg-[#FFF0F4] hover:bg-[#B0003A] hover:text-white text-[#B0003A] text-xs font-mono font-bold transition border border-[#F8C0CE]"
                         title="Restock +15 portions"
                       >
                         +15
@@ -1131,12 +1133,12 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   </div>
 
                   {/* Prominent Edit Dish Details Button */}
-                  <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+                  <div className="mt-3 pt-2.5 border-t border-[#E8E3D7]/60">
                     <button
                       onClick={() => openEditModal(item)}
-                      className="w-full py-1.5 px-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-cyan-300 hover:text-cyan-200 text-xs font-bold transition flex items-center justify-center gap-1.5 border border-slate-700/60 shadow-sm"
+                      className="w-full py-1.5 px-3 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] text-[#B0003A] text-xs font-bold transition flex items-center justify-center gap-1.5 border border-[#E8E3D7] shadow-sm"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Edit2 className="w-3.5 h-3.5 text-[#B0003A]" />
                       <span>Edit Dish Name & Details</span>
                     </button>
                   </div>
@@ -1146,7 +1148,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
           </div>
 
           {filteredMenuItems.length === 0 && (
-            <div className="py-16 text-center text-slate-500 bg-white border border-slate-200 rounded-2xl text-xs shadow-sm">
+            <div className="py-16 text-center text-slate-500 bg-white border border-[#E8E3D7] rounded-2xl text-xs shadow-sm">
               No menu items found matching the selected filter.
             </div>
           )}
@@ -1158,20 +1160,20 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       ========================================================================= */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-lg p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="bg-white border border-[#E8E3D7] rounded-3xl w-full max-w-lg p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between pb-4 border-b border-[#E8E3D7]/60">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-rose-50 border border-rose-200 text-[#A41034]">
+                <div className="p-2 rounded-xl bg-[#FFF0F4] border border-[#F8C0CE] text-[#B0003A]">
                   <PlusCircle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-base text-[#A41034]">Add New Dish to Menu</h3>
+                  <h3 className="font-extrabold text-base text-[#B0003A]">Add New Dish to Menu</h3>
                   <p className="text-xs text-slate-500 font-medium">Adding to {currentCanteen?.name}</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition"
+                className="p-2 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] text-slate-500 hover:text-slate-800 transition"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1186,7 +1188,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   placeholder="e.g. Mushroom Fried Rice"
                   value={itemForm.name}
                   onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034] focus:bg-white font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#B0003A] focus:bg-white font-medium"
                 />
               </div>
 
@@ -1196,7 +1198,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   <select
                     value={itemForm.category}
                     onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#A41034] focus:bg-white font-medium"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 focus:outline-none focus:border-[#B0003A] focus:bg-white font-medium"
                   >
                     {categoriesList.map((cat) => (
                       <option key={cat} value={cat}>
@@ -1214,7 +1216,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     required
                     value={itemForm.price}
                     onChange={(e) => setItemForm({ ...itemForm, price: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono font-bold focus:outline-none focus:border-[#A41034] focus:bg-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 font-mono font-bold focus:outline-none focus:border-[#B0003A] focus:bg-white"
                   />
                 </div>
               </div>
@@ -1227,7 +1229,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     min="0"
                     value={itemForm.stock}
                     onChange={(e) => setItemForm({ ...itemForm, stock: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#A41034] focus:bg-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 font-mono focus:outline-none focus:border-[#B0003A] focus:bg-white"
                   />
                 </div>
 
@@ -1238,7 +1240,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     min="1"
                     value={itemForm.prepTimeMinutes}
                     onChange={(e) => setItemForm({ ...itemForm, prepTimeMinutes: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#A41034] focus:bg-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 font-mono focus:outline-none focus:border-[#B0003A] focus:bg-white"
                   />
                 </div>
               </div>
@@ -1251,11 +1253,11 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     onClick={() => setItemForm({ ...itemForm, isVeg: true })}
                     className={`flex-1 py-2 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${
                       itemForm.isVeg
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
-                        : 'bg-slate-50 border-slate-200 text-slate-600'
+                        ? 'bg-[#E8F5E9] border-[#A3D9B5] text-[#198754]'
+                        : 'bg-[#FAF7F0] border-[#E8E3D7] text-slate-600'
                     }`}
                   >
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="w-2 h-2 rounded-full bg-[#198754]" />
                     <span>Pure Veg</span>
                   </button>
 
@@ -1264,11 +1266,11 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     onClick={() => setItemForm({ ...itemForm, isVeg: false })}
                     className={`flex-1 py-2 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${
                       !itemForm.isVeg
-                        ? 'bg-rose-50 border-rose-300 text-rose-800'
-                        : 'bg-slate-50 border-slate-200 text-slate-600'
+                        ? 'bg-[#FCE8E6] border-[#F5B0A9] text-[#DC3545]'
+                        : 'bg-[#FAF7F0] border-[#E8E3D7] text-slate-600'
                     }`}
                   >
-                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                    <span className="w-2 h-2 rounded-full bg-[#DC3545]" />
                     <span>Non-Veg</span>
                   </button>
                 </div>
@@ -1278,13 +1280,13 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-slate-700 font-bold">Dish Image</label>
-                  <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-[11px]">
+                  <div className="flex items-center bg-[#FAF7F0] p-0.5 rounded-xl border border-[#E8E3D7] text-[11px]">
                     <button
                       type="button"
                       onClick={() => setImageSourceMode('upload')}
                       className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
                         imageSourceMode === 'upload'
-                          ? 'bg-white text-[#A41034] border border-slate-200 shadow-sm font-bold'
+                          ? 'bg-white text-[#B0003A] border border-[#E8E3D7] shadow-sm font-bold'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
@@ -1296,7 +1298,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                       onClick={() => setImageSourceMode('url')}
                       className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
                         imageSourceMode === 'url'
-                          ? 'bg-white text-[#A41034] border border-slate-200 shadow-sm font-bold'
+                          ? 'bg-white text-[#B0003A] border border-[#E8E3D7] shadow-sm font-bold'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
@@ -1319,8 +1321,8 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                       onClick={() => addFileInputRef.current?.click()}
                       className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 group ${
                         itemForm.imageUrl
-                          ? 'border-emerald-300 bg-emerald-50/30'
-                          : 'border-slate-200 bg-slate-50 hover:border-[#A41034] hover:bg-rose-50/10'
+                          ? 'border-[#A3D9B5] bg-[#E8F5E9]/30'
+                          : 'border-[#E8E3D7] bg-[#FAF7F0] hover:border-[#B0003A] hover:bg-[#FFF0F4]/30'
                       }`}
                     >
                       {itemForm.imageUrl ? (
@@ -1328,10 +1330,10 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                           <img
                             src={itemForm.imageUrl}
                             alt="Selected"
-                            className="w-16 h-16 rounded-xl object-cover border border-emerald-300 shrink-0 shadow-sm"
+                            className="w-16 h-16 rounded-xl object-cover border border-[#A3D9B5] shrink-0 shadow-sm"
                           />
                           <div className="text-left flex-1 min-w-0">
-                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 block">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#198754] block">
                               ✓ Image Loaded From System
                             </span>
                             <span className="text-xs text-slate-800 truncate block mt-0.5 font-medium">
@@ -1347,7 +1349,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                               e.stopPropagation();
                               setItemForm((prev) => ({ ...prev, imageUrl: '' }));
                             }}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-700 transition"
+                            className="p-1.5 rounded-lg bg-[#FAF7F0] hover:bg-[#FCE8E6] text-slate-500 hover:text-[#DC3545] transition"
                             title="Remove uploaded image"
                           >
                             <X className="w-4 h-4" />
@@ -1355,7 +1357,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                         </div>
                       ) : (
                         <>
-                          <div className="p-3 rounded-2xl bg-rose-50 text-[#A41034] group-hover:scale-110 transition duration-200">
+                          <div className="p-3 rounded-2xl bg-[#FFF0F4] text-[#B0003A] group-hover:scale-110 transition duration-200">
                             <Upload className="w-5 h-5" />
                           </div>
                           <div>
@@ -1379,7 +1381,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                           placeholder="Paste web image link: https://..."
                           value={itemForm.imageUrl}
                           onChange={(e) => setItemForm({ ...itemForm, imageUrl: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034] focus:bg-white font-mono text-[11px]"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#B0003A] focus:bg-white font-mono text-[11px]"
                         />
                       </div>
                       {itemForm.imageUrl && (
@@ -1390,7 +1392,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                             e.currentTarget.onerror = null;
                             e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80';
                           }}
-                          className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0"
+                          className="w-10 h-10 rounded-xl object-cover border border-[#E8E3D7] shrink-0"
                         />
                       )}
                     </div>
@@ -1408,21 +1410,21 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   placeholder="Freshly prepared with..."
                   value={itemForm.description}
                   onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A41034] focus:bg-white"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#B0003A] focus:bg-white"
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-[#E8E3D7]/60 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold transition"
+                  className="px-4 py-2 rounded-xl bg-[#FAF7F0] text-slate-700 hover:bg-[#E8E3D7] font-bold transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-extrabold transition shadow-sm"
+                  className="px-5 py-2 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] text-white font-extrabold transition shadow-sm"
                 >
                   Save Dish to Menu
                 </button>
@@ -1437,20 +1439,20 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       ========================================================================= */}
       {editingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-lg p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="bg-white border border-[#E8E3D7] rounded-3xl w-full max-w-lg p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between pb-4 border-b border-[#E8E3D7]/60">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-rose-50 border border-rose-200 text-[#A41034]">
+                <div className="p-2 rounded-xl bg-[#FFF0F4] border border-[#F8C0CE] text-[#B0003A]">
                   <Edit2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-base text-[#A41034]">Edit Dish Details</h3>
+                  <h3 className="font-extrabold text-base text-[#B0003A]">Edit Dish Details</h3>
                   <p className="text-xs text-slate-500 font-medium">Update pricing, category or quantity</p>
                 </div>
               </div>
               <button
                 onClick={() => setEditingItem(null)}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition"
+                className="p-2 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] text-slate-500 hover:text-slate-800 transition"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1464,7 +1466,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   required
                   value={itemForm.name}
                   onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium focus:outline-none focus:border-[#A41034] focus:bg-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 font-medium focus:outline-none focus:border-[#B0003A] focus:bg-white"
                 />
               </div>
 
@@ -1474,7 +1476,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   <select
                     value={itemForm.category}
                     onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#A41034] focus:bg-white font-medium"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 focus:outline-none focus:border-[#B0003A] focus:bg-white font-medium"
                   >
                     {categoriesList.map((cat) => (
                       <option key={cat} value={cat}>
@@ -1492,7 +1494,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     required
                     value={itemForm.price}
                     onChange={(e) => setItemForm({ ...itemForm, price: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono font-bold focus:outline-none focus:border-[#A41034] focus:bg-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 font-mono font-bold focus:outline-none focus:border-[#B0003A] focus:bg-white"
                   />
                 </div>
               </div>
@@ -1505,7 +1507,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     min="0"
                     value={itemForm.stock}
                     onChange={(e) => setItemForm({ ...itemForm, stock: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono font-bold focus:outline-none focus:border-[#A41034] focus:bg-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 font-mono font-bold focus:outline-none focus:border-[#B0003A] focus:bg-white"
                   />
                 </div>
 
@@ -1516,7 +1518,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     min="1"
                     value={itemForm.prepTimeMinutes}
                     onChange={(e) => setItemForm({ ...itemForm, prepTimeMinutes: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono focus:outline-none focus:border-[#A41034] focus:bg-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 font-mono focus:outline-none focus:border-[#B0003A] focus:bg-white"
                   />
                 </div>
               </div>
@@ -1529,11 +1531,11 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     onClick={() => setItemForm({ ...itemForm, isVeg: true })}
                     className={`flex-1 py-2 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${
                       itemForm.isVeg
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
-                        : 'bg-slate-50 border-slate-200 text-slate-600'
+                        ? 'bg-[#E8F5E9] border-[#A3D9B5] text-[#198754]'
+                        : 'bg-[#FAF7F0] border-[#E8E3D7] text-slate-600'
                     }`}
                   >
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="w-2 h-2 rounded-full bg-[#198754]" />
                     <span>Pure Veg</span>
                   </button>
 
@@ -1542,11 +1544,11 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     onClick={() => setItemForm({ ...itemForm, isVeg: false })}
                     className={`flex-1 py-2 rounded-xl font-bold border transition flex items-center justify-center gap-2 ${
                       !itemForm.isVeg
-                        ? 'bg-rose-50 border-rose-300 text-rose-800'
-                        : 'bg-slate-50 border-slate-200 text-slate-600'
+                        ? 'bg-[#FCE8E6] border-[#F5B0A9] text-[#DC3545]'
+                        : 'bg-[#FAF7F0] border-[#E8E3D7] text-slate-600'
                     }`}
                   >
-                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                    <span className="w-2 h-2 rounded-full bg-[#DC3545]" />
                     <span>Non-Veg</span>
                   </button>
                 </div>
@@ -1556,13 +1558,13 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-slate-700 font-bold">Dish Image</label>
-                  <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-[11px]">
+                  <div className="flex items-center bg-[#FAF7F0] p-0.5 rounded-xl border border-[#E8E3D7] text-[11px]">
                     <button
                       type="button"
                       onClick={() => setImageSourceMode('upload')}
                       className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
                         imageSourceMode === 'upload'
-                          ? 'bg-white text-[#A41034] border border-slate-200 shadow-sm font-bold'
+                          ? 'bg-white text-[#B0003A] border border-[#E8E3D7] shadow-sm font-bold'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
@@ -1574,7 +1576,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                       onClick={() => setImageSourceMode('url')}
                       className={`px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 ${
                         imageSourceMode === 'url'
-                          ? 'bg-white text-[#A41034] border border-slate-200 shadow-sm font-bold'
+                          ? 'bg-white text-[#B0003A] border border-[#E8E3D7] shadow-sm font-bold'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
@@ -1597,8 +1599,8 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                       onClick={() => editFileInputRef.current?.click()}
                       className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 group ${
                         itemForm.imageUrl
-                          ? 'border-emerald-300 bg-emerald-50/30'
-                          : 'border-slate-200 bg-slate-50 hover:border-[#A41034] hover:bg-rose-50/10'
+                          ? 'border-[#A3D9B5] bg-[#E8F5E9]/30'
+                          : 'border-[#E8E3D7] bg-[#FAF7F0] hover:border-[#B0003A] hover:bg-[#FFF0F4]/30'
                       }`}
                     >
                       {itemForm.imageUrl ? (
@@ -1606,10 +1608,10 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                           <img
                             src={itemForm.imageUrl}
                             alt="Selected"
-                            className="w-16 h-16 rounded-xl object-cover border border-emerald-300 shrink-0 shadow-sm"
+                            className="w-16 h-16 rounded-xl object-cover border border-[#A3D9B5] shrink-0 shadow-sm"
                           />
                           <div className="text-left flex-1 min-w-0">
-                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 block">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#198754] block">
                               ✓ Dish Photo Selected
                             </span>
                             <span className="text-xs text-slate-800 truncate block mt-0.5 font-medium">
@@ -1625,7 +1627,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                               e.stopPropagation();
                               setItemForm((prev) => ({ ...prev, imageUrl: '' }));
                             }}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-700 transition"
+                            className="p-1.5 rounded-lg bg-[#FAF7F0] hover:bg-[#FCE8E6] text-slate-500 hover:text-[#DC3545] transition"
                             title="Remove uploaded image"
                           >
                             <X className="w-4 h-4" />
@@ -1633,7 +1635,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                         </div>
                       ) : (
                         <>
-                          <div className="p-3 rounded-2xl bg-rose-50 text-[#A41034] group-hover:scale-110 transition duration-200">
+                          <div className="p-3 rounded-2xl bg-[#FFF0F4] text-[#B0003A] group-hover:scale-110 transition duration-200">
                             <Upload className="w-5 h-5" />
                           </div>
                           <div>
@@ -1657,7 +1659,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                           placeholder="Paste web image link: https://..."
                           value={itemForm.imageUrl}
                           onChange={(e) => setItemForm({ ...itemForm, imageUrl: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#A41034] focus:bg-white font-mono text-[11px]"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-900 focus:outline-none focus:border-[#B0003A] focus:bg-white font-mono text-[11px]"
                         />
                       </div>
                       {itemForm.imageUrl && (
@@ -1668,7 +1670,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                             e.currentTarget.onerror = null;
                             e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80';
                           }}
-                          className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0"
+                          className="w-10 h-10 rounded-xl object-cover border border-[#E8E3D7] shrink-0"
                         />
                       )}
                     </div>
@@ -1686,21 +1688,21 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   placeholder="Ingredients, accompaniments, spices..."
                   value={itemForm.description || ''}
                   onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#A41034] font-medium text-xs"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#B0003A] font-medium text-xs"
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-[#E8E3D7]/60 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setEditingItem(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold transition"
+                  className="px-4 py-2 rounded-xl bg-[#FAF7F0] text-slate-700 hover:bg-[#E8E3D7] font-bold transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-extrabold transition shadow-sm"
+                  className="px-5 py-2 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] text-white font-extrabold transition shadow-sm"
                 >
                   Save Changes
                 </button>

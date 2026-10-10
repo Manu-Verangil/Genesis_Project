@@ -429,16 +429,16 @@ export function CampusMapView({ onNavigateToCanteen }) {
   return (
     <div className="space-y-6 text-slate-800">
       {/* Amrita Campus Header with Lockdown Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs">
+      <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 sm:p-6 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
-                <Compass className="w-5 h-5 text-[#A41034]" />
+                <Compass className="w-5 h-5 text-[#B0003A]" />
                 <span>Amrita Vishwa Vidyapeetham — Ettimadai Campus Map</span>
               </h3>
-              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-rose-50 text-[#A41034] border border-rose-200 flex items-center gap-1 font-bold">
-                <Lock className="w-3 h-3 text-[#A41034]" />
+              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[#FFF0F4] text-[#B0003A] border border-[#F8C0CE] flex items-center gap-1 font-bold">
+                <Lock className="w-3 h-3 text-[#B0003A]" />
                 400-Acre Compound Locked
               </span>
             </div>
@@ -454,21 +454,21 @@ export function CampusMapView({ onNavigateToCanteen }) {
               placeholder="Search canteen, AB-1, library, clinic..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#A41034] shadow-xs"
+              className="w-full pl-9 pr-3 py-1.5 bg-white border border-[#E8E3D7] rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#B0003A] shadow-xs"
             />
           </div>
         </div>
 
         {/* Categories Bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pt-4 border-t border-slate-100 mt-4 pb-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto pt-4 border-t border-[#E8E3D7] mt-4 pb-1">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
                 selectedCategory === cat
-                  ? 'bg-[#A41034] text-white shadow-xs font-bold'
-                  : 'bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200'
+                  ? 'bg-[#B0003A] text-white shadow-xs font-bold'
+                  : 'bg-slate-50 text-slate-700 hover:text-slate-900 border border-[#E8E3D7]'
               }`}
             >
               {cat}
@@ -480,16 +480,16 @@ export function CampusMapView({ onNavigateToCanteen }) {
       {/* Main Map Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Real Leaflet Map Container (2 Cols) */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-xs flex flex-col justify-between">
           {/* Map Top Bar Controls */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#E8E3D7]">
             {/* Tile Layer Switcher */}
-            <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-200">
+            <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-[#E8E3D7]">
               <button
                 onClick={() => setActiveLayer('street')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
                   activeLayer === 'street'
-                    ? 'bg-[#A41034] text-white shadow-xs font-bold'
+                    ? 'bg-[#B0003A] text-white shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -499,7 +499,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
                 onClick={() => setActiveLayer('satellite')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
                   activeLayer === 'satellite'
-                    ? 'bg-[#A41034] text-white shadow-xs font-bold'
+                    ? 'bg-[#B0003A] text-white shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -509,7 +509,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
                 onClick={() => setActiveLayer('dark')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
                   activeLayer === 'dark'
-                    ? 'bg-[#A41034] text-white shadow-xs font-bold'
+                    ? 'bg-[#B0003A] text-white shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -521,10 +521,10 @@ export function CampusMapView({ onNavigateToCanteen }) {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleLocateMe}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold transition"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-[#E8E3D7] text-xs font-semibold transition"
                 title="Locate my position on Amrita Campus"
               >
-                <Locate className="w-3.5 h-3.5 text-[#A41034]" />
+                <Locate className="w-3.5 h-3.5 text-[#B0003A]" />
                 <span>Locate Me</span>
               </button>
 
@@ -534,7 +534,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
                     mapInstanceRef.current.flyTo(AMRITA_CAMPUS_CENTER, 16.5);
                   }
                 }}
-                className="px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#A41034] border border-slate-200 transition text-xs font-bold flex items-center gap-1"
+                className="px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#B0003A] border border-[#E8E3D7] transition text-xs font-bold flex items-center gap-1"
                 title="Center on Amrita Central Plaza"
               >
                 <Compass className="w-3.5 h-3.5" />
@@ -543,7 +543,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
 
               <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
-                className="p-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 transition"
+                className="p-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-[#E8E3D7] transition"
                 title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Map'}
               >
                 {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -554,22 +554,22 @@ export function CampusMapView({ onNavigateToCanteen }) {
           {/* Real Leaflet Map Viewport */}
           <div
             ref={mapContainerRef}
-            className={`w-full rounded-xl overflow-hidden my-3 border border-slate-200 shadow-inner z-10 transition-all duration-300 ${
+            className={`w-full rounded-xl overflow-hidden my-3 border border-[#E8E3D7] shadow-inner z-10 transition-all duration-300 ${
               isFullscreen ? 'fixed inset-4 z-50 h-[92vh]' : 'h-96 sm:h-[480px]'
             }`}
           />
 
           {/* Active Navigation Route Alert Banner */}
           {activeRoute && (
-            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 my-1 text-xs text-slate-900 flex items-center justify-between gap-3 animate-in fade-in">
+            <div className="p-3.5 rounded-xl bg-[#FFF0F4] border border-[#F8C0CE] my-1 text-xs text-slate-900 flex items-center justify-between gap-3 animate-in fade-in">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-[#A41034] text-white shrink-0">
+                <div className="p-2 rounded-lg bg-[#B0003A] text-white shrink-0">
                   <Footprints className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="font-bold flex items-center gap-2">
                     <span>Walking to: {activeRoute.destination}</span>
-                    <span className="text-emerald-700 font-mono font-bold">
+                    <span className="text-[#198754] font-mono font-bold">
                       ~{activeRoute.walkMinutes} min ({activeRoute.distanceMeters}m)
                     </span>
                   </div>
@@ -584,7 +584,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
                   setActiveRoute(null);
                   if (routeLayerRef.current) routeLayerRef.current.clearLayers();
                 }}
-                className="text-xs text-[#A41034] hover:text-[#880E2D] font-bold underline shrink-0"
+                className="text-xs text-[#B0003A] hover:text-[#8F002E] font-bold underline shrink-0"
               >
                 Clear Route
               </button>
@@ -592,32 +592,32 @@ export function CampusMapView({ onNavigateToCanteen }) {
           )}
 
           {/* Compound Lockdown Legend Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#E8E3D7] text-[11px] text-slate-500">
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#A41034]" /> Amrita Perimeter
+                <span className="w-2.5 h-2.5 rounded-full bg-[#B0003A]" /> Amrita Perimeter
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Canteen & Dining
+                <span className="w-2.5 h-2.5 rounded-full bg-[#D4A017]" /> Canteen & Dining
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-600" /> Academic & Labs
+                <span className="w-2.5 h-2.5 rounded-full bg-[#0D6EFD]" /> Academic & Labs
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" /> Hostels (Boys & Girls)
+                <span className="w-2.5 h-2.5 rounded-full bg-[#6F42C1]" /> Hostels (Boys & Girls)
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" /> Sports & Pool
+                <span className="w-2.5 h-2.5 rounded-full bg-[#198754]" /> Sports & Pool
               </span>
             </div>
-            <span className="text-[#A41034] font-bold">Locked to Ettimadai Compound Bounds</span>
+            <span className="text-[#B0003A] font-bold">Locked to Ettimadai Compound Bounds</span>
           </div>
         </div>
 
         {/* Right Column: Selected Destination & Details Card */}
         <div className="space-y-4">
           {selectedLocation ? (
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between">
+            <div className="bg-white border border-[#E8E3D7] rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between">
               <div>
                 {/* Photo */}
                 <div className="relative h-44 w-full bg-slate-100">
@@ -627,10 +627,10 @@ export function CampusMapView({ onNavigateToCanteen }) {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
-                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md text-[10px] font-bold text-slate-800 border border-slate-200 shadow-xs">
+                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md text-[10px] font-bold text-slate-800 border border-[#E8E3D7] shadow-xs">
                     {selectedLocation.zone}
                   </span>
-                  <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-[#A41034] text-white text-[10px] font-bold shadow-xs">
+                  <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-[#B0003A] text-white text-[10px] font-bold shadow-xs">
                     {selectedLocation.category}
                   </span>
                 </div>
@@ -641,7 +641,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
                     <h3 className="font-extrabold text-slate-900 text-base leading-tight">
                       {selectedLocation.name}
                     </h3>
-                    <p className="text-xs text-[#A41034] mt-1 font-semibold flex items-center gap-1">
+                    <p className="text-xs text-[#B0003A] mt-1 font-semibold flex items-center gap-1">
                       <Building className="w-3.5 h-3.5" />
                       {selectedLocation.building} • {selectedLocation.floor}
                     </p>
@@ -655,7 +655,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
                     {selectedLocation.description}
                   </p>
 
-                  <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
+                  <div className="space-y-2 pt-2 border-t border-[#E8E3D7] text-xs">
                     <div className="flex items-center gap-2 text-slate-700">
                       <Clock className="w-4 h-4 text-slate-400 shrink-0" />
                       <span>{selectedLocation.timings}</span>
@@ -666,8 +666,8 @@ export function CampusMapView({ onNavigateToCanteen }) {
                       <span>{selectedLocation.contact}</span>
                     </div>
 
-                    <div className="flex items-start gap-2 text-amber-800 text-[11px] pt-1">
-                      <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-2 text-[#FD7E14] text-[11px] pt-1">
+                      <Info className="w-4 h-4 text-[#FD7E14] shrink-0 mt-0.5" />
                       <span>
                         <strong>Peak Crowd:</strong> {selectedLocation.popularTimes}
                       </span>
@@ -680,7 +680,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
               <div className="p-5 pt-0 space-y-2">
                 <button
                   onClick={() => handleGetDirections(selectedLocation)}
-                  className="w-full py-2.5 rounded-xl bg-[#A41034] hover:bg-[#880E2D] text-white font-bold text-xs transition shadow-xs flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] text-white font-bold text-xs transition shadow-xs flex items-center justify-center gap-2"
                 >
                   <Footprints className="w-4 h-4" />
                   <span>Get Walking Directions (Within Campus)</span>
@@ -689,7 +689,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
                 {selectedLocation.category === 'Food & Dining' && (
                   <button
                     onClick={() => onNavigateToCanteen(selectedLocation.id)}
-                    className="w-full py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#A41034] font-bold text-xs border border-slate-200 transition flex items-center justify-center gap-2"
+                    className="w-full py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#B0003A] font-bold text-xs border border-[#E8E3D7] transition flex items-center justify-center gap-2"
                   >
                     <Utensils className="w-4 h-4" />
                     <span>View Menu & Place Prepaid Order</span>
@@ -698,13 +698,13 @@ export function CampusMapView({ onNavigateToCanteen }) {
               </div>
             </div>
           ) : (
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center text-slate-500 text-xs shadow-xs">
+            <div className="bg-white border border-[#E8E3D7] rounded-2xl p-6 text-center text-slate-500 text-xs shadow-xs">
               Select a building on the Amrita Ettimadai map to view details.
             </div>
           )}
 
           {/* Quick List of Amrita Campus Hubs */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+          <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-xs">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
               Amrita Ettimadai Directory ({filteredLocations.length} locations)
             </h4>
@@ -722,8 +722,8 @@ export function CampusMapView({ onNavigateToCanteen }) {
                   }}
                   className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between transition ${
                     selectedLocation?.id === loc.id
-                      ? 'bg-rose-50 text-[#A41034] font-bold border border-rose-200'
-                      : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
+                      ? 'bg-[#FFF0F4] text-[#B0003A] font-bold border border-[#F8C0CE]'
+                      : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-[#E8E3D7]'
                   }`}
                 >
                   <span className="truncate pr-2">{loc.name}</span>
