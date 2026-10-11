@@ -259,6 +259,8 @@ export function CanteenView({
       <CanteenRushMeter
         selectedCanteenId={selectedCanteenId}
         canteenName={currentCanteen?.name}
+        currentCanteen={currentCanteen}
+        onRefreshData={onRefreshData}
       />
 
       {/* Search & Category Filter Controls */}

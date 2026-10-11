@@ -8,22 +8,13 @@ import {
   Sparkles,
   Users,
   Flame,
-  Calendar,
-  AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  RefreshCw,
+  Activity
 } from 'lucide-react';
+import { api } from '../api';
 
-const DAYS_OF_WEEK = [
-  { key: 0, label: 'Sun', fullName: 'Sunday', type: 'weekend' },
-  { key: 1, label: 'Mon', fullName: 'Monday', type: 'weekday' },
-  { key: 2, label: 'Tue', fullName: 'Tuesday', type: 'weekday' },
-  { key: 3, label: 'Wed', fullName: 'Wednesday', type: 'weekday' },
-  { key: 4, label: 'Thu', fullName: 'Thursday', type: 'weekday' },
-  { key: 5, label: 'Fri', fullName: 'Friday', type: 'weekday' },
-  { key: 6, label: 'Sat', fullName: 'Saturday', type: 'weekend' }
-];
-
-// Base schedule template extending from 8:30 AM to 9:00 PM (Night)
+// Timeline slots from 8:30 AM to 9:00 PM (Night)
 const BASE_TIME_SLOTS = [
   { time: '8:30 AM', hour24: 8.5, label: 'Breakfast' },
   { time: '9:30 AM', hour24: 9.5, label: 'Morning Rush' },
@@ -40,129 +31,15 @@ const BASE_TIME_SLOTS = [
   { time: '8:45 PM', hour24: 20.75, label: 'Night Closing' }
 ];
 
-// Day multipliers to dynamically modulate crowd % and wait times per day
-function getDayFactors(dayIndex, isCanteen2) {
-  // dayIndex: 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  switch (dayIndex) {
-    case 0: // Sunday: slow morning, relaxed afternoon, heavy dinner
-      return {
-        morningMult: 0.65,
-        lunchMult: 0.85,
-        afternoonMult: 0.7,
-        snacksMult: 0.9,
-        dinnerMult: 1.25,
-        notes: 'Hostel weekend routine: light breakfast, peak dinner crowd'
-      };
-    case 1: // Monday: intense morning & lunch start
-      return {
-        morningMult: 1.2,
-        lunchMult: 1.15,
-        afternoonMult: 0.9,
-        snacksMult: 1.05,
-        dinnerMult: 0.95,
-        notes: 'Full academic crowd: heavy morning rush & class-break surges'
-      };
-    case 2: // Tuesday
-      return {
-        morningMult: 1.05,
-        lunchMult: 1.1,
-        afternoonMult: 0.85,
-        snacksMult: 1.0,
-        dinnerMult: 0.95,
-        notes: 'Standard lecture hours: sharp 12:30 PM & 4:15 PM peaks'
-      };
-    case 3: // Wednesday
-      return {
-        morningMult: 1.0,
-        lunchMult: 1.12,
-        afternoonMult: 0.95,
-        snacksMult: 1.1,
-        dinnerMult: 1.0,
-        notes: 'Mid-week peak: consistent crowd through snacks & tea'
-      };
-    case 4: // Thursday
-      return {
-        morningMult: 0.95,
-        lunchMult: 1.08,
-        afternoonMult: 0.9,
-        snacksMult: 1.05,
-        dinnerMult: 1.05,
-        notes: 'Moderate rush with high evening tea demand'
-      };
-    case 5: // Friday: high snacks & early weekend departure
-      return {
-        morningMult: 1.1,
-        lunchMult: 1.2,
-        afternoonMult: 1.15,
-        snacksMult: 1.3,
-        dinnerMult: 0.85,
-        notes: 'Pre-weekend buzz: largest evening snacks & juice rush'
-      };
-    case 6: // Saturday: half-day labs, late brunch
-    default:
-      return {
-        morningMult: 0.8,
-        lunchMult: 0.9,
-        afternoonMult: 0.85,
-        snacksMult: 1.15,
-        dinnerMult: 1.1,
-        notes: 'Weekend schedule: relaxed lunch, active evening hangout'
-      };
-  }
-}
-
-// Compute dynamic schedule for chosen canteen & day
-function generateDynamicSchedule(selectedCanteenId, dayIndex) {
-  const isC2 = selectedCanteenId === 'canteen-2';
-  const factors = getDayFactors(dayIndex, isC2);
-
-  // Base crowd profiles (Canteen 1 vs Canteen 2)
-  const baseProfile = isC2
-    ? [20, 45, 30, 40, 72, 80, 35, 30, 88, 65, 45, 60, 25]
-    : [35, 60, 30, 52, 92, 96, 45, 25, 78, 40, 55, 85, 30];
-
-  const baseWaitProfile = isC2
-    ? [3, 6, 4, 6, 13, 16, 5, 4, 18, 10, 6, 11, 4]
-    : [6, 9, 4, 8, 20, 24, 7, 4, 13, 6, 8, 17, 5];
-
-  return BASE_TIME_SLOTS.map((slot, i) => {
-    let multiplier = 1.0;
-    if (slot.hour24 < 11.0) multiplier = factors.morningMult;
-    else if (slot.hour24 < 14.5) multiplier = factors.lunchMult;
-    else if (slot.hour24 < 16.0) multiplier = factors.afternoonMult;
-    else if (slot.hour24 < 18.0) multiplier = factors.snacksMult;
-    else multiplier = factors.dinnerMult;
-
-    // Computed crowd % bounded between 15% and 98%
-    const computedCrowd = Math.min(98, Math.max(15, Math.round(baseProfile[i] * multiplier)));
-    // Computed wait minutes bounded between 2 and 30 mins
-    const computedWait = Math.min(30, Math.max(2, Math.round(baseWaitProfile[i] * multiplier)));
-
-    let level = 'Low';
-    if (computedCrowd >= 88 || computedWait >= 18) level = 'Critical';
-    else if (computedCrowd >= 75 || computedWait >= 14) level = 'Peak';
-    else if (computedCrowd >= 55 || computedWait >= 8) level = 'Busy';
-    else if (computedCrowd >= 35 || computedWait >= 5) level = 'Moderate';
-
-    return {
-      time: slot.time,
-      hour24: slot.hour24,
-      label: slot.label,
-      crowdPercent: computedCrowd,
-      waitMinutes: computedWait,
-      level
-    };
-  });
-}
-
-export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
+export function CanteenRushMeter({
+  selectedCanteenId,
+  canteenName,
+  currentCanteen,
+  onRefreshData
+}) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
-  
-  // Real today day index (0 = Sun, 1 = Mon...)
-  const todayDayIndex = currentTime.getDay();
-  // Selected day index (defaults to today)
-  const [selectedDayIndex, setSelectedDayIndex] = useState(todayDayIndex);
+  const [isUpdatingCrowd, setIsUpdatingCrowd] = useState(false);
 
   // Sync clock every 30 seconds
   useEffect(() => {
@@ -172,18 +49,101 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
 
   const currentHourDecimal = currentTime.getHours() + currentTime.getMinutes() / 60;
   const timeFormatted = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const todayFormatted = currentTime.toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric'
+  });
 
-  // Generate dynamic schedule based on selected day and selected canteen
+  // Effective real-time crowd level from currentCanteen prop
+  const liveCrowdLevel = currentCanteen?.crowdLevel || 'Moderate';
+  const liveActiveOrders = currentCanteen?.activeOrdersCount || 3;
+  const isC2 = selectedCanteenId === 'canteen-2';
+
+  // Real-time multiplier based on live crowd changes
+  const crowdMultiplier = useMemo(() => {
+    switch (liveCrowdLevel) {
+      case 'Low':
+        return 0.55;
+      case 'Moderate':
+        return 1.0;
+      case 'Busy':
+        return 1.35;
+      case 'Rush Hour':
+        return 1.65;
+      default:
+        return 1.0;
+    }
+  }, [liveCrowdLevel]);
+
+  // Compute live dynamic schedule reflecting real-time kitchen changes
   const schedule = useMemo(() => {
-    return generateDynamicSchedule(selectedCanteenId, selectedDayIndex);
-  }, [selectedCanteenId, selectedDayIndex]);
+    // Base profiles for today
+    const baseCrowd = isC2
+      ? [20, 45, 30, 42, 70, 80, 35, 30, 86, 60, 42, 60, 25]
+      : [35, 58, 30, 50, 92, 95, 42, 25, 78, 38, 52, 84, 30];
 
-  // Is viewing today?
-  const isViewingToday = selectedDayIndex === todayDayIndex;
+    const baseWait = isC2
+      ? [3, 6, 4, 6, 13, 16, 5, 4, 18, 9, 6, 11, 4]
+      : [6, 9, 4, 8, 20, 24, 7, 4, 13, 6, 8, 17, 5];
 
-  // Closest slot index for current time
+    // Find closest current time slot index
+    let closestIdx = 0;
+    let minDiff = 999;
+    BASE_TIME_SLOTS.forEach((slot, idx) => {
+      const diff = Math.abs(slot.hour24 - currentHourDecimal);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIdx = idx;
+      }
+    });
+
+    return BASE_TIME_SLOTS.map((slot, i) => {
+      // Dynamic shift: slots near the current hour react strongly to the live sudden surge/drop
+      const distanceToNow = Math.abs(i - closestIdx);
+      let slotMultiplier = 1.0;
+
+      if (distanceToNow === 0) {
+        // Current active slot reacts 100% to live crowd level
+        slotMultiplier = crowdMultiplier;
+      } else if (distanceToNow === 1) {
+        // Immediate next/prev hour reflects 70% of live surge
+        slotMultiplier = 1.0 + (crowdMultiplier - 1.0) * 0.7;
+      } else if (distanceToNow === 2) {
+        slotMultiplier = 1.0 + (crowdMultiplier - 1.0) * 0.35;
+      }
+
+      // Add extra wait if active orders are surging
+      const ordersBonus = distanceToNow === 0 ? Math.round(Math.max(0, liveActiveOrders - 2) * 1.2) : 0;
+
+      const computedCrowd = Math.min(
+        98,
+        Math.max(14, Math.round(baseCrowd[i] * slotMultiplier))
+      );
+      const computedWait = Math.min(
+        35,
+        Math.max(2, Math.round(baseWait[i] * slotMultiplier + ordersBonus))
+      );
+
+      let level = 'Low';
+      if (computedCrowd >= 86 || computedWait >= 18) level = 'Critical';
+      else if (computedCrowd >= 72 || computedWait >= 14) level = 'Peak';
+      else if (computedCrowd >= 50 || computedWait >= 8) level = 'Busy';
+      else if (computedCrowd >= 32 || computedWait >= 5) level = 'Moderate';
+
+      return {
+        time: slot.time,
+        hour24: slot.hour24,
+        label: slot.label,
+        crowdPercent: computedCrowd,
+        waitMinutes: computedWait,
+        level
+      };
+    });
+  }, [isC2, crowdMultiplier, currentHourDecimal, liveActiveOrders]);
+
+  // Current active slot
   const currentSlotIndex = useMemo(() => {
-    if (!isViewingToday) return -1;
     let closestIdx = 0;
     let minDiff = 999;
     schedule.forEach((slot, idx) => {
@@ -194,83 +154,63 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
       }
     });
     return closestIdx;
-  }, [schedule, currentHourDecimal, isViewingToday]);
+  }, [schedule, currentHourDecimal]);
 
-  // Selected or active slot for advice card
-  const [userSelectedSlotIdx, setUserSelectedSlotIdx] = useState(null);
+  const activeSlot = schedule[currentSlotIndex] || schedule[0];
 
-  // If user clicked a slot, show that slot's advice; otherwise show current time slot (or peak slot)
-  const activeSlotIndex = useMemo(() => {
-    if (userSelectedSlotIdx !== null && schedule[userSelectedSlotIdx]) {
-      return userSelectedSlotIdx;
-    }
-    if (currentSlotIndex >= 0) {
-      return currentSlotIndex;
-    }
-    // Find the peak slot of the day as default when viewing another day
-    let maxIdx = 0;
-    let maxCrowd = 0;
-    schedule.forEach((s, i) => {
-      if (s.crowdPercent > maxCrowd) {
-        maxCrowd = s.crowdPercent;
-        maxIdx = i;
-      }
-    });
-    return maxIdx;
-  }, [userSelectedSlotIdx, currentSlotIndex, schedule]);
-
-  const activeSlot = schedule[activeSlotIndex] || schedule[0];
-
-  // Dynamic contextual advice tailored to current/selected slot & day
+  // Dynamic advice reacting live to sudden rush jumps or drops
   const contextualAdvice = useMemo(() => {
-    const dayMeta = DAYS_OF_WEEK.find((d) => d.key === selectedDayIndex);
-    const dayName = dayMeta ? dayMeta.fullName : 'Day';
-    const dayFactors = getDayFactors(selectedDayIndex, selectedCanteenId === 'canteen-2');
-
-    if (activeSlot.level === 'Critical' || activeSlot.level === 'Peak') {
+    if (liveCrowdLevel === 'Rush Hour' || activeSlot.level === 'Critical' || activeSlot.level === 'Peak') {
       return {
-        badge: `${dayName} Peak Surge`,
+        badge: '🔥 Sudden Surge Active',
         badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
         icon: Flame,
-        title: `${activeSlot.label} Rush is Active (~${activeSlot.waitMinutes} min queue)`,
-        text: `Queue delays surge around ${activeSlot.time} on ${dayName}s (${dayFactors.notes}). Pre-ordering your single-use token reserves your kitchen slot before lines build up!`
+        title: `Kitchen Rush Active (~${activeSlot.waitMinutes} min queue)`,
+        text: `Live sensors detect sudden rush surge at ${canteenName || 'canteen'}. Orders take ~${activeSlot.waitMinutes} mins to prepare. Pre-order your single-use token now to hold your place in line!`
       };
-    } else if (activeSlot.level === 'Busy') {
+    } else if (liveCrowdLevel === 'Busy' || activeSlot.level === 'Busy') {
       return {
-        badge: `${dayName} Moderate Rush`,
+        badge: '🟠 Moderate-High Rush',
         badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
         icon: Zap,
-        title: `${activeSlot.label} Window (~${activeSlot.waitMinutes} min queue)`,
-        text: `Counters experience brisk student movement at ${activeSlot.time}. Estimated token wait is ~${activeSlot.waitMinutes} mins.`
+        title: `Active Kitchen Movement (~${activeSlot.waitMinutes} min queue)`,
+        text: `Kitchen is bustling with ${liveActiveOrders} active orders. Digital pickup token lets you skip the counter payment line directly.`
       };
-    } else if (activeSlot.hour24 >= 19.0) {
+    } else if (liveCrowdLevel === 'Low' || activeSlot.level === 'Low') {
       return {
-        badge: `${dayName} Dinner`,
-        badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
-        icon: Clock,
-        title: `Evening Dinner & Night Bites (~${activeSlot.waitMinutes} min wait)`,
-        text: `Night service running until 9:00 PM. ${dayFactors.notes}. Fast dining hall turnaround.`
-      };
-    } else if (activeSlot.hour24 < 10.5) {
-      return {
-        badge: `${dayName} Breakfast`,
-        badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
-        icon: Clock,
-        title: `Morning Breakfast Window (~${activeSlot.waitMinutes} min wait)`,
-        text: `Quick morning service at ${activeSlot.time}. Dosa, idli, and beverage counters are serving rapidly.`
+        badge: '⚡ Rush Cleared / Low Wait',
+        badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        icon: Sparkles,
+        title: `Queue Just Dropped to Low (~${activeSlot.waitMinutes} min wait)!`,
+        text: `Live crowd has cleared up! Kitchen is preparing dishes in just ~${activeSlot.waitMinutes} mins. Best time to order without standing in any line.`
       };
     } else {
       return {
-        badge: 'Off-Peak Window',
-        badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        icon: Sparkles,
-        title: `Optimal Off-Peak Time (~${activeSlot.waitMinutes} min wait)`,
-        text: `Kitchen wait times are at their lowest around ${activeSlot.time} on ${dayName}. Food is prepared almost immediately!`
+        badge: '🔵 Normal Flow',
+        badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
+        icon: Clock,
+        title: `Steady Flow (~${activeSlot.waitMinutes} min wait)`,
+        text: `Crowd density is moderate. Food preparation running smoothly with ~${activeSlot.waitMinutes} min turnaround.`
       };
     }
-  }, [activeSlot, selectedDayIndex, selectedCanteenId]);
+  }, [liveCrowdLevel, activeSlot, liveActiveOrders, canteenName]);
 
   const AdviceIcon = contextualAdvice.icon;
+
+  // Handler to toggle live crowd during demo
+  const handleSetCrowd = async (newLevel) => {
+    try {
+      setIsUpdatingCrowd(true);
+      await api.updateCrowdLevel(selectedCanteenId, newLevel);
+      if (onRefreshData) {
+        await onRefreshData();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsUpdatingCrowd(false);
+    }
+  };
 
   const getBarColor = (level, isNow) => {
     if (isNow) return 'bg-[#B0003A] ring-2 ring-[#B0003A]/40 shadow-md';
@@ -307,13 +247,13 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
               </span>
             </div>
             <p className="text-[11px] text-slate-500 font-medium">
-              Dynamic hourly crowd density, kitchen wait times & night service (8:30 AM – 9:00 PM)
+              Real-time crowd response & predicted wait times (8:30 AM – 9:00 PM)
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          {/* Real-time Clock Badge */}
+          {/* Live Clock Badge */}
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-semibold text-slate-700">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Now: {timeFormatted}</span>
@@ -333,68 +273,67 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
 
       {isExpanded && (
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-4">
-          {/* Day Selector Chips: Allows judges & students to test dynamic day differences */}
-          <div className="flex items-center justify-between flex-wrap gap-2 bg-slate-50/80 p-2 rounded-2xl border border-[#E8E3D7]/70 text-xs">
-            <div className="flex items-center gap-1.5 text-slate-600 font-medium pl-1">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-[11px] font-semibold text-slate-700">Day Forecast:</span>
+          {/* Live Kitchen Real-Time Status Bar with Quick Live Crowd Toggle */}
+          <div className="flex items-center justify-between flex-wrap gap-2.5 bg-slate-50 p-2.5 rounded-2xl border border-[#E8E3D7] text-xs">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>{todayFormatted} (Live Today)</span>
+              </div>
+              <span className="text-slate-300">|</span>
+              <span className="text-slate-500 text-[11px]">
+                Active Kitchen Orders: <b className="text-slate-900 font-mono">{liveActiveOrders}</b>
+              </span>
             </div>
-            <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
-              {DAYS_OF_WEEK.map((d) => {
-                const isSelected = selectedDayIndex === d.key;
-                const isToday = todayDayIndex === d.key;
-                return (
-                  <button
-                    key={d.key}
-                    onClick={() => {
-                      setSelectedDayIndex(d.key);
-                      setUserSelectedSlotIdx(null); // Reset manual click
-                    }}
-                    className={`px-2.5 py-1 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap flex items-center gap-1 ${
-                      isSelected
-                        ? 'bg-[#B0003A] text-white shadow-xs font-bold scale-[1.02]'
-                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    <span>{d.label}</span>
-                    {isToday && (
-                      <span
-                        className={`text-[9px] px-1 py-0.2 rounded-full font-extrabold ${
-                          isSelected ? 'bg-white/20 text-white' : 'bg-[#FFF0F4] text-[#B0003A]'
-                        }`}
-                      >
-                        Today
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+
+            {/* Quick Live Crowd Selector: Allows immediate demonstration of sudden surge/drop */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-slate-600 font-medium hidden sm:inline">Live Rush Sensor:</span>
+              {[
+                { level: 'Low', color: 'bg-emerald-500 text-white', border: 'border-emerald-500', active: liveCrowdLevel === 'Low' },
+                { level: 'Moderate', color: 'bg-blue-500 text-white', border: 'border-blue-500', active: liveCrowdLevel === 'Moderate' },
+                { level: 'Busy', color: 'bg-amber-500 text-white', border: 'border-amber-500', active: liveCrowdLevel === 'Busy' },
+                { level: 'Rush Hour', color: 'bg-rose-500 text-white', border: 'border-rose-500', active: liveCrowdLevel === 'Rush Hour' }
+              ].map((btn) => (
+                <button
+                  key={btn.level}
+                  onClick={() => handleSetCrowd(btn.level)}
+                  disabled={isUpdatingCrowd}
+                  title={`Set live crowd to ${btn.level}`}
+                  className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
+                    btn.active
+                      ? `${btn.color} shadow-xs scale-105`
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  {btn.level}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Hourly Visual Bars: Roomy padding-top (pt-8) so the "NOW" badge is NEVER cut off */}
+          {/* Hourly Visual Bars: Roomy padding-top (pt-9) so the "NOW" badge is NEVER cut off */}
           <div className="relative">
-            <div className="flex items-end justify-between gap-1 sm:gap-2 overflow-x-auto pb-3 pt-8 px-2 scrollbar-none">
+            <div className="flex items-end justify-between gap-1 sm:gap-2 overflow-x-auto pb-3 pt-9 px-2 scrollbar-none">
               {schedule.map((slot, idx) => {
-                const isNow = isViewingToday && idx === currentSlotIndex;
-                const isUserSelected = idx === userSelectedSlotIdx;
+                const isNow = idx === currentSlotIndex;
                 const barHeight = Math.max(24, Math.round((slot.crowdPercent / 100) * 78));
 
                 return (
                   <div
                     key={slot.time}
-                    onClick={() => setUserSelectedSlotIdx(idx)}
-                    className={`flex flex-col items-center flex-1 min-w-[56px] sm:min-w-[62px] group transition-all relative cursor-pointer ${
+                    className={`flex flex-col items-center flex-1 min-w-[56px] sm:min-w-[62px] group transition-all duration-300 relative ${
                       isNow
                         ? 'scale-[1.03] z-20'
-                        : isUserSelected
-                        ? 'scale-[1.02] z-10'
                         : 'opacity-85 hover:opacity-100'
                     }`}
                   >
-                    {/* The "NOW" floating badge - With generous spacing, full pill shape, drop shadow, never cut off */}
+                    {/* The "NOW" floating badge - Generous spacing, full pill shape, drop shadow, never cut off */}
                     {isNow && (
-                      <div className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap z-30 pointer-events-none">
+                      <div className="absolute -top-7.5 left-1/2 -translate-x-1/2 whitespace-nowrap z-30 pointer-events-none">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#B0003A] text-white text-[10px] font-extrabold shadow-md border border-white">
                           <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
                           NOW
@@ -402,13 +341,11 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
                       </div>
                     )}
 
-                    {/* Wait time text above bar (e.g. ~24m, ~18m) */}
+                    {/* Wait time text above bar (e.g. ~4m, ~24m) */}
                     <span
-                      className={`text-[10px] font-bold mb-1.5 transition ${
+                      className={`text-[10px] font-bold mb-1.5 transition-all duration-300 ${
                         isNow
                           ? 'text-[#B0003A] font-extrabold text-[11px]'
-                          : isUserSelected
-                          ? 'text-slate-900 font-extrabold'
                           : 'text-slate-500 group-hover:text-slate-800'
                       }`}
                     >
@@ -416,14 +353,10 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
                     </span>
 
                     {/* Bar graphic */}
-                    <div
-                      className={`w-full bg-slate-100 rounded-t-lg h-[80px] flex items-end justify-center p-0.5 transition ${
-                        isUserSelected ? 'ring-2 ring-slate-400/50' : ''
-                      }`}
-                    >
+                    <div className="w-full bg-slate-100 rounded-t-lg h-[80px] flex items-end justify-center p-0.5">
                       <div
                         style={{ height: `${barHeight}px` }}
-                        className={`w-full rounded-t-md transition-all duration-300 ${getBarColor(
+                        className={`w-full rounded-t-md transition-all duration-500 ${getBarColor(
                           slot.level,
                           isNow
                         )}`}
@@ -433,11 +366,7 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
                     {/* Time Label */}
                     <span
                       className={`text-[10px] mt-2 whitespace-nowrap text-center ${
-                        isNow
-                          ? 'font-extrabold text-[#B0003A]'
-                          : isUserSelected
-                          ? 'font-bold text-slate-900'
-                          : 'font-medium text-slate-600'
+                        isNow ? 'font-extrabold text-[#B0003A]' : 'font-medium text-slate-600'
                       }`}
                     >
                       {slot.time}
@@ -445,14 +374,16 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
 
                     {/* Status Subtitle */}
                     <span
-                      className={`text-[9px] truncate max-w-full text-center mt-0.5 ${
+                      className={`text-[9px] truncate max-w-full text-center mt-0.5 transition-all duration-300 ${
                         slot.level === 'Critical'
                           ? 'text-rose-600 font-bold'
                           : slot.level === 'Peak'
                           ? 'text-rose-500 font-semibold'
                           : slot.level === 'Busy'
                           ? 'text-amber-600 font-semibold'
-                          : 'text-slate-500 font-normal'
+                          : slot.level === 'Moderate'
+                          ? 'text-blue-600 font-medium'
+                          : 'text-emerald-600 font-medium'
                       }`}
                     >
                       {slot.level}
@@ -464,8 +395,8 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
           </div>
 
           {/* Bottom Card: Dynamic Contextual Advice & Legend */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-[#E8E3D7]">
-            {/* Contextual Dynamic Advice based on active slot & selected day */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-[#E8E3D7] transition-all duration-300">
+            {/* Dynamic Advice reacting to sudden rush spikes or drops */}
             <div className="flex items-start sm:items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-white border border-[#E8E3D7] flex items-center justify-center text-[#B0003A] shrink-0 shadow-2xs mt-0.5 sm:mt-0">
                 <AdviceIcon className="w-4 h-4" />
