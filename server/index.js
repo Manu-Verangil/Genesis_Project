@@ -594,16 +594,26 @@ app.post("/api/menu/:id/notify-me", (req, res) => {
 
 // ----------------- ORDERS & LIVE QUEUE -----------------
 app.get("/api/orders", (req, res) => {
-  const { canteenId, studentOnly } = req.query;
+  const { canteenId, studentOnly, priorityOnly } = req.query;
   let orders = [...db.orders];
   if (canteenId) orders = orders.filter((o) => o.canteenId === canteenId);
   if (studentOnly === "true") orders = orders.filter((o) => o.isCurrentUser);
-  // Sort latest first
-  orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  if (priorityOnly === "true") orders = orders.filter((o) => o.isPriority || o.isFaculty);
+
+  // Priority sorting: Active faculty priority orders bubble to the top of cooking/ready queue
+  orders.sort((a, b) => {
+    const aActive = ["cooking", "ready", "received", "serving"].includes(a.status);
+    const bActive = ["cooking", "ready", "received", "serving"].includes(b.status);
+    if (aActive && bActive) {
+      if ((a.isPriority || a.isFaculty) && !(b.isPriority || b.isFaculty)) return -1;
+      if (!(a.isPriority || a.isFaculty) && (b.isPriority || b.isFaculty)) return 1;
+    }
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
   res.json({ success: true, data: orders });
 });
 
-// Live Queue Board (Slide 8)
+// Live Queue Board with Dedicated Faculty Priority Queue (Slide 8)
 app.get("/api/queue/:canteenId", (req, res) => {
   const { canteenId } = req.params;
   const canteen = db.canteens.find((c) => c.id === canteenId);
@@ -616,15 +626,34 @@ app.get("/api/queue/:canteenId", (req, res) => {
   const ready = activeOrders.filter((o) => o.status === "ready");
   const cooking = activeOrders.filter((o) => ["cooking", "received"].includes(o.status));
 
+  // Faculty Priority Lane separation
+  const facultyQueue = activeOrders.filter((o) => o.isPriority || o.isFaculty);
+  const regularQueue = activeOrders.filter((o) => !o.isPriority && !o.isFaculty);
+
+  // Within cooking & ready, prioritize faculty tokens
+  cooking.sort((a, b) => {
+    if ((a.isPriority || a.isFaculty) && !(b.isPriority || b.isFaculty)) return -1;
+    if (!(a.isPriority || a.isFaculty) && (b.isPriority || b.isFaculty)) return 1;
+    return 0;
+  });
+
   // Current user order if any
   const myOrder = activeOrders.find((o) => o.isCurrentUser);
   let ordersAhead = 0;
   let estimatedWait = 0;
 
   if (myOrder) {
-    const idx = cooking.findIndex((o) => o.id === myOrder.id);
-    ordersAhead = ready.length + (idx > 0 ? idx : 0);
-    estimatedWait = myOrder.estimatedWaitMinutes;
+    if (myOrder.isPriority || myOrder.isFaculty) {
+      // Faculty express calculation
+      const facCooking = cooking.filter((o) => o.isPriority || o.isFaculty);
+      const idx = facCooking.findIndex((o) => o.id === myOrder.id);
+      ordersAhead = Math.max(0, (idx > 0 ? idx : 0));
+      estimatedWait = myOrder.estimatedWaitMinutes || 3;
+    } else {
+      const idx = cooking.findIndex((o) => o.id === myOrder.id);
+      ordersAhead = ready.length + (idx > 0 ? idx : 0);
+      estimatedWait = myOrder.estimatedWaitMinutes;
+    }
   }
 
   res.json({
@@ -634,6 +663,8 @@ app.get("/api/queue/:canteenId", (req, res) => {
       serving,
       ready,
       cooking,
+      facultyQueue,
+      regularQueue,
       myOrder,
       ordersAhead,
       estimatedWait
@@ -692,7 +723,7 @@ app.post("/api/orders", (req, res) => {
     if (menuItem) menuItem.stock = Math.max(0, menuItem.stock - cartItem.quantity);
   });
 
-  // 5. Generate unique single-use token (e.g. C1-048)
+  // 5. Generate unique single-use token (e.g. C1-048 or C1-FAC-048)
   const canteenPrefix = canteen.code || (canteenId === "canteen-1" ? "C1" : "C2");
   const existingTokens = db.orders
     .filter((o) => o.canteenId === canteenId)
@@ -701,25 +732,41 @@ app.post("/api/orders", (req, res) => {
       return match ? parseInt(match[0], 10) : 0;
     });
   const nextNum = Math.max(42, ...(existingTokens.length ? existingTokens : [42])) + 1;
-  const token = `${canteenPrefix}-${String(nextNum).padStart(3, "0")}`;
 
-  // 6. Dynamic wait-time calculation (Slide 8)
+  const isFacultyOrder =
+    Boolean(req.body.isFaculty) ||
+    Boolean(req.body.customerRole === "faculty") ||
+    Boolean(currentUserSession && currentUserSession.role === "faculty");
+
+  const token = isFacultyOrder
+    ? `${canteenPrefix}-FAC-${String(nextNum).padStart(3, "0")}`
+    : `${canteenPrefix}-${String(nextNum).padStart(3, "0")}`;
+
+  // 6. Dynamic wait-time calculation (Faculty Priority Queue receives 50% accelerated preparation)
   const waitInfo = calculateWaitTime(canteenId, items);
+  const estimatedWait = isFacultyOrder
+    ? Math.max(2, Math.round(waitInfo.estimatedMinutes * 0.45))
+    : waitInfo.estimatedMinutes;
 
   const newOrder = {
     id: `ord_${Date.now()}`,
     token,
     canteenId,
     canteenName: canteen.name,
-    studentName: "You (Karthik)",
-    studentRoll: "CS24B001",
+    studentName: req.body.customerName || (currentUserSession ? currentUserSession.name : (isFacultyOrder ? "Dr. Balakrishnan P (Faculty)" : "You (Karthik)")),
+    studentRoll: isFacultyOrder
+      ? (currentUserSession ? `Faculty (${currentUserSession.username})` : "Faculty Priority Member")
+      : (currentUserSession ? currentUserSession.username : "CS24B001"),
     isCurrentUser: true,
+    isFaculty: isFacultyOrder,
+    isPriority: isFacultyOrder,
+    priorityTag: isFacultyOrder ? "⚡ FACULTY VIP PRIORITY" : null,
     items,
     totalAmount,
     paymentMethod: paymentMethod || "Wallet",
     paymentStatus: "paid",
     status: "cooking",
-    estimatedWaitMinutes: waitInfo.estimatedMinutes,
+    estimatedWaitMinutes: estimatedWait,
     createdAt: new Date().toISOString(),
     qrCodeData: `CAMPUS_HUB_${token}_SECRET_${Date.now()}`
   };
@@ -745,8 +792,10 @@ app.post("/api/orders", (req, res) => {
   // In-app notification
   db.notifications.unshift({
     id: `nt_${Date.now()}`,
-    title: "Order Placed Successfully",
-    message: `Order #${token} confirmed. Your token is ready! Estimated wait: ~${waitInfo.estimatedMinutes} min.`,
+    title: isFacultyOrder ? "⚡ Faculty Priority Order Confirmed" : "Order Placed Successfully",
+    message: isFacultyOrder
+      ? `VIP Token #${token} confirmed in Faculty Priority Queue! Fast-track prep: ~${estimatedWait} min.`
+      : `Order #${token} confirmed. Your token is ready! Estimated wait: ~${waitInfo.estimatedMinutes} min.`,
     type: "order",
     timestamp: new Date().toISOString(),
     read: false

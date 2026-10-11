@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, User, ChefHat, Lock, AlertCircle, Sparkles, ArrowRight, X, UserCheck, Check } from 'lucide-react';
+import { Shield, User, ChefHat, Lock, AlertCircle, Sparkles, ArrowRight, X, UserCheck, Check, GraduationCap, Zap, Key } from 'lucide-react';
 import { api } from '../api';
 
 export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
@@ -13,7 +13,29 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
 
   if (!isOpen) return null;
 
+  const demoAccounts = [
+    { role: 'faculty', label: 'Faculty VIP', user: 'cb.fac.cse301', pass: 'Faculty@Pass301', desc: 'Dr. Balakrishnan P (Priority Queue)' },
+    { role: 'student', label: 'Student', user: 'cb.ps.i5das23101', pass: 'Student@Pass101', desc: 'Aarav Sharma (Canteen & Token)' },
+    { role: 'staff', label: 'Canteen Staff', user: 'CANTEEN1-COUNTER-01', pass: 'Staff@C1Pass101', desc: 'Kitchen KDS & Token Dispatcher' },
+    { role: 'admin', label: 'Root Admin', user: 'SYS-ADMIN-SUPER', pass: 'Admin@SecureRoot01', desc: 'Security Vault & AI Forecast' }
+  ];
+
+  const fillDemo = (acc) => {
+    setSelectedRole(acc.role);
+    setIdentifier(acc.user);
+    setPassword(acc.pass);
+    setErrorMessage('');
+  };
+
   const rolePerks = [
+    {
+      role: 'faculty',
+      title: 'Faculty Portal ⚡',
+      perk: 'VIP Priority Queue tokens, fast-track preparation & express counter pickup',
+      icon: GraduationCap,
+      activeColor: 'ring-2 ring-[#0D6EFD] border-[#0D6EFD] bg-[#EBF3FF] text-[#0D6EFD] shadow-md scale-[1.02]',
+      normalColor: 'border-[#B6D4FE] bg-[#EBF3FF]/60 text-[#0D6EFD] hover:bg-[#EBF3FF] hover:scale-[1.01]'
+    },
     {
       role: 'student',
       title: 'Student Portal',
@@ -182,8 +204,35 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           </div>
         </div>
 
-        {/* Prominent Guest Login Button */}
+        {/* Quick 1-Click Demo Profiles (Faculty, Student, Canteen Staff, Admin) */}
         <div className="mt-4 pt-3 border-t border-[#E8E3D7]/60">
+          <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-600 mb-2 flex items-center gap-1.5">
+            <Key className="w-3.5 h-3.5 text-[#D4A017]" />
+            <span>Quick 1-Click Test Credentials (Click to autofill)</span>
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+            {demoAccounts.map((acc) => (
+              <button
+                key={acc.role}
+                type="button"
+                onClick={() => fillDemo(acc)}
+                className={`p-2 rounded-xl border text-left transition group shadow-xs ${
+                  selectedRole === acc.role
+                    ? 'border-[#B0003A] bg-[#FFF0F4] ring-1 ring-[#B0003A]'
+                    : 'border-[#E8E3D7] bg-[#FAF7F0] hover:bg-white hover:border-[#B0003A]'
+                }`}
+              >
+                <div className="font-extrabold text-[11px] text-slate-800 group-hover:text-[#B0003A] truncate flex items-center justify-between">
+                  <span>{acc.label}</span>
+                </div>
+                <div className="text-[10px] text-slate-500 font-mono truncate mt-0.5">{acc.user}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Prominent Guest Login Button */}
+        <div>
           <button
             type="button"
             onClick={handleGuestLogin}

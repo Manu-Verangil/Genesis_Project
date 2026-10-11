@@ -26,6 +26,8 @@ export function CanteenView({
   setSelectedCanteenId,
   menuItems,
   wallet,
+  currentUser,
+  currentRole,
   onOrderCreated,
   onOpenWallet,
   onRefreshData
@@ -129,6 +131,7 @@ export function CanteenView({
   const submitOrder = async () => {
     setIsSubmitting(true);
     try {
+      const isFaculty = currentRole === 'faculty' || currentUser?.role === 'faculty';
       const orderPayload = {
         canteenId: selectedCanteenId,
         items: cart.map((i) => ({
@@ -140,7 +143,10 @@ export function CanteenView({
         })),
         paymentMethod,
         totalAmount: cartTotal,
-        canteenName: currentCanteen?.name || 'Campus Canteen'
+        canteenName: currentCanteen?.name || 'Campus Canteen',
+        isFaculty: isFaculty,
+        customerRole: isFaculty ? 'faculty' : (currentUser?.role || 'student'),
+        customerName: currentUser?.name || (isFaculty ? 'Dr. Balakrishnan P (Faculty)' : 'You (Karthik)')
       };
 
       const res = await api.createOrder(orderPayload);
@@ -567,6 +573,16 @@ export function CanteenView({
                   </button>
                 </div>
               </div>
+
+              {/* Faculty Priority Queue Indicator */}
+              {(currentRole === 'faculty' || currentUser?.role === 'faculty') && (
+                <div className="p-2.5 rounded-2xl bg-[#EBF3FF] border border-[#B6D4FE] text-[#0D6EFD] text-xs flex items-center gap-2">
+                  <span className="px-1.5 py-0.5 rounded-md bg-[#0D6EFD] text-white text-[9px] font-black uppercase shadow-xs">⚡ VIP</span>
+                  <span className="font-semibold text-[11px] text-blue-900">
+                    Faculty Priority Lane Active: Express C1-FAC token with 50% accelerated preparation!
+                  </span>
+                </div>
+              )}
 
               {/* Guarantee notice */}
               <div className="p-2.5 rounded-2xl bg-slate-50 border border-[#E8E3D7] text-[10px] text-slate-500 leading-relaxed flex items-start gap-2">

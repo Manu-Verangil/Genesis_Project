@@ -31,7 +31,8 @@ import {
   DollarSign,
   Upload,
   Link,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Zap
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -298,7 +299,10 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
   }, [orders]);
 
   const filteredOrders = useMemo(() => {
-    return activeOrders.filter((order) => {
+    const list = activeOrders.filter((order) => {
+      if (orderStatusFilter === 'faculty_priority') {
+        return order.isPriority || order.isFaculty;
+      }
       if (orderStatusFilter !== 'all' && order.status !== orderStatusFilter) return false;
       if (orderSearchQuery) {
         const query = orderSearchQuery.toLowerCase();
@@ -310,6 +314,14 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       }
       return true;
     });
+
+    return [...list].sort((a, b) => {
+      const aPri = a.isPriority || a.isFaculty;
+      const bPri = b.isPriority || b.isFaculty;
+      if (aPri && !bPri) return -1;
+      if (!aPri && bPri) return 1;
+      return 0;
+    });
   }, [activeOrders, orderStatusFilter, orderSearchQuery]);
 
   // Operational metrics
@@ -317,12 +329,14 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
     const cookingCount = activeOrders.filter((o) => o.status === 'cooking').length;
     const readyCount = activeOrders.filter((o) => o.status === 'ready').length;
     const servingCount = activeOrders.filter((o) => o.status === 'serving').length;
+    const priorityCount = activeOrders.filter((o) => o.isPriority || o.isFaculty).length;
     const lowStockCount = menuItems.filter((i) => i.stock <= 5).length;
     return {
       activeTotal: activeOrders.length,
       cooking: cookingCount,
       ready: readyCount,
       serving: servingCount,
+      priority: priorityCount,
       lowStock: lowStockCount
     };
   }, [activeOrders, menuItems]);
@@ -613,6 +627,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
             <div className="flex flex-wrap items-center gap-1.5">
               {[
                 { id: 'all', label: 'All Active', count: activeOrders.length },
+                { id: 'faculty_priority', label: '⚡ Faculty VIP', count: stats.priority },
                 { id: 'cooking', label: 'Cooking', count: stats.cooking },
                 { id: 'ready', label: 'Ready', count: stats.ready },
                 { id: 'serving', label: 'Serving', count: stats.serving }
@@ -622,13 +637,19 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   onClick={() => setOrderStatusFilter(f.id)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 ${
                     orderStatusFilter === f.id
-                      ? 'bg-[#B0003A] text-white shadow-sm font-bold'
+                      ? f.id === 'faculty_priority'
+                        ? 'bg-blue-600 text-white shadow-sm font-bold'
+                        : 'bg-[#B0003A] text-white shadow-sm font-bold'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-[#FAF7F0]'
                   }`}
                 >
                   <span>{f.label}</span>
                   <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                    orderStatusFilter === f.id ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-600'
+                    orderStatusFilter === f.id
+                      ? 'bg-white/20 text-white'
+                      : f.id === 'faculty_priority' && f.count > 0
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-[#FAF7F0] text-slate-600'
                   }`}>
                     {f.count}
                   </span>
@@ -653,12 +674,15 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
               const isCooking = order.status === 'cooking';
               const isReady = order.status === 'ready';
               const isServing = order.status === 'serving';
+              const isPriority = order.isPriority || order.isFaculty;
 
               return (
                 <div
                   key={order.id}
                   className={`rounded-2xl p-5 border transition-all duration-200 flex flex-col justify-between shadow-sm hover:shadow-md bg-white ${
-                    isServing
+                    isPriority
+                      ? 'border-blue-400 ring-2 ring-blue-400/40 bg-blue-50/20'
+                      : isServing
                       ? 'border-[#0D6EFD]/50 ring-1 ring-[#0D6EFD]/20 bg-[#EBF3FE]/30'
                       : isReady
                       ? 'border-[#198754]/50 ring-1 ring-[#198754]/20 bg-[#E8F5E9]/30'
@@ -673,6 +697,12 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                         <span className="text-2xl font-black font-mono text-[#B0003A] tracking-wider">
                           {order.token}
                         </span>
+                        {isPriority && (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-blue-600 text-white uppercase shadow-xs flex items-center gap-1 animate-pulse">
+                            <Zap className="w-2.5 h-2.5 fill-white" />
+                            <span>VIP</span>
+                          </span>
+                        )}
                         <span className="text-[10px] font-mono text-slate-600 bg-[#FAF7F0] px-2 py-0.5 rounded-md border border-[#E8E3D7] font-semibold">
                           {getElapsedMinutes(order.createdAt)}
                         </span>

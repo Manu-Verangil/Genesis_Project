@@ -12,14 +12,15 @@ import { VoiceGuidanceModal } from './components/VoiceGuidanceModal';
 import { LoginModal } from './components/LoginModal';
 import { StudentSpendingWidget } from './components/StudentSpendingWidget';
 import { OrderReceiptScreen } from './components/OrderReceiptScreen';
+import { Sparkles, User, GraduationCap, ChefHat, Shield, ArrowRight } from 'lucide-react';
 import { api } from './api';
 
 export function App() {
   const [activeTab, setActiveTab] = useState('canteen'); // 'canteen', 'queue', 'map', 'lost-found', 'issues'
-  const [currentRole, setCurrentRole] = useState('student'); // 'student', 'staff', 'admin'
+  const [currentRole, setCurrentRole] = useState('guest'); // 'guest', 'student', 'faculty', 'staff', 'admin'
   const [selectedCanteenId, setSelectedCanteenId] = useState('canteen-1');
   const [currentUser, setCurrentUser] = useState(null);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(true); // Must start in logged-out mode!
 
   // Shared Data
   const [canteens, setCanteens] = useState([]);
@@ -33,13 +34,19 @@ export function App() {
   const [receiptOrder, setReceiptOrder] = useState(null);
 
   const handleRoleRedirection = (role) => {
-    if (role === 'student') {
+    if (role === 'faculty') {
+      setCurrentRole('faculty');
+      setActiveTab('canteen');
+    } else if (role === 'student') {
       setCurrentRole('student');
       setActiveTab('canteen');
     } else if (role === 'staff') {
       setCurrentRole('staff');
     } else if (role === 'admin') {
       setCurrentRole('admin');
+    } else {
+      setCurrentRole('guest');
+      setActiveTab('canteen');
     }
   };
 
@@ -54,7 +61,7 @@ export function App() {
       await api.logout();
     } catch (e) {}
     setCurrentUser(null);
-    setCurrentRole('student');
+    setCurrentRole('guest');
     setActiveTab('canteen');
     setIsLoginOpen(true);
   };
@@ -86,19 +93,10 @@ export function App() {
 
   useEffect(() => {
     fetchGlobalData();
-    // Default to Login Screen if no active session detected on load
-    api.getCurrentUser()
-      .then((res) => {
-        if (res.success && res.user) {
-          setCurrentUser(res.user);
-          handleRoleRedirection(res.user.role);
-        } else {
-          setIsLoginOpen(true);
-        }
-      })
-      .catch(() => {
-        setIsLoginOpen(true);
-      });
+    // User requirement: Application MUST start in logged-out mode with login modal open
+    setCurrentUser(null);
+    setCurrentRole('guest');
+    setIsLoginOpen(true);
 
     // Live update interval
     const interval = setInterval(fetchGlobalData, 6000);
@@ -156,9 +154,11 @@ export function App() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
             <div>
               <h2 className="text-base sm:text-lg font-extrabold text-[#B0003A] tracking-tight">
+                {currentRole === 'faculty' && 'Smart Campus Hub — Faculty Portal & VIP Priority Services ⚡'}
                 {currentRole === 'student' && 'Smart Campus Hub — Student & Campus Community'}
-                {currentRole === 'staff' && 'Smart Campus Hub — Kitchen Staff & Counter Operations'}
+                {currentRole === 'staff' && 'Smart Campus Hub — Canteen Kitchen Staff & Counter Operations 🍳'}
                 {currentRole === 'admin' && 'Smart Campus Hub — Central Administration & Campus Analytics'}
+                {currentRole === 'guest' && 'Smart Campus Hub — Guest Visitor Access'}
               </h2>
               <p className="text-xs text-slate-500 font-medium">
                 Amrita Vishwa Vidyapeetham • Ettimadai Campus, Coimbatore
@@ -205,11 +205,103 @@ export function App() {
               </div>
             </div>
           </div>
+
+          {/* Quick Portal Switcher (Instant 1-Click access to Canteen Staff Dashboard, Faculty VIP, Student, Admin) */}
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 bg-[#FFF0F4]/80 border border-[#F8C0CE] rounded-2xl p-2.5 sm:px-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-extrabold text-[#B0003A] uppercase tracking-wider flex items-center gap-1.5 shrink-0">
+                <Sparkles className="w-3.5 h-3.5 text-[#D4A017]" />
+                Switch Campus Dashboard:
+              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  onClick={() => { setCurrentRole('student'); setActiveTab('canteen'); }}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
+                    currentRole === 'student'
+                      ? 'bg-[#B0003A] text-white shadow-xs'
+                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#B0003A] border border-[#E8E3D7]'
+                  }`}
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>Student</span>
+                </button>
+                <button
+                  onClick={() => { setCurrentRole('faculty'); setActiveTab('canteen'); }}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    currentRole === 'faculty'
+                      ? 'bg-[#0D6EFD] text-white shadow-xs'
+                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#0D6EFD] border border-[#E8E3D7]'
+                  }`}
+                >
+                  <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
+                  <span>Faculty (VIP Priority ⚡)</span>
+                </button>
+                <button
+                  onClick={() => setCurrentRole('staff')}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    currentRole === 'staff'
+                      ? 'bg-[#FD7E14] text-white shadow-xs ring-2 ring-[#FD7E14]/40'
+                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#FD7E14] border border-[#E8E3D7]'
+                  }`}
+                >
+                  <ChefHat className="w-3.5 h-3.5 text-amber-500" />
+                  <span>🍳 Canteen Staff Dashboard</span>
+                </button>
+                <button
+                  onClick={() => setCurrentRole('admin')}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
+                    currentRole === 'admin'
+                      ? 'bg-[#6F42C1] text-white shadow-xs'
+                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#6F42C1] border border-[#E8E3D7]'
+                  }`}
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Campus Admin</span>
+                </button>
+              </div>
+            </div>
+            {!currentUser && (
+              <button
+                onClick={() => setIsLoginOpen(true)}
+                className="text-xs font-bold text-[#B0003A] hover:underline flex items-center gap-1 ml-auto"
+              >
+                <span>Login with Password</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Student View */}
-        {currentRole === 'student' && (
+        {/* Student, Faculty, or Guest View */}
+        {(currentRole === 'student' || currentRole === 'faculty' || currentRole === 'guest') && (
           <div>
+            {/* Faculty VIP Priority Banner */}
+            {currentRole === 'faculty' && (
+              <div className="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-900 shadow-xs flex items-center justify-between gap-3 animate-in fade-in">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-blue-600 text-white shadow-xs shrink-0">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-sm text-blue-950 flex items-center gap-1.5">
+                      <span>Faculty Priority Lane Activated</span>
+                      <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded-md bg-blue-600 text-white uppercase shadow-xs">
+                        ⚡ VIP QUEUE
+                      </span>
+                    </h4>
+                    <p className="text-xs text-blue-700 mt-0.5 font-medium">
+                      Your orders receive <strong>C1-FAC-*</strong> tokens, 50% accelerated preparation, and jump ahead of regular student queues!
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setActiveTab('queue')}
+                  className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-xs shrink-0"
+                >
+                  View Priority Queue
+                </button>
+              </div>
+            )}
 
             {activeTab === 'canteen' && (
               <CanteenView
@@ -218,6 +310,8 @@ export function App() {
                 setSelectedCanteenId={setSelectedCanteenId}
                 menuItems={menuItems}
                 wallet={wallet}
+                currentUser={currentUser}
+                currentRole={currentRole}
                 onOrderCreated={handleOrderCreated}
                 onOpenWallet={() => setIsWalletOpen(true)}
                 onRefreshData={fetchGlobalData}
@@ -229,6 +323,8 @@ export function App() {
                 canteens={canteens}
                 selectedCanteenId={selectedCanteenId}
                 setSelectedCanteenId={setSelectedCanteenId}
+                currentUser={currentUser}
+                currentRole={currentRole}
                 onNavigateToMenu={() => setActiveTab('canteen')}
               />
             )}

@@ -4408,6 +4408,29 @@ export const initialData = {
     }
   ],
   orders: [
+    // Faculty Priority Express Queue Token!
+    {
+      id: "ord-fac-101",
+      token: "C1-FAC-042",
+      canteenId: "canteen-1",
+      canteenName: "Main Canteen",
+      studentName: "Dr. Balakrishnan P (Faculty)",
+      studentRoll: "Faculty (HOD CSE)",
+      isFaculty: true,
+      isPriority: true,
+      priorityTag: "⚡ FACULTY VIP PRIORITY",
+      items: [
+        { id: "m3", name: "Crispy Masala Dosa", quantity: 1, price: 50, prepTimeMinutes: 4 },
+        { id: "m7", name: "Hot Ginger Masala Chai", quantity: 1, price: 15, prepTimeMinutes: 2 }
+      ],
+      totalAmount: 65,
+      paymentMethod: "Wallet",
+      paymentStatus: "paid",
+      status: "cooking",
+      estimatedWaitMinutes: 2,
+      createdAt: new Date(Date.now() - 4 * 60 * 1000).toISOString(),
+      qrCodeData: "CAMPUS_HUB_C1_FAC_042_SECRET"
+    },
     // Pre-seeded live queue matching Slide 8 exactly!
     {
       id: "ord-101",

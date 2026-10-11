@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { api } from '../api';
 
-export function LiveQueueView({ canteens, selectedCanteenId, setSelectedCanteenId, onNavigateToMenu }) {
+export function LiveQueueView({ canteens, selectedCanteenId, setSelectedCanteenId, currentUser, currentRole, onNavigateToMenu }) {
   const [queueData, setQueueData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -116,6 +116,62 @@ export function LiveQueueView({ canteens, selectedCanteenId, setSelectedCanteenI
               </div>
             ) : (
               <div className="mt-5 space-y-3">
+                {/* 0. FACULTY PRIORITY VIP EXPRESS QUEUE (Blue/Indigo with Golden Spark) */}
+                {queueData.facultyQueue && queueData.facultyQueue.length > 0 && (
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border-2 border-blue-300 shadow-xs mb-3">
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-blue-200">
+                      <span className="text-[11px] font-black uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
+                        <Zap className="w-4 h-4 text-amber-500 fill-amber-500 animate-bounce" />
+                        <span>⚡ Faculty Priority VIP Express Lane</span>
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-blue-600 text-white uppercase shadow-xs">
+                        Fast-Track Turnaround
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {queueData.facultyQueue.map((o) => (
+                        <div
+                          key={o.id}
+                          className="flex items-center justify-between p-3 rounded-xl bg-white border border-blue-200 text-slate-900 shadow-xs"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl font-black font-mono tracking-wider text-blue-700">
+                              {o.token}
+                            </span>
+                            <div>
+                              <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                <span>{o.studentName}</span>
+                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-100 text-blue-800">
+                                  Faculty VIP
+                                </span>
+                              </div>
+                              <div className="text-[10px] text-slate-500">
+                                {o.items.map((i) => `${i.name} (${i.quantity})`).join(', ')}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono font-bold text-blue-700">
+                              ~{o.estimatedWaitMinutes} min
+                            </span>
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-xs font-black uppercase shadow-xs ${
+                                o.status === 'serving'
+                                  ? 'bg-[#198754] text-white'
+                                  : o.status === 'ready'
+                                  ? 'bg-[#0D6EFD] text-white'
+                                  : 'bg-amber-500 text-white animate-pulse'
+                              }`}
+                            >
+                              {o.status.toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* 1. SERVING (Success / Vegetarian - Green #198754) */}
                 {queueData.serving && queueData.serving.length > 0 && (
                   <div>

@@ -29,3 +29,9 @@ id,name,role,username,email,password
 28,Sunita Varma,admin,CAMPUS-OPS-DIRECTOR,sunita.v@campus.edu,Admin@SecureLead02
 29,Manoj Chandran,admin,HUB-ADMIN-FACILITIES,manoj.c@campus.edu,Admin@SecureMap03
 30,Preethi Swaminathan,admin,HUB-ADMIN-SERVICES,preethi.s@campus.edu,Admin@SecureOps04
+31,Dr. Balakrishnan P,faculty,cb.fac.cse301,bala.p@campus.edu,Faculty@Pass301
+32,Dr. Radhika Sharma,faculty,cb.fac.aie302,radhika.s@campus.edu,Faculty@Pass302
+33,Dr. K. S. Anand,faculty,cb.fac.ece303,anand.ks@campus.edu,Faculty@Pass303
+34,Dr. Geetha Mohan,faculty,cb.fac.mec304,geetha.m@campus.edu,Faculty@Pass304
+35,Dr. Sivaramakrishnan V,faculty,cb.fac.math305,sivaram.v@campus.edu,Faculty@Pass305
+36,Dr. Lakshmi Priya,faculty,cb.fac.biotech306,lakshmi.p@campus.edu,Faculty@Pass306

@@ -36,7 +36,12 @@ export function Navbar({
 
   const navItems = [
     { id: 'canteen', label: 'Canteen Menu', icon: Utensils },
-    { id: 'queue', label: 'Live Queue & Token', icon: Clock, badge: 'C1-047' },
+    {
+      id: 'queue',
+      label: currentRole === 'faculty' ? '⚡ Faculty Priority Queue' : 'Live Queue & Token',
+      icon: Clock,
+      badge: currentRole === 'faculty' ? 'C1-FAC-042' : 'C1-047'
+    },
     { id: 'map', label: 'Campus Map', icon: MapPin },
     { id: 'lost-found', label: 'Lost & Found', icon: Search },
     { id: 'issues', label: 'Campus Issues', icon: AlertTriangle },
@@ -62,6 +67,11 @@ export function Navbar({
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/30 shrink-0">
                   Amrita Ettimadai
                 </span>
+                {currentRole === 'faculty' && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500 text-white border border-blue-400 shrink-0 shadow-xs animate-pulse">
+                    ⚡ Priority VIP
+                  </span>
+                )}
               </div>
               <p className="text-[10px] sm:text-[11px] font-medium text-rose-100/90 leading-tight mt-0.5 truncate max-w-[230px] sm:max-w-md">
                 Amrita Vishwa Vidyapeetham, Coimbatore • Food, Navigation & Issues
@@ -69,8 +79,29 @@ export function Navbar({
             </div>
           </div>
 
-          {/* Right Action Controls: Voice, Wallet, Notifications, Auth User, and Role Switcher */}
+          {/* Right Action Controls: Voice, Canteen Staff Switch, Wallet, Notifications, Auth User */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Direct Quick Link to Canteen Staff Dashboard */}
+            {currentRole !== 'staff' ? (
+              <button
+                onClick={() => setCurrentRole('staff')}
+                title="Go to Canteen Staff & Kitchen Operations"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/25 hover:bg-amber-500/40 border border-amber-300/40 text-amber-200 text-xs font-bold transition shadow-xs shrink-0"
+              >
+                <ChefHat className="w-3.5 h-3.5 text-amber-300" />
+                <span className="hidden sm:inline">Canteen Staff</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => { setCurrentRole('student'); setActiveTab('canteen'); }}
+                title="Return to Student / Campus View"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-bold transition shadow-xs shrink-0"
+              >
+                <Utensils className="w-3.5 h-3.5 text-rose-200" />
+                <span className="hidden sm:inline">Back to Menu</span>
+              </button>
+            )}
+
             {/* Voice Guidance Button */}
             <button
               onClick={onOpenVoice}
@@ -82,7 +113,7 @@ export function Navbar({
             </button>
 
             {/* Student Wallet Pill */}
-            {currentRole === 'student' && wallet && (
+            {(currentRole === 'student' || currentRole === 'faculty') && wallet && (
               <button
                 onClick={onOpenWallet}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#198754]/30 hover:bg-[#198754]/45 border border-[#198754]/50 text-white text-xs font-bold transition shadow-sm shrink-0"
@@ -144,7 +175,7 @@ export function Navbar({
       </div>
 
       {/* Main Navigation Sub-Bar (Dedicated Amrita-style Navigation Row) */}
-      {currentRole === 'student' && (
+      {(currentRole === 'student' || currentRole === 'faculty' || currentRole === 'guest') && (
         <div className="bg-[#8F002E] border-t border-[#730025] shadow-inner">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="flex items-center gap-1 sm:gap-2 py-2 overflow-x-auto scrollbar-thin">

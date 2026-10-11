@@ -104,15 +104,10 @@ export function loadUsersFromVault() {
  * encrypt everything into the AES-256 vault, and protect users.csv.
  */
 export async function initializeEncryptedVault(existingUsers = []) {
-  const loaded = loadUsersFromVault();
-  if (loaded && loaded.length > 0) {
-    return loaded;
-  }
+  let loaded = loadUsersFromVault() || [];
+  let hasUpdates = false;
 
-  console.log('[VAULT] Creating fresh AES-256 encrypted security vault from user base...');
-  const usersToEncrypt = [];
-
-  // Read users.csv if available
+  // Read users.csv if available to import any new accounts (e.g. Faculty)
   const csvPath = path.resolve(__dirname, '../../users.csv');
   if (fs.existsSync(csvPath)) {
     const content = fs.readFileSync(csvPath, 'utf8');
@@ -128,41 +123,48 @@ export async function initializeEncryptedVault(existingUsers = []) {
         const email = parts[4].toLowerCase();
         const rawPassword = parts[5];
 
-        // Ensure password is never stored plain text: hash with bcrypt
-        const passwordHash = rawPassword.startsWith('$2')
-          ? rawPassword
-          : await bcrypt.hash(rawPassword, 12);
+        const existing = loaded.find((u) => u.username.toLowerCase() === username.toLowerCase());
+        if (!existing) {
+          // New user found in CSV — hash password with 12 bcrypt rounds
+          const passwordHash = rawPassword.startsWith('$2')
+            ? rawPassword
+            : await bcrypt.hash(rawPassword, 12);
 
-        usersToEncrypt.push({
-          id,
-          name,
-          role,
-          username,
-          email,
-          passwordHash,
-          failedLoginAttempts: 0,
-          isLocked: false,
-          lockoutUntil: null,
-          createdAt: new Date().toISOString()
-        });
+          loaded.push({
+            id,
+            name,
+            role,
+            username,
+            email,
+            passwordHash,
+            failedLoginAttempts: 0,
+            isLocked: false,
+            lockoutUntil: null,
+            createdAt: new Date().toISOString()
+          });
+          hasUpdates = true;
+        }
       }
     }
   }
 
-  // Include any existing users
+  // Include any runtime existing users
   if (existingUsers && existingUsers.length > 0) {
     for (const u of existingUsers) {
-      if (!usersToEncrypt.find((x) => x.username === u.username)) {
-        usersToEncrypt.push(u);
+      if (!loaded.find((x) => x.username.toLowerCase() === u.username.toLowerCase())) {
+        loaded.push(u);
+        hasUpdates = true;
       }
     }
   }
 
-  // Persist to encrypted vault
-  persistUsersToVault(usersToEncrypt);
-  console.log(`[VAULT] Encrypted vault written to disk at: ${VAULT_FILE_PATH}`);
+  // Persist to encrypted vault if modified or on initial creation
+  if (hasUpdates || !fs.existsSync(VAULT_FILE_PATH)) {
+    persistUsersToVault(loaded);
+    console.log(`[VAULT] Encrypted security vault updated on disk (${loaded.length} total accounts).`);
+  }
 
-  return usersToEncrypt;
+  return loaded;
 }
 
 /**
