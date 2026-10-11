@@ -19,12 +19,25 @@ import {
   ChevronRight,
   ShieldCheck,
   Check,
-  Lock
+  Lock,
+  ArrowRightLeft,
+  Flame,
+  Route as RouteIcon,
+  X,
+  Sparkles,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { api } from '../api';
 import { initialData } from '../mockData';
+import {
+  CAMPUS_LANDMARKS,
+  calculateCampusRoute,
+  calculateHaversineDistance,
+  WALKING_SPEED_METERS_PER_MIN
+} from '../data/campusRouting';
 
-// Tile Layer Configurations for Real Map
+// Tile Layer Configurations
 const TILE_LAYERS = {
   street: {
     name: 'Street Map',
@@ -45,18 +58,16 @@ const TILE_LAYERS = {
 
 // ========================================================
 // AMRITA VISHWA VIDYAPEETHAM, ETTIMADAI, COIMBATORE
-// Exact Campus Coordinates & Compound Boundary Lockdown
+// Campus Center & Strict Boundary Lockdown
 // ========================================================
 const AMRITA_CAMPUS_CENTER = [10.9036, 76.8997];
 
-// Strict Campus Compound Bounds: [South-West, North-East]
-// Exact bounds enclosing the 400-acre Amrita Vishwa Vidyapeetham Ettimadai campus
 const AMRITA_CAMPUS_BOUNDS = [
   [10.8950, 76.8900], // South-West
   [10.9120, 76.9090]  // North-East
 ];
 
-// Official 400-Acre Campus Perimeter Polygon from OpenStreetMap (Way 128964693)
+// Official 400-Acre Campus Perimeter Polygon
 const AMRITA_COMPOUND_PERIMETER = [
   [10.906129, 76.894420], [10.905300, 76.893011], [10.904382, 76.893025], [10.903148, 76.893068],
   [10.903569, 76.894786], [10.903232, 76.894829], [10.902853, 76.894870], [10.901947, 76.894988],
@@ -74,18 +85,20 @@ const AMRITA_COMPOUND_PERIMETER = [
   [10.906455, 76.894972], [10.906129, 76.894420]
 ];
 
-const AMRITA_MAIN_GATE = [10.8980, 76.9003];
-
 export function CampusMapView({ onNavigateToCanteen }) {
-  const [locations, setLocations] = useState(initialData.campusLocations || []);
+  const [locations, setLocations] = useState(initialData.campusLocations || CAMPUS_LANDMARKS);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
   const [activeLayer, setActiveLayer] = useState('street');
   const [userLocation, setUserLocation] = useState(null);
-  const [activeRoute, setActiveRoute] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Routing State
+  const [originId, setOriginId] = useState('loc-gate');
+  const [destinationId, setDestinationId] = useState('loc-1');
+  const [activeRoute, setActiveRoute] = useState(null);
+  const [showStepDetails, setShowStepDetails] = useState(false);
 
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -95,87 +108,66 @@ export function CampusMapView({ onNavigateToCanteen }) {
   const perimeterLayerRef = useRef(null);
   const userMarkerRef = useRef(null);
 
-  // Fetch campus locations from backend
-  const fetchLocations = async () => {
-    try {
-      const res = await api.getMapLocations();
-      if (res.success) {
-        setLocations(res.data);
-        if (res.data.length > 0) setSelectedLocation(res.data[0]);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch campus locations from backend or fallback to CAMPUS_LANDMARKS
   useEffect(() => {
-    fetchLocations();
+    api.getMapLocations()
+      .then((res) => {
+        if (res.success && res.data && res.data.length > 0) {
+          setLocations(res.data);
+          setSelectedLocation(res.data[0]);
+        } else {
+          setSelectedLocation(CAMPUS_LANDMARKS[0]);
+        }
+      })
+      .catch(() => {
+        setSelectedLocation(CAMPUS_LANDMARKS[0]);
+      });
   }, []);
 
-  // Initialize Leaflet Map with Compound Lockdown
+  // Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
     const map = L.map(mapContainerRef.current, {
       center: AMRITA_CAMPUS_CENTER,
       zoom: 16.5,
-      minZoom: 15.2, // Prevent zooming out beyond Amrita Ettimadai campus
+      minZoom: 15.2,
       maxZoom: 19,
-      maxBounds: AMRITA_CAMPUS_BOUNDS, // Stiff boundary lockdown
-      maxBoundsViscosity: 1.0, // Stiffest lock: completely blocks panning outside compound!
+      maxBounds: AMRITA_CAMPUS_BOUNDS,
+      maxBoundsViscosity: 1.0,
       zoomControl: false
     });
 
-    // Custom positioned zoom control
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // Initial Tile Layer
     const tileLayer = L.tileLayer(TILE_LAYERS[activeLayer].url, {
       attribution: TILE_LAYERS[activeLayer].attribution,
       maxZoom: 19
     }).addTo(map);
 
     tileLayerRef.current = tileLayer;
-
-    // Feature Groups
     perimeterLayerRef.current = L.featureGroup().addTo(map);
     routeLayerRef.current = L.featureGroup().addTo(map);
     markersLayerRef.current = L.featureGroup().addTo(map);
 
-    // Draw Glowing Amrita Compound Boundary Perimeter
+    // Compound boundary polygon
     const compoundPolygon = L.polygon(AMRITA_COMPOUND_PERIMETER, {
-      color: '#8b5cf6', // Violet
+      color: '#A41034',
       weight: 3,
       opacity: 0.9,
-      fillColor: '#8b5cf6',
-      fillOpacity: 0.05,
+      fillColor: '#A41034',
+      fillOpacity: 0.04,
       dashArray: '8, 6'
     }).addTo(perimeterLayerRef.current);
 
     compoundPolygon.bindTooltip(
-      '🏛️ Amrita Vishwa Vidyapeetham — 400-Acre Ettimadai Campus Compound',
+      '🏛️ Amrita Vishwa Vidyapeetham — 400-Acre Ettimadai Campus Boundary',
       {
         permanent: false,
         direction: 'center',
-        className: 'bg-slate-900 text-purple-300 font-bold text-xs p-2 rounded-lg border border-purple-500/40 shadow-xl'
+        className: 'bg-slate-900 text-rose-300 font-bold text-xs p-2 rounded-lg border border-rose-500/40 shadow-xl'
       }
     );
-
-    // Click handler to inspect any point on campus
-    map.on('click', (e) => {
-      const { lat, lng } = e.latlng;
-      L.popup()
-        .setLatLng(e.latlng)
-        .setContent(`
-          <div style="font-family: inherit; font-size: 11px; padding: 2px;">
-            <div style="font-weight: bold; color: #7c3aed;">📍 Clicked Campus Point</div>
-            <div style="color: #334155; margin-top: 3px;">Lat: <b>${lat.toFixed(5)}</b>, Lng: <b>${lng.toFixed(5)}</b></div>
-          </div>
-        `)
-        .openOn(map);
-    });
 
     mapInstanceRef.current = map;
 
@@ -185,7 +177,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
     };
   }, []);
 
-  // Update Tile Layer when user toggles Street / Satellite / Dark
+  // Tile layer switch
   useEffect(() => {
     if (!mapInstanceRef.current || !tileLayerRef.current) return;
     mapInstanceRef.current.removeLayer(tileLayerRef.current);
@@ -196,49 +188,51 @@ export function CampusMapView({ onNavigateToCanteen }) {
     tileLayerRef.current = newTile;
   }, [activeLayer]);
 
-  // Create custom marker icons for Amrita Campus Landmarks
-  const createCustomIcon = (loc, isSelected) => {
-    const isCanteen = loc.category === 'Food & Dining';
-    const isHostel = loc.category === 'Hostels & Living';
-    const isAcademic = loc.category === 'Academic & Labs';
-    const isMedical = loc.category === 'Medical & Health';
-    const isSports = loc.category === 'Sports & Recreation';
-    const isStore = loc.category === 'Academic Store' || loc.category === 'Retail Store';
-
-    let bgClass = 'bg-blue-600 border-white text-white';
+  // Marker Icon Generator
+  const createCustomIcon = (loc, isSelected, isOrigin, isDest) => {
+    let bgClass = 'bg-[#0D6EFD] text-white border-white';
     let iconChar = '🏛️';
 
-    if (isCanteen) {
-      bgClass = 'bg-amber-500 border-amber-200 text-slate-950 font-bold';
+    if (loc.category === 'Food & Dining') {
+      bgClass = 'bg-amber-500 text-slate-950 border-amber-200 font-bold';
       iconChar = '🍽️';
-    } else if (isHostel) {
-      bgClass = 'bg-indigo-600 border-indigo-200 text-white';
-      iconChar = '🛏️';
-    } else if (isAcademic) {
-      bgClass = 'bg-cyan-600 border-cyan-200 text-white';
-      iconChar = '🎓';
-    } else if (isMedical) {
-      bgClass = 'bg-rose-600 border-rose-200 text-white';
-      iconChar = '🏥';
-    } else if (isSports) {
-      bgClass = 'bg-emerald-600 border-emerald-200 text-white';
-      iconChar = '🏊';
-    } else if (isStore) {
-      bgClass = 'bg-teal-600 border-teal-200 text-white';
+    } else if (loc.category === 'Academic Store' || loc.category === 'Retail Store') {
+      bgClass = 'bg-teal-600 text-white border-teal-200';
       iconChar = '📚';
+    } else if (loc.category === 'Academic & Labs') {
+      bgClass = 'bg-cyan-700 text-white border-cyan-200';
+      iconChar = '🎓';
+    } else if (loc.category === 'Hostels & Living') {
+      bgClass = 'bg-indigo-600 text-white border-indigo-200';
+      iconChar = '🛏️';
+    } else if (loc.category === 'Medical & Health') {
+      bgClass = 'bg-rose-600 text-white border-rose-200';
+      iconChar = '🏥';
+    } else if (loc.category === 'Sports & Recreation') {
+      bgClass = 'bg-emerald-600 text-white border-emerald-200';
+      iconChar = '🏊';
     }
 
-    const selectedRing = isSelected
-      ? 'ring-4 ring-purple-400 scale-125 z-50 animate-bounce'
-      : 'hover:scale-110';
+    let ringClass = '';
+    if (isDest) {
+      ringClass = 'ring-4 ring-rose-500 scale-125 z-50 animate-bounce';
+    } else if (isOrigin) {
+      ringClass = 'ring-4 ring-emerald-500 scale-125 z-50';
+    } else if (isSelected) {
+      ringClass = 'ring-4 ring-[#A41034] scale-110 z-40';
+    } else {
+      ringClass = 'hover:scale-110';
+    }
+
+    const shortTitle = loc.name.split('(')[0].trim();
 
     const html = `
       <div class="relative group cursor-pointer flex flex-col items-center">
-        <div class="w-8 h-8 rounded-full border-2 shadow-xl flex items-center justify-center text-xs transition duration-200 ${bgClass} ${selectedRing}">
+        <div class="w-8 h-8 rounded-full border-2 shadow-xl flex items-center justify-center text-xs transition duration-200 ${bgClass} ${ringClass}">
           <span>${iconChar}</span>
         </div>
-        <div class="mt-1 px-2 py-0.5 rounded-md bg-slate-950/95 text-white text-[9px] font-bold border border-slate-700 whitespace-nowrap shadow-md pointer-events-none">
-          ${loc.name.split('(')[0].trim()}
+        <div class="mt-1 px-2 py-0.5 rounded-md bg-slate-950/90 text-white text-[9px] font-bold border border-slate-700 whitespace-nowrap shadow-md pointer-events-none">
+          ${shortTitle}
         </div>
       </div>
     `;
@@ -252,102 +246,129 @@ export function CampusMapView({ onNavigateToCanteen }) {
     });
   };
 
-  // Render Markers on Map
+  // Render Markers
   useEffect(() => {
-    if (!mapInstanceRef.current || !markersLayerRef.current || locations.length === 0) return;
+    if (!mapInstanceRef.current || !markersLayerRef.current) return;
 
     markersLayerRef.current.clearLayers();
 
     filteredLocations.forEach((loc) => {
-      const lat = loc.lat || loc.coordinates?.lat || AMRITA_CAMPUS_CENTER[0];
-      const lng = loc.lng || loc.coordinates?.lng || AMRITA_CAMPUS_CENTER[1];
+      const lat = loc.lat || loc.coords?.[0] || loc.coordinates?.lat || AMRITA_CAMPUS_CENTER[0];
+      const lng = loc.lng || loc.coords?.[1] || loc.coordinates?.lng || AMRITA_CAMPUS_CENTER[1];
       const isSelected = selectedLocation?.id === loc.id;
+      const isOrigin = originId === loc.id;
+      const isDest = destinationId === loc.id;
 
       const marker = L.marker([lat, lng], {
-        icon: createCustomIcon(loc, isSelected)
+        icon: createCustomIcon(loc, isSelected, isOrigin, isDest)
       });
 
       marker.on('click', () => {
         setSelectedLocation(loc);
+        setDestinationId(loc.id);
         mapInstanceRef.current.flyTo([lat, lng], 17.5, { duration: 1 });
       });
 
-      // Bind rich Leaflet popup
       const popupHtml = `
         <div style="font-family: inherit; font-size: 12px; min-width: 190px; color: #0f172a; padding: 2px;">
-          <div style="font-weight: 800; font-size: 13px; color: #1e293b; line-height: 1.2;">${loc.name}</div>
-          <div style="font-size: 10px; color: #7c3aed; font-weight: 700; margin-top: 3px;">${loc.category} • ${loc.zone}</div>
-          <div style="font-size: 11px; color: #475569; margin-top: 4px;">${loc.building} (${loc.floor})</div>
-          <div style="font-size: 10px; color: #16a34a; font-weight: 600; margin-top: 4px;">🕒 ${loc.timings}</div>
+          <div style="font-weight: 800; font-size: 13px; color: #A41034; line-height: 1.2;">${loc.name}</div>
+          <div style="font-size: 10px; color: #64748b; font-weight: 700; margin-top: 3px;">${loc.category} • ${loc.zone || 'Ettimadai'}</div>
+          <div style="font-size: 11px; color: #334155; margin-top: 4px;">${loc.building || 'Campus Facility'}</div>
+          <div style="font-size: 10px; color: #16a34a; font-weight: 600; margin-top: 4px;">🕒 ${loc.timings || 'Open for campus community'}</div>
         </div>
       `;
       marker.bindPopup(popupHtml);
-
       marker.addTo(markersLayerRef.current);
     });
-  }, [locations, selectedLocation, selectedCategory, searchQuery]);
+  }, [locations, selectedLocation, selectedCategory, searchQuery, originId, destinationId]);
 
-  // Handle Walking Route Directions within Amrita Compound
-  const handleGetDirections = (targetLoc) => {
-    if (!mapInstanceRef.current || !routeLayerRef.current) return;
+  // Route Calculation and Rendering
+  const handleCalculateRoute = (srcId = originId, dstId = destinationId) => {
+    if (!srcId || !dstId) return;
 
-    routeLayerRef.current.clearLayers();
+    const customCoords = srcId === 'current-location' && userLocation ? [userLocation.lat, userLocation.lng] : null;
+    const route = calculateCampusRoute(srcId, dstId, customCoords);
 
-    // Start point: User location if within Amrita campus, otherwise Amrita Main Gate
-    const startPoint = userLocation
-      ? [userLocation.lat, userLocation.lng]
-      : AMRITA_MAIN_GATE;
+    if (route && route.success) {
+      setActiveRoute(route);
 
-    const destPoint = [
-      targetLoc.lat || targetLoc.coordinates?.lat || 10.9026,
-      targetLoc.lng || targetLoc.coordinates?.lng || 76.8994
-    ];
+      if (mapInstanceRef.current && routeLayerRef.current) {
+        routeLayerRef.current.clearLayers();
 
-    // Generate realistic campus road pathway waypoints along Amrita black-topped avenues
-    const midLat = (startPoint[0] + destPoint[0]) / 2 + 0.0002;
-    const midLng = (startPoint[1] + destPoint[1]) / 2;
+        // Outer glowing route polyline
+        const glowLine = L.polyline(route.pathCoords, {
+          color: '#A41034',
+          weight: 6,
+          opacity: 0.9,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }).addTo(routeLayerRef.current);
 
-    const routeWaypoints = [
-      startPoint,
-      [startPoint[0] + 0.0012, startPoint[1] - 0.0003],
-      [midLat, midLng],
-      [destPoint[0] - 0.0004, destPoint[1] + 0.0001],
-      destPoint
-    ];
+        // Inner glowing dashes
+        L.polyline(route.pathCoords, {
+          color: '#ffffff',
+          weight: 2,
+          opacity: 0.95,
+          dashArray: '8, 8',
+          lineCap: 'round'
+        }).addTo(routeLayerRef.current);
 
-    // Calculate approximate distance
-    const p1 = L.latLng(startPoint);
-    const p2 = L.latLng(destPoint);
-    const distMeters = Math.round(p1.distanceTo(p2) * 1.25);
-    const walkMinutes = Math.max(1, Math.round(distMeters / 75)); // ~75m per min walk
+        // Origin marker pin
+        const startIcon = L.divIcon({
+          className: 'route-start-pin',
+          html: '<div style="background:#16a34a;color:#fff;width:24px;height:24px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;box-shadow:0 3px 6px rgba(0,0,0,0.35);">A</div>',
+          iconSize: [24, 24],
+          iconAnchor: [12, 12]
+        });
+        L.marker(route.pathCoords[0], { icon: startIcon })
+          .bindTooltip(`Origin: ${route.originName}`, { direction: 'top' })
+          .addTo(routeLayerRef.current);
 
-    // Draw glowing route line on real map
-    const routeLine = L.polyline(routeWaypoints, {
-      color: '#8b5cf6',
-      weight: 6,
-      opacity: 0.9,
-      dashArray: '10, 10',
-      lineCap: 'round'
-    }).addTo(routeLayerRef.current);
+        // Destination marker pin
+        const endIcon = L.divIcon({
+          className: 'route-end-pin',
+          html: '<div style="background:#A41034;color:#fff;width:24px;height:24px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;box-shadow:0 3px 6px rgba(0,0,0,0.35);">B</div>',
+          iconSize: [24, 24],
+          iconAnchor: [12, 12]
+        });
+        L.marker(route.pathCoords[route.pathCoords.length - 1], { icon: endIcon })
+          .bindTooltip(`Destination: ${route.destinationName}`, { direction: 'top' })
+          .addTo(routeLayerRef.current);
 
-    // Inner highlight
-    L.polyline(routeWaypoints, {
-      color: '#c4b5fd',
-      weight: 2,
-      opacity: 1
-    }).addTo(routeLayerRef.current);
-
-    mapInstanceRef.current.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
-
-    setActiveRoute({
-      destination: targetLoc.name,
-      distanceMeters: distMeters,
-      walkMinutes,
-      from: userLocation ? 'Your Current Location' : 'Amrita Main Entrance Arch (Gate 1)'
-    });
+        mapInstanceRef.current.fitBounds(glowLine.getBounds(), { padding: [55, 55], maxZoom: 18 });
+      }
+    }
   };
 
-  // Locate User on Real Map
+  // Quick Shortcut Handler
+  const handleShortcutSelect = (destKey) => {
+    setDestinationId(destKey);
+    const destLoc = CAMPUS_LANDMARKS.find((l) => l.id === destKey);
+    if (destLoc) setSelectedLocation(destLoc);
+    handleCalculateRoute(originId, destKey);
+  };
+
+  // Swap Origin and Destination
+  const handleSwapLocations = () => {
+    if (originId === 'current-location') {
+      alert('Cannot swap when starting from live GPS location.');
+      return;
+    }
+    const temp = originId;
+    setOriginId(destinationId);
+    setDestinationId(temp);
+    handleCalculateRoute(destinationId, temp);
+  };
+
+  // Clear Active Route
+  const handleClearRoute = () => {
+    setActiveRoute(null);
+    if (routeLayerRef.current) {
+      routeLayerRef.current.clearLayers();
+    }
+  };
+
+  // GPS Locate User
   const handleLocateMe = () => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
@@ -359,6 +380,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
         const { latitude, longitude } = pos.coords;
         const coords = { lat: latitude, lng: longitude };
         setUserLocation(coords);
+        setOriginId('current-location');
 
         if (mapInstanceRef.current) {
           if (userMarkerRef.current) {
@@ -385,15 +407,17 @@ export function CampusMapView({ onNavigateToCanteen }) {
 
           mapInstanceRef.current.flyTo([latitude, longitude], 17.5);
         }
+
+        // Recalculate route if destination is active
+        if (destinationId) {
+          handleCalculateRoute('current-location', destinationId);
+        }
       },
-      (err) => {
-        // Fallback: Center on Central Amenities Complex
+      () => {
         const fallback = { lat: 10.9026, lng: 76.8994 };
         setUserLocation(fallback);
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.flyTo([fallback.lat, fallback.lng], 17);
-        }
-        alert('Could not retrieve device GPS. Centered on Amrita Central Amenities Plaza.');
+        setOriginId('current-location');
+        alert('Could not retrieve device GPS. Set origin to Central Amenities Plaza.');
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
@@ -402,11 +426,11 @@ export function CampusMapView({ onNavigateToCanteen }) {
   const categories = [
     'All',
     'Food & Dining',
-    'Academic & Labs',
-    'Hostels & Living',
-    'Facilities',
-    'Sports & Recreation',
     'Academic Store',
+    'Academic & Labs',
+    'Facilities',
+    'Hostels & Living',
+    'Sports & Recreation',
     'Medical & Health',
     'Administration'
   ];
@@ -417,8 +441,8 @@ export function CampusMapView({ onNavigateToCanteen }) {
       const q = searchQuery.toLowerCase();
       if (
         !loc.name.toLowerCase().includes(q) &&
-        !loc.description.toLowerCase().includes(q) &&
-        !loc.building.toLowerCase().includes(q)
+        !loc.description?.toLowerCase().includes(q) &&
+        !loc.building?.toLowerCase().includes(q)
       ) {
         return false;
       }
@@ -426,48 +450,87 @@ export function CampusMapView({ onNavigateToCanteen }) {
     return true;
   });
 
+  // Shortcut items list
+  const shortcutPills = [
+    { label: 'Canteen 1 (Main)', id: 'loc-1', icon: '🍽️' },
+    { label: 'Canteen 2 (IT)', id: 'loc-it', icon: '🍔' },
+    { label: 'MBA Canteen', id: 'loc-mba', icon: '☕' },
+    { label: 'Stationery & Xerox', id: 'loc-xerox', icon: '📚' },
+    { label: 'Central Library', id: 'loc-lib', icon: '📖' },
+    { label: 'Academic Block 1', id: 'loc-ab1', icon: '🎓' },
+    { label: 'Academic Block 3', id: 'loc-ab3', icon: '💻' },
+    { label: 'Amrita Health Clinic', id: 'loc-clinic', icon: '🏥' },
+    { label: 'Main Entrance Gate', id: 'loc-gate', icon: '🚪' }
+  ];
+
   return (
-    <div className="space-y-6 text-slate-800">
-      {/* Amrita Campus Header with Lockdown Banner */}
-      <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 sm:p-6 shadow-xs">
+    <div className="space-y-5 text-slate-800">
+      
+      {/* Header & Search Bar */}
+      <div className="bg-white border border-[#E8E3D7] rounded-3xl p-4 sm:p-6 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
-                <Compass className="w-5 h-5 text-[#B0003A]" />
+                <Compass className="w-5 h-5 text-[#A41034]" />
                 <span>Amrita Vishwa Vidyapeetham — Ettimadai Campus Map</span>
               </h3>
-              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[#FFF0F4] text-[#B0003A] border border-[#F8C0CE] flex items-center gap-1 font-bold">
-                <Lock className="w-3 h-3 text-[#B0003A]" />
-                400-Acre Compound Locked
+              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[#FFF0F4] text-[#A41034] border border-[#F8C0CE] flex items-center gap-1 font-bold">
+                <Lock className="w-3 h-3 text-[#A41034]" />
+                Point-to-Point Walking Routing
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Live geographic navigation for Amrita Coimbatore (Ettimadai). Panning is locked strictly within the campus perimeter.
+              Interactive pedestrian navigation with real walking distances in meters and estimated walking times across the 400-acre campus.
             </p>
           </div>
 
-          <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
             <input
               type="text"
-              placeholder="Search canteen, AB-1, library, clinic..."
+              placeholder="Search canteen, Xerox, AB-1, clinic..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-white border border-[#E8E3D7] rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#B0003A] shadow-xs"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-[#E8E3D7] rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#A41034] focus:ring-1 focus:ring-[#A41034]"
             />
           </div>
         </div>
 
+        {/* Quick Shortcut Pills */}
+        <div className="mt-4 pt-3 border-t border-[#E8E3D7]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+              Quick-Tap Campus Destinations
+            </span>
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+            {shortcutPills.map((pill) => (
+              <button
+                key={pill.id}
+                onClick={() => handleShortcutSelect(pill.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 shadow-2xs shrink-0 ${
+                  destinationId === pill.id
+                    ? 'bg-[#A41034] text-white shadow-sm'
+                    : 'bg-slate-50 hover:bg-rose-50 text-slate-700 hover:text-[#A41034] border border-[#E8E3D7]'
+                }`}
+              >
+                <span>{pill.icon}</span>
+                <span>{pill.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Categories Bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pt-4 border-t border-[#E8E3D7] mt-4 pb-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto pt-3 border-t border-[#E8E3D7] mt-3 pb-1">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
                 selectedCategory === cat
-                  ? 'bg-[#B0003A] text-white shadow-xs font-bold'
+                  ? 'bg-[#A41034] text-white font-bold shadow-xs'
                   : 'bg-slate-50 text-slate-700 hover:text-slate-900 border border-[#E8E3D7]'
               }`}
             >
@@ -477,19 +540,104 @@ export function CampusMapView({ onNavigateToCanteen }) {
         </div>
       </div>
 
+      {/* Point-to-Point Routing Control Bar */}
+      <div className="bg-white border border-[#E8E3D7] rounded-3xl p-4 sm:p-5 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <RouteIcon className="w-4 h-4 text-[#A41034]" />
+          <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+            Point-to-Point Route Planner
+          </h4>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+          {/* Origin Selector */}
+          <div className="sm:col-span-5">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1">
+              Starting From (Origin A)
+            </label>
+            <div className="relative">
+              <select
+                value={originId}
+                onChange={(e) => setOriginId(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-[#E8E3D7] rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#A41034]"
+              >
+                {userLocation && (
+                  <option value="current-location">📍 Your Current Location (GPS)</option>
+                )}
+                {CAMPUS_LANDMARKS.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name} ({loc.category})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Swap Button */}
+          <div className="sm:col-span-1 flex justify-center pt-2 sm:pt-4">
+            <button
+              type="button"
+              onClick={handleSwapLocations}
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+              title="Swap Origin and Destination"
+            >
+              <ArrowRightLeft className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Destination Selector */}
+          <div className="sm:col-span-5">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-[#A41034] mb-1">
+              Heading To (Destination B)
+            </label>
+            <div className="relative">
+              <select
+                value={destinationId}
+                onChange={(e) => {
+                  setDestinationId(e.target.value);
+                  const destLoc = CAMPUS_LANDMARKS.find((l) => l.id === e.target.value);
+                  if (destLoc) setSelectedLocation(destLoc);
+                }}
+                className="w-full px-3 py-2 bg-slate-50 border border-[#E8E3D7] rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#A41034]"
+              >
+                {CAMPUS_LANDMARKS.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name} ({loc.category})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <div className="sm:col-span-1 flex justify-center pt-2 sm:pt-4">
+            <button
+              type="button"
+              onClick={() => handleCalculateRoute(originId, destinationId)}
+              className="w-full sm:w-auto px-4 py-2 bg-[#A41034] hover:bg-[#8F002E] text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5"
+            >
+              <Footprints className="w-3.5 h-3.5" />
+              <span>Route</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Main Map Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Real Leaflet Map Container (2 Cols) */}
-        <div className="lg:col-span-2 bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-xs flex flex-col justify-between">
+        
+        {/* Map Viewport (2 Cols) */}
+        <div className="lg:col-span-2 bg-white border border-[#E8E3D7] rounded-3xl p-4 shadow-sm flex flex-col justify-between">
+          
           {/* Map Top Bar Controls */}
           <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#E8E3D7]">
             {/* Tile Layer Switcher */}
-            <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-[#E8E3D7]">
+            <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-2xl border border-[#E8E3D7]">
               <button
                 onClick={() => setActiveLayer('street')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
                   activeLayer === 'street'
-                    ? 'bg-[#B0003A] text-white shadow-xs font-bold'
+                    ? 'bg-[#A41034] text-white shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -497,9 +645,9 @@ export function CampusMapView({ onNavigateToCanteen }) {
               </button>
               <button
                 onClick={() => setActiveLayer('satellite')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
                   activeLayer === 'satellite'
-                    ? 'bg-[#B0003A] text-white shadow-xs font-bold'
+                    ? 'bg-[#A41034] text-white shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -507,9 +655,9 @@ export function CampusMapView({ onNavigateToCanteen }) {
               </button>
               <button
                 onClick={() => setActiveLayer('dark')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
                   activeLayer === 'dark'
-                    ? 'bg-[#B0003A] text-white shadow-xs font-bold'
+                    ? 'bg-[#A41034] text-white shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -517,14 +665,14 @@ export function CampusMapView({ onNavigateToCanteen }) {
               </button>
             </div>
 
-            {/* Map Action Buttons */}
+            {/* Action Buttons */}
             <div className="flex items-center gap-2">
               <button
                 onClick={handleLocateMe}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-[#E8E3D7] text-xs font-semibold transition"
-                title="Locate my position on Amrita Campus"
+                title="Locate my position on campus"
               >
-                <Locate className="w-3.5 h-3.5 text-[#B0003A]" />
+                <Locate className="w-3.5 h-3.5 text-[#A41034]" />
                 <span>Locate Me</span>
               </button>
 
@@ -534,11 +682,11 @@ export function CampusMapView({ onNavigateToCanteen }) {
                     mapInstanceRef.current.flyTo(AMRITA_CAMPUS_CENTER, 16.5);
                   }
                 }}
-                className="px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#B0003A] border border-[#E8E3D7] transition text-xs font-bold flex items-center gap-1"
+                className="px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#A41034] border border-[#E8E3D7] transition text-xs font-bold flex items-center gap-1"
                 title="Center on Amrita Central Plaza"
               >
                 <Compass className="w-3.5 h-3.5" />
-                <span>Amrita Center</span>
+                <span>Center</span>
               </button>
 
               <button
@@ -551,127 +699,154 @@ export function CampusMapView({ onNavigateToCanteen }) {
             </div>
           </div>
 
-          {/* Real Leaflet Map Viewport */}
+          {/* Leaflet Map Container */}
           <div
             ref={mapContainerRef}
-            className={`w-full rounded-xl overflow-hidden my-3 border border-[#E8E3D7] shadow-inner z-10 transition-all duration-300 ${
+            className={`w-full rounded-2xl overflow-hidden my-3 border border-[#E8E3D7] shadow-inner z-10 transition-all duration-300 ${
               isFullscreen ? 'fixed inset-4 z-50 h-[92vh]' : 'h-96 sm:h-[480px]'
             }`}
           />
 
-          {/* Active Navigation Route Alert Banner */}
+          {/* Active Route Summary Bar */}
           {activeRoute && (
-            <div className="p-3.5 rounded-xl bg-[#FFF0F4] border border-[#F8C0CE] my-1 text-xs text-slate-900 flex items-center justify-between gap-3 animate-in fade-in">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-[#B0003A] text-white shrink-0">
-                  <Footprints className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="font-bold flex items-center gap-2">
-                    <span>Walking to: {activeRoute.destination}</span>
-                    <span className="text-[#198754] font-mono font-bold">
-                      ~{activeRoute.walkMinutes} min ({activeRoute.distanceMeters}m)
-                    </span>
+            <div className="p-4 rounded-2xl bg-[#FFF0F4] border border-[#F8C0CE] my-1 text-xs text-slate-900 animate-in fade-in">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="p-2.5 rounded-xl bg-[#A41034] text-white shrink-0 mt-0.5">
+                    <Footprints className="w-5 h-5" />
                   </div>
-                  <div className="text-[11px] text-slate-600 mt-0.5">
-                    Path calculated from {activeRoute.from} along Amrita campus walkways.
-                  </div>
-                </div>
-              </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-extrabold text-sm text-[#A41034]">
+                        {activeRoute.originName} ➔ {activeRoute.destinationName}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white font-mono font-bold text-[11px]">
+                        {activeRoute.formattedDistance}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950 font-bold text-[11px]">
+                        {activeRoute.formattedTime}
+                      </span>
+                    </div>
 
-              <button
-                onClick={() => {
-                  setActiveRoute(null);
-                  if (routeLayerRef.current) routeLayerRef.current.clearLayers();
-                }}
-                className="text-xs text-[#B0003A] hover:text-[#8F002E] font-bold underline shrink-0"
-              >
-                Clear Route
-              </button>
+                    <div className="flex items-center gap-4 text-[11px] text-slate-600 mt-1 font-medium">
+                      <span>🚶 ~{activeRoute.estimatedSteps} steps</span>
+                      <span>🔥 ~{activeRoute.caloriesBurnedKcal} kcal burned</span>
+                    </div>
+
+                    {/* Step details toggle */}
+                    {activeRoute.stepInstructions && activeRoute.stepInstructions.length > 0 && (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowStepDetails(!showStepDetails)}
+                          className="text-[11px] font-bold text-[#A41034] hover:underline flex items-center gap-1"
+                        >
+                          <span>{showStepDetails ? 'Hide route steps' : 'View turn-by-turn guidance'}</span>
+                          {showStepDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                        </button>
+
+                        {showStepDetails && (
+                          <div className="mt-2 space-y-1 pl-2 border-l-2 border-[#A41034]/40 text-[11px] text-slate-700 font-medium">
+                            {activeRoute.stepInstructions.map((step, idx) => (
+                              <div key={idx} className="flex items-start gap-1.5">
+                                <span className="font-bold text-[#A41034] shrink-0">{idx + 1}.</span>
+                                <span>{step}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleClearRoute}
+                  className="p-1 rounded-lg text-slate-400 hover:text-rose-600 transition"
+                  title="Clear Route"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Compound Lockdown Legend Bar */}
+          {/* Map Legend */}
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#E8E3D7] text-[11px] text-slate-500">
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#B0003A]" /> Amrita Perimeter
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Canteen & Food
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#D4A017]" /> Canteen & Dining
+                <span className="w-2.5 h-2.5 rounded-full bg-teal-600" /> Stationery & Stores
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#0D6EFD]" /> Academic & Labs
+                <span className="w-2.5 h-2.5 rounded-full bg-cyan-700" /> Academic & Labs
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#6F42C1]" /> Hostels (Boys & Girls)
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#198754]" /> Sports & Pool
+                <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" /> Hostels
               </span>
             </div>
-            <span className="text-[#B0003A] font-bold">Locked to Ettimadai Compound Bounds</span>
+            <span className="text-[#A41034] font-bold">Amrita Ettimadai Compound Bounds</span>
           </div>
         </div>
 
-        {/* Right Column: Selected Destination & Details Card */}
+        {/* Right Column: Selected Destination Details Card */}
         <div className="space-y-4">
           {selectedLocation ? (
-            <div className="bg-white border border-[#E8E3D7] rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between">
+            <div className="bg-white border border-[#E8E3D7] rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between">
               <div>
                 {/* Photo */}
                 <div className="relative h-44 w-full bg-slate-100">
                   <img
-                    src={selectedLocation.image}
+                    src={selectedLocation.image || 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=500&auto=format&fit=crop&q=80'}
                     alt={selectedLocation.name}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
-                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md text-[10px] font-bold text-slate-800 border border-[#E8E3D7] shadow-xs">
-                    {selectedLocation.zone}
+                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-xl bg-white/90 backdrop-blur-md text-[10px] font-bold text-slate-800 border border-[#E8E3D7] shadow-xs">
+                    {selectedLocation.zone || 'Campus'}
                   </span>
-                  <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-[#B0003A] text-white text-[10px] font-bold shadow-xs">
+                  <span className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-[#A41034] text-white text-[10px] font-bold shadow-xs">
                     {selectedLocation.category}
                   </span>
                 </div>
 
                 {/* Content */}
-                <div className="p-5 space-y-3.5">
+                <div className="p-5 space-y-3">
                   <div>
                     <h3 className="font-extrabold text-slate-900 text-base leading-tight">
                       {selectedLocation.name}
                     </h3>
-                    <p className="text-xs text-[#B0003A] mt-1 font-semibold flex items-center gap-1">
+                    <p className="text-xs text-[#A41034] mt-1 font-semibold flex items-center gap-1">
                       <Building className="w-3.5 h-3.5" />
-                      {selectedLocation.building} • {selectedLocation.floor}
-                    </p>
-                    <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-slate-400" />
-                      {selectedLocation.address || 'Amrita Vishwa Vidyapeetham, Ettimadai'}
+                      {selectedLocation.building || 'Amrita Campus'} • {selectedLocation.floor || 'Ground'}
                     </p>
                   </div>
 
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <p className="text-xs text-slate-600 leading-relaxed font-normal">
                     {selectedLocation.description}
                   </p>
 
                   <div className="space-y-2 pt-2 border-t border-[#E8E3D7] text-xs">
                     <div className="flex items-center gap-2 text-slate-700">
                       <Clock className="w-4 h-4 text-slate-400 shrink-0" />
-                      <span>{selectedLocation.timings}</span>
+                      <span>{selectedLocation.timings || '08:00 AM - 08:00 PM'}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-slate-700">
                       <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-                      <span>{selectedLocation.contact}</span>
+                      <span>{selectedLocation.contact || 'Extension 2400'}</span>
                     </div>
 
-                    <div className="flex items-start gap-2 text-[#FD7E14] text-[11px] pt-1">
-                      <Info className="w-4 h-4 text-[#FD7E14] shrink-0 mt-0.5" />
-                      <span>
-                        <strong>Peak Crowd:</strong> {selectedLocation.popularTimes}
-                      </span>
-                    </div>
+                    {selectedLocation.popularTimes && (
+                      <div className="flex items-start gap-2 text-amber-700 text-[11px] pt-1">
+                        <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        <span>
+                          <strong>Peak Hours:</strong> {selectedLocation.popularTimes}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -679,50 +854,54 @@ export function CampusMapView({ onNavigateToCanteen }) {
               {/* Action Buttons */}
               <div className="p-5 pt-0 space-y-2">
                 <button
-                  onClick={() => handleGetDirections(selectedLocation)}
-                  className="w-full py-2.5 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] text-white font-bold text-xs transition shadow-xs flex items-center justify-center gap-2"
+                  onClick={() => {
+                    setDestinationId(selectedLocation.id);
+                    handleCalculateRoute(originId, selectedLocation.id);
+                  }}
+                  className="w-full py-2.5 rounded-2xl bg-[#A41034] hover:bg-[#8F002E] text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-2"
                 >
                   <Footprints className="w-4 h-4" />
-                  <span>Get Walking Directions (Within Campus)</span>
+                  <span>Navigate Here (Calculate Walking Route)</span>
                 </button>
 
                 {selectedLocation.category === 'Food & Dining' && (
                   <button
-                    onClick={() => onNavigateToCanteen(selectedLocation.id)}
-                    className="w-full py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#B0003A] font-bold text-xs border border-[#E8E3D7] transition flex items-center justify-center gap-2"
+                    onClick={() => onNavigateToCanteen && onNavigateToCanteen(selectedLocation.relatedCanteenId || selectedLocation.id)}
+                    className="w-full py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm"
                   >
                     <Utensils className="w-4 h-4" />
-                    <span>View Menu & Place Prepaid Order</span>
+                    <span>View Menu & Place Food Order</span>
                   </button>
                 )}
               </div>
             </div>
           ) : (
-            <div className="bg-white border border-[#E8E3D7] rounded-2xl p-6 text-center text-slate-500 text-xs shadow-xs">
-              Select a building on the Amrita Ettimadai map to view details.
+            <div className="bg-white border border-[#E8E3D7] rounded-3xl p-6 text-center text-slate-500 text-xs shadow-sm">
+              Select any building or canteen marker on the map to view details and calculate walking paths.
             </div>
           )}
 
-          {/* Quick List of Amrita Campus Hubs */}
-          <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-xs">
+          {/* Directory List */}
+          <div className="bg-white border border-[#E8E3D7] rounded-3xl p-4 shadow-sm">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
-              Amrita Ettimadai Directory ({filteredLocations.length} locations)
+              Campus Directory ({filteredLocations.length} locations)
             </h4>
-            <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+            <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
               {filteredLocations.map((loc) => (
                 <button
                   key={loc.id}
                   onClick={() => {
                     setSelectedLocation(loc);
-                    const lat = loc.lat || loc.coordinates?.lat || AMRITA_CAMPUS_CENTER[0];
-                    const lng = loc.lng || loc.coordinates?.lng || AMRITA_CAMPUS_CENTER[1];
+                    setDestinationId(loc.id);
+                    const lat = loc.lat || loc.coords?.[0] || loc.coordinates?.lat || AMRITA_CAMPUS_CENTER[0];
+                    const lng = loc.lng || loc.coords?.[1] || loc.coordinates?.lng || AMRITA_CAMPUS_CENTER[1];
                     if (mapInstanceRef.current) {
                       mapInstanceRef.current.flyTo([lat, lng], 17.5, { duration: 1 });
                     }
                   }}
-                  className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between transition ${
+                  className={`w-full text-left p-2.5 rounded-2xl text-xs flex items-center justify-between transition ${
                     selectedLocation?.id === loc.id
-                      ? 'bg-[#FFF0F4] text-[#B0003A] font-bold border border-[#F8C0CE]'
+                      ? 'bg-[#FFF0F4] text-[#A41034] font-bold border border-[#F8C0CE]'
                       : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-[#E8E3D7]'
                   }`}
                 >
@@ -732,8 +911,11 @@ export function CampusMapView({ onNavigateToCanteen }) {
               ))}
             </div>
           </div>
+
         </div>
       </div>
     </div>
   );
 }
+
+export default CampusMapView;
