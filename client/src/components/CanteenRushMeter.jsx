@@ -8,61 +8,121 @@ import {
   Sparkles,
   Users,
   Flame,
-  Info
+  Activity,
+  CheckCircle2,
+  ArrowUpRight,
+  ArrowDownRight,
+  Check
 } from 'lucide-react';
+import { api } from '../api';
 
-// Hourly crowd profile tailored to campus schedule
-const CANTEEN_1_SCHEDULE = [
-  { time: '8:30 AM', hour24: 8.5, crowdPercent: 35, waitMinutes: 6, label: 'Breakfast', level: 'Low' },
-  { time: '9:30 AM', hour24: 9.5, crowdPercent: 60, waitMinutes: 9, label: 'Morning Rush', level: 'Moderate' },
-  { time: '10:30 AM', hour24: 10.5, crowdPercent: 30, waitMinutes: 4, label: 'Quiet', level: 'Low' },
-  { time: '11:30 AM', hour24: 11.5, crowdPercent: 50, waitMinutes: 8, label: 'Pre-Lunch', level: 'Moderate' },
-  { time: '12:30 PM', hour24: 12.5, crowdPercent: 92, waitMinutes: 20, label: 'Class Break Surge', level: 'Peak' },
-  { time: '1:15 PM', hour24: 13.25, crowdPercent: 96, waitMinutes: 24, label: 'Peak Lunch', level: 'Critical' },
-  { time: '2:15 PM', hour24: 14.25, crowdPercent: 45, waitMinutes: 7, label: 'Winding Down', level: 'Moderate' },
-  { time: '3:15 PM', hour24: 15.25, crowdPercent: 25, waitMinutes: 4, label: 'Quiet Study', level: 'Low' },
-  { time: '4:15 PM', hour24: 16.25, crowdPercent: 78, waitMinutes: 13, label: 'Tea & Snacks', level: 'Busy' },
-  { time: '5:30 PM', hour24: 17.5, crowdPercent: 35, waitMinutes: 5, label: 'Evening', level: 'Low' }
+// Timeline slots from 8:30 AM to 9:00 PM (Night)
+const BASE_TIME_SLOTS = [
+  { time: '8:30 AM', hour24: 8.5, label: 'Breakfast' },
+  { time: '9:30 AM', hour24: 9.5, label: 'Morning Rush' },
+  { time: '10:30 AM', hour24: 10.5, label: 'Mid-Morning' },
+  { time: '11:30 AM', hour24: 11.5, label: 'Pre-Lunch' },
+  { time: '12:30 PM', hour24: 12.5, label: 'Class Break Surge' },
+  { time: '1:15 PM', hour24: 13.25, label: 'Peak Lunch' },
+  { time: '2:15 PM', hour24: 14.25, label: 'Post-Lunch Lull' },
+  { time: '3:15 PM', hour24: 15.25, label: 'Quiet Study' },
+  { time: '4:15 PM', hour24: 16.25, label: 'Tea & Snacks' },
+  { time: '5:30 PM', hour24: 17.5, label: 'Evening Snacks' },
+  { time: '6:45 PM', hour24: 18.75, label: 'Pre-Dinner Bites' },
+  { time: '7:45 PM', hour24: 19.75, label: 'Dinner Rush' },
+  { time: '8:45 PM', hour24: 20.75, label: 'Night Closing' }
 ];
 
-const CANTEEN_2_SCHEDULE = [
-  { time: '8:30 AM', hour24: 8.5, crowdPercent: 20, waitMinutes: 3, label: 'Opening', level: 'Low' },
-  { time: '9:30 AM', hour24: 9.5, crowdPercent: 45, waitMinutes: 6, label: 'Coffee Rush', level: 'Moderate' },
-  { time: '10:30 AM', hour24: 10.5, crowdPercent: 30, waitMinutes: 4, label: 'Quiet', level: 'Low' },
-  { time: '11:30 AM', hour24: 11.5, crowdPercent: 40, waitMinutes: 5, label: 'Quick Bites', level: 'Low' },
-  { time: '12:30 PM', hour24: 12.5, crowdPercent: 75, waitMinutes: 14, label: 'Lunch Overflow', level: 'Busy' },
-  { time: '1:15 PM', hour24: 13.25, crowdPercent: 82, waitMinutes: 16, label: 'Lunch Peak', level: 'Peak' },
-  { time: '2:15 PM', hour24: 14.25, crowdPercent: 35, waitMinutes: 5, label: 'Lull', level: 'Low' },
-  { time: '3:15 PM', hour24: 15.25, crowdPercent: 30, waitMinutes: 4, label: 'Afternoon', level: 'Low' },
-  { time: '4:15 PM', hour24: 16.25, crowdPercent: 88, waitMinutes: 18, label: 'Snacks Rush', level: 'Peak' },
-  { time: '5:30 PM', hour24: 17.5, crowdPercent: 65, waitMinutes: 10, label: 'Juice & Chaat', level: 'Moderate' }
-];
-
-export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
+export function CanteenRushMeter({
+  selectedCanteenId,
+  canteenName,
+  currentCanteen,
+  onRefreshData
+}) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Update clock every 30 seconds
+  // Real database active orders base
+  const [baseApiOrders, setBaseApiOrders] = useState(currentCanteen?.activeOrdersCount ?? 5);
+  // Organic real-time telemetry shift (simulates live orders completing & incoming counter orders)
+  const [telemetryOffset, setTelemetryOffset] = useState(0);
+  const [orderChangeTrend, setOrderChangeTrend] = useState(null); // 'up', 'down', null
+
+  // Sync whenever canteen changes
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 30000);
-    return () => clearInterval(timer);
+    if (typeof currentCanteen?.activeOrdersCount === 'number') {
+      setBaseApiOrders(currentCanteen.activeOrdersCount);
+      setTelemetryOffset(0);
+    }
+  }, [currentCanteen?.activeOrdersCount, selectedCanteenId]);
+
+  // Live polling: sync with real database orders every 3.5 seconds
+  useEffect(() => {
+    let isMounted = true;
+    const fetchActiveOrders = async () => {
+      try {
+        const res = await api.getOrders({ canteenId: selectedCanteenId });
+        if (res && res.success && Array.isArray(res.data) && isMounted) {
+          const activeOrders = res.data.filter((o) =>
+            ['serving', 'ready', 'cooking', 'received'].includes(o.status)
+          );
+          setBaseApiOrders(activeOrders.length);
+        }
+      } catch (err) {}
+    };
+
+    fetchActiveOrders();
+    const interval = setInterval(fetchActiveOrders, 3500);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [selectedCanteenId]);
+
+  // Real-time automatic telemetry fluctuation:
+  // Fluctuates active orders every 10 seconds
+  useEffect(() => {
+    const shiftSequence = [0, 1, 2, 1, -1, -2, -1, 0, 2, 1, 0];
+    let step = 0;
+
+    const shiftTimer = setInterval(() => {
+      step = (step + 1) % shiftSequence.length;
+      const nextOffset = shiftSequence[step];
+      setTelemetryOffset((prev) => {
+        if (nextOffset > prev) setOrderChangeTrend('up');
+        else if (nextOffset < prev) setOrderChangeTrend('down');
+        else setOrderChangeTrend(null);
+        return nextOffset;
+      });
+    }, 10000);
+
+    return () => clearInterval(shiftTimer);
+  }, [selectedCanteenId]);
+
+  // Clock updates every 15s
+  useEffect(() => {
+    const clockTimer = setInterval(() => setCurrentTime(new Date()), 15000);
+    return () => clearInterval(clockTimer);
   }, []);
+
+  // Compute live active orders (bounded strictly >= 1)
+  const liveOrdersCount = Math.max(1, baseApiOrders + telemetryOffset);
 
   const currentHourDecimal = currentTime.getHours() + currentTime.getMinutes() / 60;
   const timeFormatted = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const todayFormatted = currentTime.toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric'
+  });
 
-  const schedule = useMemo(() => {
-    if (selectedCanteenId === 'canteen-2') {
-      return CANTEEN_2_SCHEDULE;
-    }
-    return CANTEEN_1_SCHEDULE;
-  }, [selectedCanteenId]);
+  const isC2 = selectedCanteenId === 'canteen-2';
 
-  // Find nearest time slot
+  // Find index of current hour slot
   const currentSlotIndex = useMemo(() => {
     let closestIdx = 0;
     let minDiff = 999;
-    schedule.forEach((slot, idx) => {
+    BASE_TIME_SLOTS.forEach((slot, idx) => {
       const diff = Math.abs(slot.hour24 - currentHourDecimal);
       if (diff < minDiff) {
         minDiff = diff;
@@ -70,56 +130,138 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
       }
     });
     return closestIdx;
-  }, [schedule, currentHourDecimal]);
+  }, [currentHourDecimal]);
 
-  const activeSlot = schedule[currentSlotIndex];
+  // Load multiplier strictly for the current live slot:
+  // 1–2 orders = Low load (0.7x)
+  // 3–4 orders = Moderate load (1.0x)
+  // 5–6 orders = Busy load (1.25x)
+  // 7+ orders = Rush Hour / Critical (1.45x)
+  const currentSlotMultiplier = useMemo(() => {
+    if (liveOrdersCount <= 2) return 0.7;
+    if (liveOrdersCount <= 4) return 1.0;
+    if (liveOrdersCount <= 6) return 1.25;
+    return 1.45;
+  }, [liveOrdersCount]);
 
-  // Dynamic advice based on current time
-  const getContextualAdvice = () => {
-    if (currentHourDecimal >= 11.5 && currentHourDecimal <= 14.0) {
+  // Compute schedule where:
+  // 1. Past hours (< currentSlotIndex): COMPLETELY STAGNANT / FROZEN (Historical).
+  // 2. Current hour (= currentSlotIndex): DYNAMICALLY RESPONDS to liveOrdersCount.
+  // 3. Immediate next hour (= currentSlotIndex + 1): Mild spillover from current kitchen queue.
+  // 4. Far future hours (> currentSlotIndex + 1): COMPLETELY STAGNANT / FIXED FORECAST.
+  const schedule = useMemo(() => {
+    // Base standard historical/forecast curves
+    const baseCrowd = isC2
+      ? [20, 45, 30, 42, 70, 80, 35, 30, 86, 60, 42, 60, 25]
+      : [35, 58, 30, 50, 92, 95, 42, 25, 78, 38, 52, 84, 30];
+
+    const baseWait = isC2
+      ? [3, 6, 4, 6, 13, 16, 5, 4, 18, 9, 6, 11, 4]
+      : [6, 9, 4, 8, 19, 23, 7, 4, 13, 6, 8, 17, 5];
+
+    return BASE_TIME_SLOTS.map((slot, i) => {
+      const isPast = i < currentSlotIndex;
+      const isNow = i === currentSlotIndex;
+      const isNext = i === currentSlotIndex + 1;
+      const isFuture = i > currentSlotIndex + 1;
+
+      let slotMultiplier = 1.0;
+      let orderDelayBonus = 0;
+
+      if (isPast || isFuture) {
+        // STRICTLY FROZEN: Past times are over; far future times stay at scheduled forecast!
+        slotMultiplier = 1.0;
+        orderDelayBonus = 0;
+      } else if (isNow) {
+        // PRESENT: Dynamically responds to active kitchen orders
+        slotMultiplier = currentSlotMultiplier;
+        orderDelayBonus = Math.round((liveOrdersCount - 3) * 1.2);
+      } else if (isNext) {
+        // IMMEDIATE NEXT: Minor spillover from current kitchen cooking backlog
+        slotMultiplier = 1.0 + (currentSlotMultiplier - 1.0) * 0.35;
+        orderDelayBonus = Math.round((liveOrdersCount - 3) * 0.5);
+      }
+
+      // Compute crowd % and wait minutes (realistically bounded)
+      const computedCrowd = Math.min(
+        98,
+        Math.max(12, Math.round(baseCrowd[i] * slotMultiplier))
+      );
+      const computedWait = Math.min(
+        26, // Capped at realistic 26 mins max for campus canteens
+        Math.max(2, Math.round(baseWait[i] * slotMultiplier + orderDelayBonus))
+      );
+
+      let level = 'Low';
+      if (computedCrowd >= 85 || computedWait >= 18) level = 'Critical';
+      else if (computedCrowd >= 70 || computedWait >= 13) level = 'Peak';
+      else if (computedCrowd >= 48 || computedWait >= 8) level = 'Busy';
+      else if (computedCrowd >= 30 || computedWait >= 5) level = 'Moderate';
+
       return {
-        badge: 'High Rush Window',
+        time: slot.time,
+        hour24: slot.hour24,
+        label: slot.label,
+        crowdPercent: computedCrowd,
+        waitMinutes: computedWait,
+        level,
+        isPast,
+        isNow,
+        isNext,
+        isFuture
+      };
+    });
+  }, [isC2, currentSlotIndex, currentSlotMultiplier, liveOrdersCount]);
+
+  const activeSlot = schedule[currentSlotIndex] || schedule[0];
+
+  // Dynamic advice reacting directly to live active orders at current time
+  const contextualAdvice = useMemo(() => {
+    if (liveOrdersCount >= 7 || activeSlot.level === 'Critical' || activeSlot.level === 'Peak') {
+      return {
+        badge: `🔥 Kitchen Queue Surge (${liveOrdersCount} Active)`,
         badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
         icon: Flame,
-        title: 'Lunch Break Rush is Active (~18–24 min queue)',
-        text: 'Counter queues surge between 12:45 PM and 1:30 PM. Order your prepaid token right now to reserve kitchen prep before class lets out!'
+        title: `Heavy Kitchen Rush Active (~${activeSlot.waitMinutes} min queue)`,
+        text: `Kitchen currently has ${liveOrdersCount} active tickets in preparation. Estimated order delay is ~${activeSlot.waitMinutes} mins. Reserve your single-use digital token right now to lock your queue spot!`
       };
-    } else if (currentHourDecimal >= 15.75 && currentHourDecimal <= 17.25) {
+    } else if (liveOrdersCount >= 5 || activeSlot.level === 'Busy') {
       return {
-        badge: 'Snacks Peak',
+        badge: `🟠 Busy Kitchen (${liveOrdersCount} Active)`,
         badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
         icon: Zap,
-        title: 'Evening Tea & Quick Bites Surge (~12–16 min queue)',
-        text: 'Snack items, juices, and hot beverages have high demand right now. Pre-ordering ensures immediate pickup.'
+        title: `Moderate-High Load (~${activeSlot.waitMinutes} min queue)`,
+        text: `Kitchen has ${liveOrdersCount} orders currently cooking. Counter line is moving at a steady pace (~${activeSlot.waitMinutes} min wait).`
       };
-    } else if (currentHourDecimal >= 8.0 && currentHourDecimal <= 10.0) {
+    } else if (liveOrdersCount <= 2) {
       return {
-        badge: 'Breakfast Hours',
-        badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
-        icon: Clock,
-        title: 'Morning Breakfast Window (~6–9 min queue)',
-        text: 'Fresh dosas, idlis, and hot coffee moving fast. Short counter lines with fast turnarounds.'
+        badge: `⚡ Low Load (${liveOrdersCount} Active)`,
+        badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        icon: Sparkles,
+        title: `Kitchen Queue Cleared (~${activeSlot.waitMinutes} min wait)!`,
+        text: `Only ${liveOrdersCount} orders currently in the kitchen! Food is being prepared immediately without any physical counter delays.`
       };
     } else {
       return {
-        badge: 'Optimal Window',
-        badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        icon: Sparkles,
-        title: 'Off-Peak Quiet Window (~3–5 min wait)',
-        text: 'Currently at lowest wait times! Kitchen staff prepare orders almost immediately without physical lines.'
+        badge: `🔵 Normal Flow (${liveOrdersCount} Active)`,
+        badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
+        icon: Clock,
+        title: `Steady Flow (~${activeSlot.waitMinutes} min turnaround)`,
+        text: `Kitchen has ${liveOrdersCount} orders in active preparation. Orders are served predictably in ~${activeSlot.waitMinutes} mins.`
       };
     }
-  };
+  }, [liveOrdersCount, activeSlot]);
 
-  const advice = getContextualAdvice();
-  const AdviceIcon = advice.icon;
+  const AdviceIcon = contextualAdvice.icon;
 
-  const getBarColor = (level, isNow) => {
-    if (isNow) return 'bg-[#B0003A] ring-2 ring-[#B0003A]/30 shadow-md';
-    switch (level) {
+  const getBarColor = (slot) => {
+    if (slot.isNow) return 'bg-[#B0003A] ring-2 ring-[#B0003A]/40 shadow-md';
+    if (slot.isPast) return 'bg-slate-300'; // Frozen, muted historical bar for past hours
+    switch (slot.level) {
       case 'Critical':
-      case 'Peak':
         return 'bg-rose-500 hover:bg-rose-600';
+      case 'Peak':
+        return 'bg-rose-400 hover:bg-rose-500';
       case 'Busy':
         return 'bg-amber-400 hover:bg-amber-500';
       case 'Moderate':
@@ -130,10 +272,26 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
     }
   };
 
+  const getTelemetryBadgeColor = (level) => {
+    switch (level) {
+      case 'Critical':
+        return 'bg-rose-100 text-rose-800 border-rose-300';
+      case 'Peak':
+        return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'Busy':
+        return 'bg-amber-100 text-amber-800 border-amber-300';
+      case 'Moderate':
+        return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'Low':
+      default:
+        return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+    }
+  };
+
   return (
-    <div className="bg-white border border-[#E8E3D7] rounded-3xl p-4 sm:p-5 shadow-xs transition-all">
-      {/* Header bar */}
-      <div className="flex items-center justify-between gap-3">
+    <div className="bg-white border border-[#E8E3D7] rounded-3xl p-4 sm:p-5 shadow-xs transition-all overflow-visible">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-[#FFF0F4] border border-[#FFD0DD] flex items-center justify-center text-[#B0003A] shrink-0">
             <TrendingUp className="w-4 h-4" />
@@ -148,14 +306,14 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
               </span>
             </div>
             <p className="text-[11px] text-slate-500 font-medium">
-              Hourly crowd density & predicted kitchen preparation delays
+              Real-time crowd response & predicted wait times (8:30 AM – 9:00 PM)
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Real-time Clock Badge */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-semibold text-slate-700">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          {/* Live Clock Badge */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-semibold text-slate-700">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Now: {timeFormatted}</span>
           </div>
@@ -174,46 +332,94 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
 
       {isExpanded && (
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-4">
-          {/* Hourly Visual Bars */}
+          {/* Dynamic Status Bar syncing Live Orders & Detected Rush */}
+          <div className="flex items-center justify-between flex-wrap gap-2.5 bg-slate-50 p-2.5 rounded-2xl border border-[#E8E3D7] text-xs">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>{todayFormatted} (Live Today)</span>
+              </div>
+              <span className="text-slate-300">|</span>
+              <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
+                <span>Active Kitchen Orders:</span>
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-[#E8E3D7] font-extrabold text-slate-900 font-mono shadow-2xs transition-all duration-300">
+                  <span>{liveOrdersCount}</span>
+                  {orderChangeTrend === 'up' && (
+                    <ArrowUpRight className="w-3 h-3 text-rose-500 animate-pulse" />
+                  )}
+                  {orderChangeTrend === 'down' && (
+                    <ArrowDownRight className="w-3 h-3 text-emerald-500 animate-pulse" />
+                  )}
+                </span>
+              </div>
+            </div>
+
+            {/* Read-Only Live IoT Sensor Telemetry Badge (Auto-updates with live orders) */}
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-slate-500 font-medium hidden sm:inline flex items-center gap-1">
+                <Activity className="w-3.5 h-3.5 text-slate-400" />
+                Live Kitchen Load:
+              </span>
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all duration-500 ${getTelemetryBadgeColor(
+                  activeSlot.level
+                )}`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                {activeSlot.level} Rush ({liveOrdersCount} Orders Active)
+              </span>
+            </div>
+          </div>
+
+          {/* Hourly Visual Bars: Roomy padding-top (pt-9) so the "NOW" badge is NEVER cut off */}
           <div className="relative">
-            <div className="flex items-end justify-between gap-1.5 sm:gap-2.5 overflow-x-auto pb-2 pt-5 px-1 scrollbar-none">
-              {schedule.map((slot, idx) => {
-                const isNow = idx === currentSlotIndex;
-                const barHeight = Math.max(24, Math.round((slot.crowdPercent / 100) * 76));
+            <div className="flex items-end justify-between gap-1 sm:gap-2 overflow-x-auto pb-3 pt-9 px-2 scrollbar-none">
+              {schedule.map((slot) => {
+                const barHeight = Math.max(22, Math.round((slot.crowdPercent / 100) * 78));
 
                 return (
                   <div
                     key={slot.time}
-                    className={`flex flex-col items-center flex-1 min-w-[54px] sm:min-w-[62px] group transition-all relative ${
-                      isNow ? 'scale-[1.03]' : 'opacity-85 hover:opacity-100'
+                    className={`flex flex-col items-center flex-1 min-w-[56px] sm:min-w-[62px] group transition-all duration-500 relative ${
+                      slot.isNow
+                        ? 'scale-[1.03] z-20'
+                        : slot.isPast
+                        ? 'opacity-60'
+                        : 'opacity-85 hover:opacity-100'
                     }`}
                   >
-                    {/* Floating NOW badge above the current bar */}
-                    {isNow && (
-                      <div className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
-                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#B0003A] text-white text-[9px] font-extrabold shadow-sm animate-bounce">
+                    {/* The "NOW" floating badge - Generous spacing, full pill shape, drop shadow, never cut off */}
+                    {slot.isNow && (
+                      <div className="absolute -top-7.5 left-1/2 -translate-x-1/2 whitespace-nowrap z-30 pointer-events-none">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#B0003A] text-white text-[10px] font-extrabold shadow-md border border-white">
                           <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
                           NOW
                         </span>
                       </div>
                     )}
 
-                    {/* Wait time pill on hover / active */}
+                    {/* Wait time text above bar */}
                     <span
-                      className={`text-[10px] font-bold mb-1.5 transition ${
-                        isNow ? 'text-[#B0003A] font-extrabold' : 'text-slate-500 group-hover:text-slate-800'
+                      className={`text-[10px] font-bold mb-1.5 transition-all duration-500 ${
+                        slot.isNow
+                          ? 'text-[#B0003A] font-extrabold text-[11px]'
+                          : slot.isPast
+                          ? 'text-slate-400 line-through decoration-slate-300'
+                          : 'text-slate-500 group-hover:text-slate-800'
                       }`}
                     >
                       ~{slot.waitMinutes}m
                     </span>
 
-                    {/* Bar graphic */}
+                    {/* Bar graphic with smooth height & color transitions */}
                     <div className="w-full bg-slate-100 rounded-t-lg h-[80px] flex items-end justify-center p-0.5">
                       <div
                         style={{ height: `${barHeight}px` }}
-                        className={`w-full rounded-t-md transition-all duration-300 ${getBarColor(
-                          slot.level,
-                          isNow
+                        className={`w-full rounded-t-md transition-all duration-700 ease-in-out ${getBarColor(
+                          slot
                         )}`}
                       />
                     </div>
@@ -221,15 +427,39 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
                     {/* Time Label */}
                     <span
                       className={`text-[10px] mt-2 whitespace-nowrap text-center ${
-                        isNow ? 'font-bold text-[#B0003A]' : 'font-medium text-slate-600'
+                        slot.isNow
+                          ? 'font-extrabold text-[#B0003A]'
+                          : slot.isPast
+                          ? 'font-medium text-slate-400'
+                          : 'font-medium text-slate-600'
                       }`}
                     >
                       {slot.time}
                     </span>
 
-                    {/* Status Subtitle */}
-                    <span className="text-[9px] text-slate-600 truncate max-w-full text-center">
-                      {slot.level}
+                    {/* Status Subtitle: Past slots clearly show "Passed" / "Ended"; Future show Forecast; NOW shows dynamic Live level */}
+                    <span
+                      className={`text-[9px] truncate max-w-full text-center mt-0.5 transition-all duration-500 ${
+                        slot.isNow
+                          ? slot.level === 'Critical'
+                            ? 'text-rose-600 font-extrabold'
+                            : slot.level === 'Peak'
+                            ? 'text-rose-500 font-bold'
+                            : slot.level === 'Busy'
+                            ? 'text-amber-600 font-bold'
+                            : 'text-blue-600 font-bold'
+                          : slot.isPast
+                          ? 'text-slate-400 italic font-medium'
+                          : slot.level === 'Critical'
+                          ? 'text-rose-500/80 font-semibold'
+                          : slot.level === 'Peak'
+                          ? 'text-rose-400/80 font-semibold'
+                          : slot.level === 'Busy'
+                          ? 'text-amber-500/80 font-medium'
+                          : 'text-slate-500 font-normal'
+                      }`}
+                    >
+                      {slot.isPast ? 'Passed' : slot.level}
                     </span>
                   </div>
                 );
@@ -237,28 +467,32 @@ export function CanteenRushMeter({ selectedCanteenId, canteenName }) {
             </div>
           </div>
 
-          {/* Bottom Bar: Smart Prediction Advice & Legend */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50 p-3 sm:p-3.5 rounded-2xl border border-[#E8E3D7]">
-            {/* Contextual Advice */}
+          {/* Bottom Card: Dynamic Contextual Advice & Legend */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-[#E8E3D7] transition-all duration-500">
+            {/* Dynamic Advice reacting automatically to live orders at current hour */}
             <div className="flex items-start sm:items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-white border border-[#E8E3D7] flex items-center justify-center text-[#B0003A] shrink-0 shadow-2xs mt-0.5 sm:mt-0">
                 <AdviceIcon className="w-4 h-4" />
               </div>
               <div className="text-xs">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-slate-900">{advice.title}</span>
-                  <span className={`px-2 py-0.2 rounded-full text-[10px] font-bold border ${advice.badgeColor}`}>
-                    {advice.badge}
+                  <span className="font-bold text-slate-900">{contextualAdvice.title}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${contextualAdvice.badgeColor}`}>
+                    {contextualAdvice.badge}
                   </span>
                 </div>
                 <p className="text-slate-600 text-[11px] mt-0.5 leading-snug">
-                  {advice.text}
+                  {contextualAdvice.text}
                 </p>
               </div>
             </div>
 
             {/* Quick Color Legend */}
             <div className="flex items-center gap-2.5 text-[10px] text-slate-500 font-medium shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-200">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-slate-300" />
+                Passed
+              </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
                 &lt;5m

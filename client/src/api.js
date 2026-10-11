@@ -313,7 +313,17 @@ export const api = {
   getCanteens: () =>
     safeCall(
       fetch(`${API_BASE}/canteens`).then(handleResponse),
-      (state) => state.canteens
+      (state) => {
+        return (state.canteens || []).map((c) => {
+          const activeCount = (state.orders || []).filter(
+            (o) => o.canteenId === c.id && ['serving', 'ready', 'cooking', 'received'].includes(o.status)
+          ).length;
+          return {
+            ...c,
+            activeOrdersCount: activeCount
+          };
+        });
+      }
     ),
 
   addCanteen: (canteenData) =>
@@ -765,11 +775,18 @@ export const api = {
         let contactInfo = 'student@campus.edu';
         let imageUrl = '';
 
+        let lat = null;
+        let lng = null;
+        let markedOnMap = false;
+
         if (isFormData) {
           title = item.get('title') || title;
           type = item.get('type') || type;
           category = item.get('category') || category;
           location = item.get('location') || location;
+          lat = item.get('lat') ? Number(item.get('lat')) : null;
+          lng = item.get('lng') ? Number(item.get('lng')) : null;
+          markedOnMap = item.get('markedOnMap') === 'true' || Boolean(item.get('markedOnMap'));
           description = item.get('description') || description;
           contactInfo = item.get('contactInfo') || contactInfo;
           imageUrl = item.get('imageUrl') || '';
@@ -778,6 +795,9 @@ export const api = {
           type = item.type || type;
           category = item.category || category;
           location = item.location || location;
+          lat = item.lat ? Number(item.lat) : null;
+          lng = item.lng ? Number(item.lng) : null;
+          markedOnMap = Boolean(item.markedOnMap);
           description = item.description || description;
           contactInfo = item.contactInfo || contactInfo;
           imageUrl = item.imageUrl || '';
@@ -789,6 +809,9 @@ export const api = {
           type,
           category,
           location,
+          lat,
+          lng,
+          markedOnMap,
           description,
           contactInfo,
           imageUrl: imageUrl || 'https://images.unsplash.com/photo-1584905066893-7d5c142ba4e1?w=500&auto=format&fit=crop&q=80',

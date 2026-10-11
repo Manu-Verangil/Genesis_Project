@@ -16,7 +16,13 @@ import {
 } from 'lucide-react';
 import { api } from '../api';
 
-export function LostAndFoundView({ onGoBack }) {
+export function LostAndFoundView({
+  onRedirectToMapForLostFound,
+  lostFoundDraft,
+  onClearLostFoundDraft,
+  onViewItemOnMap,
+  onGoBack
+}) {
   const [items, setItems] = useState([]);
   const [filterType, setFilterType] = useState('All'); // 'All', 'found', 'lost'
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -34,6 +40,9 @@ export function LostAndFoundView({ onGoBack }) {
     type: 'found',
     category: 'Electronics',
     location: '',
+    lat: null,
+    lng: null,
+    markedOnMap: false,
     description: '',
     contactInfo: 'student@campus.edu',
     imageUrl: ''
@@ -64,6 +73,21 @@ export function LostAndFoundView({ onGoBack }) {
     fetchItems();
   }, []);
 
+  // Sync draft returning from Campus Map
+  useEffect(() => {
+    if (lostFoundDraft) {
+      setReportForm((prev) => ({
+        ...prev,
+        ...lostFoundDraft
+      }));
+      if (lostFoundDraft.imageUrl) {
+        setImagePreview(lostFoundDraft.imageUrl);
+      }
+      setIsReportModalOpen(true);
+      if (onClearLostFoundDraft) onClearLostFoundDraft();
+    }
+  }, [lostFoundDraft]);
+
   const categories = ['All', 'Electronics', 'Accessories', 'Documents', 'Personal Belongings'];
 
   const filteredItems = items.filter((item) => {
@@ -88,6 +112,9 @@ export function LostAndFoundView({ onGoBack }) {
       type: 'found',
       category: 'Electronics',
       location: '',
+      lat: null,
+      lng: null,
+      markedOnMap: false,
       description: '',
       contactInfo: 'student@campus.edu',
       imageUrl: ''
@@ -123,6 +150,9 @@ export function LostAndFoundView({ onGoBack }) {
         formData.append('type', reportForm.type);
         formData.append('category', reportForm.category);
         formData.append('location', reportForm.location);
+        if (reportForm.lat) formData.append('lat', reportForm.lat);
+        if (reportForm.lng) formData.append('lng', reportForm.lng);
+        if (reportForm.markedOnMap) formData.append('markedOnMap', 'true');
         formData.append('description', reportForm.description);
         formData.append('contactInfo', reportForm.contactInfo);
         formData.append('imageUrl', reportForm.imageUrl);
@@ -180,7 +210,7 @@ export function LostAndFoundView({ onGoBack }) {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 flex-wrap">
             {onGoBack && (
               <button
                 type="button"
@@ -193,9 +223,21 @@ export function LostAndFoundView({ onGoBack }) {
               </button>
             )}
 
+            {onRedirectToMapForLostFound && (
+              <button
+                type="button"
+                onClick={() => onRedirectToMapForLostFound(reportForm)}
+                className="px-3.5 py-2.5 rounded-xl bg-[#FFF0F4] hover:bg-[#FFE0E8] text-[#B0003A] border border-[#F8C0CE] font-bold text-xs transition shadow-2xs flex items-center justify-center gap-1.5 shrink-0 active:scale-95"
+                title="Mark location on Amrita Campus Map"
+              >
+                <MapPin className="w-3.5 h-3.5 text-[#B0003A]" />
+                <span>Mark on Campus Map</span>
+              </button>
+            )}
+
             <button
               onClick={() => setIsReportModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-2 shrink-0"
+              className="px-4 py-2.5 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-2 shrink-0 active:scale-95"
             >
               <Plus className="w-4 h-4" />
               <span>Report Lost or Found Item</span>
@@ -330,9 +372,21 @@ export function LostAndFoundView({ onGoBack }) {
                     </p>
 
                     <div className="space-y-1 pt-2 border-t border-[#E8E3D7] text-[11px] text-slate-500">
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span>{item.location}</span>
+                      <div className="flex items-center gap-1.5 justify-between">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <MapPin className="w-3.5 h-3.5 text-[#B0003A] shrink-0" />
+                          <span className="truncate">{item.location}</span>
+                        </div>
+                        {onViewItemOnMap && (
+                          <button
+                            type="button"
+                            onClick={() => onViewItemOnMap(item)}
+                            className="text-[10px] font-bold text-[#B0003A] hover:underline shrink-0 bg-[#FFF0F4] border border-[#F8C0CE] px-1.5 py-0.5 rounded transition"
+                            title="View location on Campus Map"
+                          >
+                            (Map)
+                          </button>
+                        )}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -427,7 +481,23 @@ export function LostAndFoundView({ onGoBack }) {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Campus Location</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-slate-700 font-semibold text-xs flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-[#B0003A]" />
+                    <span>Campus Location</span>
+                  </label>
+                  {onRedirectToMapForLostFound && (
+                    <button
+                      type="button"
+                      onClick={() => onRedirectToMapForLostFound(reportForm)}
+                      className="flex items-center gap-1 text-[11px] font-bold text-[#B0003A] hover:text-[#8F002E] bg-[#FFF0F4] hover:bg-[#FFE0E8] border border-[#F8C0CE] px-2.5 py-1 rounded-lg transition active:scale-95 shadow-2xs"
+                      title="Mark the spot on Amrita Campus Map"
+                    >
+                      <MapPin className="w-3 h-3" />
+                      <span>Mark on Campus Map</span>
+                    </button>
+                  )}
+                </div>
                 <input
                   type="text"
                   placeholder="e.g. Central Library 2nd floor desk #14"
@@ -436,6 +506,23 @@ export function LostAndFoundView({ onGoBack }) {
                   onChange={(e) => setReportForm({ ...reportForm, location: e.target.value })}
                   className="w-full p-2 bg-white border border-[#E8E3D7] rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#B0003A]"
                 />
+                {reportForm.markedOnMap && (
+                  <div className="mt-1 flex items-center justify-between bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-lg text-[11px]">
+                    <span className="flex items-center gap-1 font-semibold">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Pinned from Campus Map</span>
+                    </span>
+                    {onRedirectToMapForLostFound && (
+                      <button
+                        type="button"
+                        onClick={() => onRedirectToMapForLostFound(reportForm)}
+                        className="text-[10px] text-emerald-700 hover:text-emerald-900 underline font-semibold"
+                      >
+                        Change spot
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>

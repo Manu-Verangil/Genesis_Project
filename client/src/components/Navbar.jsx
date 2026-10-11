@@ -101,6 +101,11 @@ export function Navbar({
                     ⚡ Priority VIP
                   </span>
                 )}
+                {currentRole === 'guest' && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/25 text-amber-200 border border-amber-300/40 shrink-0">
+                    Guest Visitor
+                  </span>
+                )}
               </div>
               <p className="text-[10px] sm:text-[11px] font-medium text-rose-100/90 leading-tight mt-0.5 truncate max-w-[230px] sm:max-w-md">
                 Amrita Vishwa Vidyapeetham, Coimbatore • Food, Navigation & Issues
@@ -224,8 +229,12 @@ export function Navbar({
             {currentUser ? (
               <div className="flex items-center gap-1.5 pl-1 shrink-0">
                 <div className="hidden md:flex flex-col text-right">
-                  <span className="text-xs font-bold text-white leading-none">{currentUser.name}</span>
-                  <span className="text-[10px] font-mono text-amber-300 uppercase leading-tight">{currentUser.role} ({currentUser.username})</span>
+                  <span className="text-xs font-bold text-white leading-none">
+                    {currentUser.role === 'guest' ? 'Guest Visitor' : currentUser.name}
+                  </span>
+                  <span className="text-[10px] font-mono text-amber-300 uppercase leading-tight">
+                    {currentUser.role === 'guest' ? 'Visitor Session' : `${currentUser.role} (${currentUser.username})`}
+                  </span>
                 </div>
                 <button
                   onClick={onLogout}

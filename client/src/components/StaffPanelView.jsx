@@ -540,67 +540,135 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
           OPERATIONAL METRICS RIBBON
       ========================================================================= */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Total In Kitchen
+        {isCook ? (
+          <>
+            <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Active Tickets
+                </div>
+                <div className="text-2xl font-black font-mono text-slate-900 mt-0.5">
+                  {stats.activeTotal}
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5 font-medium">Orders in kitchen</div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[#FAF7F0] text-slate-600 border border-[#E8E3D7] flex items-center justify-center">
+                <Layers className="w-5 h-5" />
+              </div>
             </div>
-            <div className="text-2xl font-black font-mono text-slate-900 mt-0.5">
-              {stats.activeTotal}
-            </div>
-            <div className="text-[10px] text-slate-500 mt-0.5 font-medium">Pending collection</div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-[#FAF7F0] text-slate-600 border border-[#E8E3D7] flex items-center justify-center">
-            <Layers className="w-5 h-5" />
-          </div>
-        </div>
 
-        <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Cooking / Prep
+            <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Cooking / In Prep
+                </div>
+                <div className="text-2xl font-black font-mono text-[#FD7E14] mt-0.5">
+                  {stats.cooking}
+                </div>
+                <div className="text-[10px] text-[#FD7E14] mt-0.5 font-medium">Under preparation</div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[#FFF2E6] border border-[#FECB9F] text-[#FD7E14] flex items-center justify-center">
+                <Flame className="w-5 h-5" />
+              </div>
             </div>
-            <div className="text-2xl font-black font-mono text-[#FD7E14] mt-0.5">
-              {stats.cooking}
-            </div>
-            <div className="text-[10px] text-[#FD7E14] mt-0.5 font-medium">In preparation</div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-[#FFF2E6] border border-[#FECB9F] text-[#FD7E14] flex items-center justify-center">
-            <Flame className="w-5 h-5" />
-          </div>
-        </div>
 
-        <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Ready At Counter
+            <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Food Ready
+                </div>
+                <div className="text-2xl font-black font-mono text-[#198754] mt-0.5">
+                  {stats.ready}
+                </div>
+                <div className="text-[10px] text-[#198754] mt-0.5 font-medium">Ready & Plated</div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[#E8F5E9] border border-[#A3D9B5] text-[#198754] flex items-center justify-center">
+                <CheckCircle className="w-5 h-5" />
+              </div>
             </div>
-            <div className="text-2xl font-black font-mono text-[#198754] mt-0.5">
-              {stats.ready + stats.serving}
-            </div>
-            <div className="text-[10px] text-[#198754] mt-0.5 font-medium">Awaiting pickup</div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-[#E8F5E9] border border-[#A3D9B5] text-[#198754] flex items-center justify-center">
-            <Bell className="w-5 h-5" />
-          </div>
-        </div>
 
-        <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Total Menu Items
+            <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Serving Pass
+                </div>
+                <div className="text-2xl font-black font-mono text-[#0D6EFD] mt-0.5">
+                  {stats.serving}
+                </div>
+                <div className="text-[10px] text-[#0D6EFD] mt-0.5 font-medium">At pickup counter</div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[#EBF3FE] border border-[#A2C8FD] text-[#0D6EFD] flex items-center justify-center">
+                <Bell className="w-5 h-5" />
+              </div>
             </div>
-            <div className="text-2xl font-black font-mono text-[#0D6EFD] mt-0.5">
-              {menuItems.length}
+          </>
+        ) : (
+          <>
+            <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Ready For Handover
+                </div>
+                <div className="text-2xl font-black font-mono text-[#198754] mt-0.5">
+                  {stats.ready + stats.serving}
+                </div>
+                <div className="text-[10px] text-[#198754] mt-0.5 font-medium">Awaiting pickup</div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[#E8F5E9] border border-[#A3D9B5] text-[#198754] flex items-center justify-center">
+                <Bell className="w-5 h-5" />
+              </div>
             </div>
-            <div className="text-[10px] text-slate-500 mt-0.5 font-medium">
-              {stats.lowStock > 0 ? `${stats.lowStock} low stock` : 'Active on counter'}
+
+            <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Serving Dispatch
+                </div>
+                <div className="text-2xl font-black font-mono text-[#0D6EFD] mt-0.5">
+                  {stats.serving}
+                </div>
+                <div className="text-[10px] text-[#0D6EFD] mt-0.5 font-medium">At handover window</div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[#EBF3FE] border border-[#A2C8FD] text-[#0D6EFD] flex items-center justify-center">
+                <CheckCheck className="w-5 h-5" />
+              </div>
             </div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-[#EBF3FE] border border-[#A2C8FD] text-[#0D6EFD] flex items-center justify-center">
-            <Package className="w-5 h-5" />
-          </div>
-        </div>
+
+            <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Menu Items Listed
+                </div>
+                <div className="text-2xl font-black font-mono text-slate-900 mt-0.5">
+                  {menuItems.length}
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5 font-medium">Active food dishes</div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[#FAF7F0] text-slate-600 border border-[#E8E3D7] flex items-center justify-center">
+                <Package className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white border border-[#E8E3D7] rounded-2xl p-4 shadow-sm flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Low Stock Alert
+                </div>
+                <div className={`text-2xl font-black font-mono mt-0.5 ${stats.lowStock > 0 ? 'text-[#DC3545]' : 'text-[#198754]'}`}>
+                  {stats.lowStock}
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5 font-medium">
+                  {stats.lowStock > 0 ? 'Dishes need restocking' : 'All dishes in stock'}
+                </div>
+              </div>
+              <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${
+                stats.lowStock > 0 ? 'bg-[#FCE8E6] border-[#F5B0A9] text-[#DC3545]' : 'bg-[#E8F5E9] border-[#A3D9B5] text-[#198754]'
+              }`}>
+                <AlertCircle className="w-5 h-5" />
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* =========================================================================
@@ -609,36 +677,25 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E3D7] pb-3">
         <div className="flex items-center gap-2">
           {isCook ? (
+            <div className="px-4 py-2 rounded-xl bg-[#FFF2E6] border border-[#FECB9F] text-[#FD7E14] text-xs font-extrabold flex items-center gap-2 shadow-xs">
+              <Flame className="w-4 h-4 text-[#FD7E14]" />
+              <span>🍳 Kitchen Food Preparation Queue (KDS)</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#FD7E14] text-white">
+                {activeOrders.length}
+              </span>
+            </div>
+          ) : (
             <>
-              <button
-                onClick={() => setActiveTab('orders')}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
-                  activeTab === 'orders'
-                    ? 'bg-[#B0003A] text-white shadow-sm font-extrabold'
-                    : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
-                }`}
-              >
-                <Clock className="w-4 h-4" />
-                <span>🍳 Kitchen Cooking Queue (KDS)</span>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                    activeTab === 'orders' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
-                  }`}
-                >
-                  {activeOrders.length}
-                </span>
-              </button>
-
               <button
                 onClick={() => setActiveTab('stock')}
                 className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
                   activeTab === 'stock'
-                    ? 'bg-[#B0003A] text-white shadow-sm font-extrabold'
+                    ? 'bg-[#0D9488] text-white shadow-sm font-extrabold'
                     : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
                 }`}
               >
                 <Package className="w-4 h-4" />
-                <span>📦 Kitchen Ingredients & Stock</span>
+                <span>📋 Edit Menu & Stock Inventory</span>
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                     activeTab === 'stock' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
@@ -647,9 +704,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   {menuItems.length}
                 </span>
               </button>
-            </>
-          ) : (
-            <>
+
               <button
                 onClick={() => setActiveTab('verify')}
                 className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
@@ -659,13 +714,13 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                 }`}
               >
                 <QrCode className="w-4 h-4" />
-                <span>🏷️ Pickup Token Scanner & Dispatch</span>
+                <span>🏷️ Pickup Token Scanner & Verification</span>
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                     activeTab === 'verify' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
                   }`}
                 >
-                  Verify
+                  Scanner
                 </span>
               </button>
 
@@ -681,7 +736,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                 }`}
               >
                 <Bell className="w-4 h-4" />
-                <span>🛎️ Ready for Pickup Callboard</span>
+                <span>🛎️ Ready Orders & Handover Queue</span>
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                     activeTab === 'orders' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
@@ -690,32 +745,13 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   {stats.ready + stats.serving}
                 </span>
               </button>
-
-              <button
-                onClick={() => setActiveTab('stock')}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
-                  activeTab === 'stock'
-                    ? 'bg-[#0D9488] text-white shadow-sm font-extrabold'
-                    : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
-                }`}
-              >
-                <Package className="w-4 h-4" />
-                <span>📋 Counter Items & Snacks</span>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                    activeTab === 'stock' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
-                  }`}
-                >
-                  {menuItems.length}
-                </span>
-              </button>
             </>
           )}
         </div>
 
         <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-slate-500 font-medium">
           <span className="w-2 h-2 rounded-full bg-[#198754] animate-ping" />
-          <span>Polling: 4s</span>
+          <span>{isCook ? 'Kitchen Sync: 4s' : 'Counter Sync: 4s'}</span>
         </div>
       </div>
 
@@ -726,13 +762,21 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
         <div className="space-y-4">
           <div className="bg-white border border-[#E8E3D7] rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
             <div className="flex flex-wrap items-center gap-1.5">
-              {[
-                { id: 'all', label: 'All Active', count: activeOrders.length },
-                { id: 'faculty_priority', label: '⚡ Faculty VIP', count: stats.priority },
-                { id: 'cooking', label: 'Cooking', count: stats.cooking },
-                { id: 'ready', label: 'Ready', count: stats.ready },
-                { id: 'serving', label: 'Serving', count: stats.serving }
-              ].map((f) => (
+              {(isCook
+                ? [
+                    { id: 'all', label: 'All Active Tickets', count: activeOrders.length },
+                    { id: 'cooking', label: '🍳 In Cooking', count: stats.cooking },
+                    { id: 'ready', label: '🍽️ Food Ready', count: stats.ready },
+                    { id: 'serving', label: '🛎️ Serving Pass', count: stats.serving },
+                    { id: 'faculty_priority', label: '⚡ Faculty VIP', count: stats.priority }
+                  ]
+                : [
+                    { id: 'ready', label: '🍽️ Ready for Handover', count: stats.ready },
+                    { id: 'serving', label: '🛎️ In Serving Dispatch', count: stats.serving },
+                    { id: 'all', label: 'All Orders', count: activeOrders.length },
+                    { id: 'faculty_priority', label: '⚡ Faculty VIP', count: stats.priority }
+                  ]
+              ).map((f) => (
                 <button
                   key={f.id}
                   onClick={() => setOrderStatusFilter(f.id)}
@@ -856,7 +900,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
 
                   <div className="mt-5 pt-3.5 border-t border-[#E8E3D7]/60 flex items-center gap-2">
                     {isCook ? (
-                      /* COOK ACTIONS */
+                      /* COOK ACTIONS: ONLY cooking, food ready, serving */
                       <>
                         {order.status === 'received' && (
                           <button
@@ -873,15 +917,25 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                             onClick={() => handleUpdateStatus(order.id, 'ready')}
                             className="flex-1 py-2.5 rounded-xl bg-[#198754] hover:bg-[#146c43] active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
                           >
-                            <Bell className="w-4 h-4" />
-                            <span>Mark Ready & Plated 🛎️</span>
+                            <CheckCircle className="w-4 h-4" />
+                            <span>Food Ready 🍽️</span>
                           </button>
                         )}
 
-                        {(isReady || isServing) && (
-                          <div className="flex-1 py-2 rounded-xl bg-[#E8F5E9] border border-[#A3D9B5] text-[#198754] text-xs font-bold text-center flex items-center justify-center gap-1.5">
+                        {isReady && (
+                          <button
+                            onClick={() => handleUpdateStatus(order.id, 'serving')}
+                            className="flex-1 py-2.5 rounded-xl bg-[#0D6EFD] hover:bg-[#0b5ed7] active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+                          >
+                            <ArrowRight className="w-4 h-4" />
+                            <span>Move to Serving 🛎️</span>
+                          </button>
+                        )}
+
+                        {isServing && (
+                          <div className="flex-1 py-2 rounded-xl bg-[#EBF3FE] border border-[#A2C8FD] text-[#0D6EFD] text-xs font-bold text-center flex items-center justify-center gap-1.5">
                             <CheckCircle className="w-4 h-4" />
-                            <span>Plated • Awaiting Counter Dispatch</span>
+                            <span>At Counter Serving Pass 🛎️</span>
                           </div>
                         )}
                       </>
@@ -958,7 +1012,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       {/* =========================================================================
           TAB 2: VERIFY PICKUP TOKEN
       ========================================================================= */}
-      {activeTab === 'verify' && (
+      {activeTab === 'verify' && !isCook && (
         <div className="max-w-xl mx-auto space-y-6">
           <div className="bg-white border border-[#E8E3D7] rounded-2xl p-6 sm:p-7 shadow-sm relative overflow-hidden">
             <div className="text-center pb-5 border-b border-[#E8E3D7]/60">
@@ -1102,7 +1156,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       {/* =========================================================================
           TAB 3: MENU & LIVE STOCK MANAGEMENT (STAFF CAN ADD & EDIT ITEMS)
       ========================================================================= */}
-      {activeTab === 'stock' && (
+      {activeTab === 'stock' && !isCook && (
         <div className="space-y-4">
           {/* Header Controls: Categories, Search, and Add Item Button */}
           <div className="bg-white border border-[#E8E3D7] rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1202,14 +1256,23 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                             <h4 className="font-bold text-sm text-slate-900 truncate">{item.name}</h4>
                           </div>
 
-                          {/* Quick Edit Item Button */}
-                          <button
-                            onClick={() => openEditModal(item)}
-                            className="p-1 rounded-lg bg-[#FAF7F0] hover:bg-[#E8E3D7] text-slate-600 hover:text-[#B0003A] transition shrink-0"
-                            title="Edit dish details & price"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
+                          {/* Quick Edit & Delete Buttons */}
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => openEditModal(item)}
+                              className="p-1 rounded-lg bg-[#FAF7F0] hover:bg-[#E8E3D7] text-slate-600 hover:text-[#B0003A] transition"
+                              title="Edit dish details & price"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteItem(item)}
+                              className="p-1 rounded-lg bg-[#FAF7F0] hover:bg-[#FCE8E6] text-slate-400 hover:text-[#DC3545] transition"
+                              title="Delete dish from menu"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
 
                         <div className="text-[11px] text-slate-500 mt-0.5 font-medium">
@@ -1302,14 +1365,21 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     </div>
                   </div>
 
-                  {/* Prominent Edit Dish Details Button */}
-                  <div className="mt-3 pt-2.5 border-t border-[#E8E3D7]/60">
+                  {/* Prominent Edit Dish & Delete Dish Buttons */}
+                  <div className="mt-3 pt-2.5 border-t border-[#E8E3D7]/60 flex items-center gap-2">
                     <button
                       onClick={() => openEditModal(item)}
-                      className="w-full py-1.5 px-3 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] text-[#B0003A] text-xs font-bold transition flex items-center justify-center gap-1.5 border border-[#E8E3D7] shadow-sm"
+                      className="flex-1 py-1.5 px-3 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] text-[#B0003A] text-xs font-bold transition flex items-center justify-center gap-1.5 border border-[#E8E3D7] shadow-sm"
                     >
                       <Edit2 className="w-3.5 h-3.5 text-[#B0003A]" />
-                      <span>Edit Dish Name & Details</span>
+                      <span>Edit Dish Details & Price</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteItem(item)}
+                      className="p-2 rounded-xl bg-[#FAF7F0] hover:bg-[#FCE8E6] text-slate-400 hover:text-[#DC3545] transition border border-[#E8E3D7]"
+                      title="Delete dish from menu"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -1328,7 +1398,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       {/* =========================================================================
           MODAL: ADD NEW FOOD ITEM TO MENU (STAFF)
       ========================================================================= */}
-      {isAddModalOpen && (
+      {isAddModalOpen && !isCook && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white border border-[#E8E3D7] rounded-3xl w-full max-w-lg p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between pb-4 border-b border-[#E8E3D7]/60">
@@ -1607,7 +1677,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       {/* =========================================================================
           MODAL: EDIT EXISTING FOOD ITEM (STAFF)
       ========================================================================= */}
-      {editingItem && (
+      {editingItem && !isCook && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white border border-[#E8E3D7] rounded-3xl w-full max-w-lg p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between pb-4 border-b border-[#E8E3D7]/60">

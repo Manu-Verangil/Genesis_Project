@@ -146,8 +146,8 @@ export function CanteenView({
         totalAmount: cartTotal,
         canteenName: currentCanteen?.name || 'Campus Canteen',
         isFaculty: isFaculty,
-        customerRole: isFaculty ? 'faculty' : (currentUser?.role || 'student'),
-        customerName: currentUser?.name || (isFaculty ? 'Dr. Balakrishnan P (Faculty)' : 'You (Karthik)')
+        customerRole: isFaculty ? 'faculty' : (currentUser?.role || (currentRole === 'guest' ? 'guest' : 'student')),
+        customerName: currentUser?.name || (isFaculty ? 'Dr. Balakrishnan P (Faculty)' : (currentRole === 'guest' ? 'Guest Visitor' : 'You (Karthik)'))
       };
 
       const res = await api.createOrder(orderPayload);
@@ -160,6 +160,7 @@ export function CanteenView({
 
         setCart([]);
         onOrderCreated(res.data);
+        if (onRefreshData) onRefreshData();
       } else {
         alert(res.message || 'Order failed');
       }
@@ -259,6 +260,8 @@ export function CanteenView({
       <CanteenRushMeter
         selectedCanteenId={selectedCanteenId}
         canteenName={currentCanteen?.name}
+        currentCanteen={currentCanteen}
+        onRefreshData={onRefreshData}
       />
 
       {/* Search & Category Filter Controls */}

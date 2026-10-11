@@ -454,9 +454,17 @@ app.get("/api/canteen/forecast", (req, res) => {
   }
 });
 
-// ----------------- CANTEENS & MENU -----------------
 app.get("/api/canteens", (req, res) => {
-  res.json({ success: true, data: db.canteens });
+  const dynamicCanteens = db.canteens.map((c) => {
+    const activeCount = db.orders.filter(
+      (o) => o.canteenId === c.id && ["serving", "ready", "cooking", "received"].includes(o.status)
+    ).length;
+    return {
+      ...c,
+      activeOrdersCount: activeCount
+    };
+  });
+  res.json({ success: true, data: dynamicCanteens });
 });
 
 app.post("/api/canteens", (req, res) => {
@@ -1072,6 +1080,9 @@ app.post("/api/lost-found", (req, res) => {
     type: req.body.type || "found",
     category: req.body.category || "General",
     location: req.body.location,
+    lat: req.body.lat ? Number(req.body.lat) : null,
+    lng: req.body.lng ? Number(req.body.lng) : null,
+    markedOnMap: req.body.markedOnMap === 'true' || Boolean(req.body.markedOnMap),
     date: req.body.date || new Date().toISOString(),
     description: req.body.description,
     reportedBy: req.body.reportedBy || "Student (Karthik)",
@@ -1182,6 +1193,9 @@ app.post("/api/issues", (req, res) => {
       title: title.trim(),
       category: category || "General Facilities",
       location: location.trim(),
+      lat: req.body.lat ? Number(req.body.lat) : null,
+      lng: req.body.lng ? Number(req.body.lng) : null,
+      markedOnMap: req.body.markedOnMap === 'true' || Boolean(req.body.markedOnMap),
       description: description.trim(),
       priority: priority || "Medium",
       status: "reported", // Stage 1

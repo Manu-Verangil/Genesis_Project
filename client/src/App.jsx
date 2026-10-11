@@ -41,6 +41,11 @@ export function App() {
   const [isMarkingIssueOnMap, setIsMarkingIssueOnMap] = useState(false);
   const [focusedIssueOnMap, setFocusedIssueOnMap] = useState(null);
 
+  // Lost & Found Map Redirection & Pinning State
+  const [lostFoundDraft, setLostFoundDraft] = useState(null);
+  const [isMarkingLostFoundOnMap, setIsMarkingLostFoundOnMap] = useState(false);
+  const [focusedLostFoundOnMap, setFocusedLostFoundOnMap] = useState(null);
+
   const handleNavigate = (newTab, newRole = null) => {
     const targetRole = newRole !== null ? newRole : currentRole;
     if (newTab === activeTab && targetRole === currentRole) return;
@@ -66,6 +71,12 @@ export function App() {
     }
     if (focusedIssueOnMap) {
       setFocusedIssueOnMap(null);
+    }
+    if (isMarkingLostFoundOnMap) {
+      setIsMarkingLostFoundOnMap(false);
+    }
+    if (focusedLostFoundOnMap) {
+      setFocusedLostFoundOnMap(null);
     }
 
     if (navHistory.length > 0) {
@@ -163,6 +174,34 @@ export function App() {
 
   const handleViewIssueOnMap = (issue) => {
     setFocusedIssueOnMap(issue);
+    handleNavigate('map');
+  };
+
+  const handleRedirectToMapForLostFound = (currentDraft) => {
+    setLostFoundDraft(currentDraft);
+    setIsMarkingLostFoundOnMap(true);
+    handleNavigate('map');
+  };
+
+  const handleConfirmLostFoundLocation = (selectedLocInfo) => {
+    setLostFoundDraft((prev) => ({
+      ...(prev || {}),
+      location: selectedLocInfo.locationName,
+      lat: selectedLocInfo.lat,
+      lng: selectedLocInfo.lng,
+      markedOnMap: true
+    }));
+    setIsMarkingLostFoundOnMap(false);
+    handleNavigate('lost-found');
+  };
+
+  const handleCancelMarkingLostFound = () => {
+    setIsMarkingLostFoundOnMap(false);
+    handleNavigate('lost-found');
+  };
+
+  const handleViewLostFoundOnMap = (item) => {
+    setFocusedLostFoundOnMap(item);
     handleNavigate('map');
   };
 
@@ -342,7 +381,7 @@ export function App() {
               <div className="text-center px-2">
                 <span className="block text-[10px] uppercase font-bold text-slate-400">Portal View</span>
                 <span className="font-extrabold text-[#B0003A] text-xs capitalize">
-                  {currentRole === 'cook' ? 'Kitchen Cook 👨‍🍳' : currentRole === 'staff' ? 'Counter Staff 🏷️' : currentRole}
+                  {currentRole === 'cook' ? 'Kitchen Cook 👨‍🍳' : currentRole === 'staff' ? 'Counter Staff 🏷️' : (currentRole === 'guest' ? 'Guest Visitor' : currentRole)}
                 </span>
               </div>
               <div className="h-6 w-px bg-[#E8E3D7]" />
@@ -353,81 +392,111 @@ export function App() {
             </div>
           </div>
 
-          {/* Quick Portal Switcher (Instant 1-Click access to Cook, Staff, Faculty VIP, Student, Admin) */}
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 bg-[#FFF0F4]/80 border border-[#F8C0CE] rounded-2xl p-2.5 sm:px-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-extrabold text-[#B0003A] uppercase tracking-wider flex items-center gap-1.5 shrink-0">
-                <Sparkles className="w-3.5 h-3.5 text-[#D4A017]" />
-                Switch Campus Dashboard:
-              </span>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <button
-                  onClick={() => handleNavigate('canteen', 'student')}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
-                    currentRole === 'student' && activeTab !== 'cook' && activeTab !== 'staff'
-                      ? 'bg-[#B0003A] text-white shadow-xs'
-                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#B0003A] border border-[#E8E3D7]'
-                  }`}
-                >
-                  <User className="w-3.5 h-3.5" />
-                  <span>Student</span>
-                </button>
-                <button
-                  onClick={() => handleNavigate('canteen', 'faculty')}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                    currentRole === 'faculty' && activeTab !== 'cook' && activeTab !== 'staff'
-                      ? 'bg-[#0D6EFD] text-white shadow-xs'
-                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#0D6EFD] border border-[#E8E3D7]'
-                  }`}
-                >
-                  <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
-                  <span>Faculty (VIP Priority ⚡)</span>
-                </button>
-                <button
-                  onClick={() => handleNavigate('cook', 'cook')}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                    currentRole === 'cook' || activeTab === 'cook'
-                      ? 'bg-[#FD7E14] text-white shadow-xs ring-2 ring-[#FD7E14]/40'
-                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#FD7E14] border border-[#E8E3D7]'
-                  }`}
-                >
-                  <ChefHat className="w-3.5 h-3.5 text-amber-500" />
-                  <span>👨‍🍳 Kitchen Cook</span>
-                </button>
-                <button
-                  onClick={() => handleNavigate('staff', 'staff')}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                    currentRole === 'staff' || activeTab === 'staff'
-                      ? 'bg-[#0D9488] text-white shadow-xs ring-2 ring-[#0D9488]/40'
-                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#0D9488] border border-[#E8E3D7]'
-                  }`}
-                >
-                  <QrCode className="w-3.5 h-3.5 text-teal-500" />
-                  <span>🏷️ Counter Staff</span>
-                </button>
-                <button
-                  onClick={() => handleNavigate('overview', 'admin')}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
-                    currentRole === 'admin' && activeTab !== 'cook' && activeTab !== 'staff'
-                      ? 'bg-[#6F42C1] text-white shadow-xs'
-                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#6F42C1] border border-[#E8E3D7]'
-                  }`}
-                >
-                  <Shield className="w-3.5 h-3.5" />
-                  <span>Campus Admin</span>
-                </button>
+
+          {/* Admin-Only Portal Switcher: Only administrators have privilege to preview other role dashboards */}
+          {currentUser && currentUser.role === 'admin' && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 bg-[#FFF0F4]/80 border border-[#F8C0CE] rounded-2xl p-2.5 sm:px-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-extrabold text-[#B0003A] uppercase tracking-wider flex items-center gap-1.5 shrink-0">
+                  <Sparkles className="w-3.5 h-3.5 text-[#D4A017]" />
+                  Admin Multi-Role Preview:
+                </span>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    onClick={() => handleNavigate('canteen', 'guest')}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
+                      currentRole === 'guest'
+                        ? 'bg-[#B0003A] text-white shadow-xs'
+                        : 'bg-white text-slate-700 hover:bg-white hover:text-[#B0003A] border border-[#E8E3D7]'
+                    }`}
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>Guest</span>
+                  </button>
+                  <button
+                    onClick={() => handleNavigate('canteen', 'student')}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
+                      currentRole === 'student'
+                        ? 'bg-[#B0003A] text-white shadow-xs'
+                        : 'bg-white text-slate-700 hover:bg-white hover:text-[#B0003A] border border-[#E8E3D7]'
+                    }`}
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>Student</span>
+                  </button>
+                  <button
+                    onClick={() => handleNavigate('canteen', 'faculty')}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                      currentRole === 'faculty'
+                        ? 'bg-[#0D6EFD] text-white shadow-xs'
+                        : 'bg-white text-slate-700 hover:bg-white hover:text-[#0D6EFD] border border-[#E8E3D7]'
+                    }`}
+                  >
+                    <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
+                    <span>Faculty (VIP Priority ⚡)</span>
+                  </button>
+                  <button
+                    onClick={() => handleNavigate('cook', 'cook')}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                      currentRole === 'cook' || activeTab === 'cook'
+                        ? 'bg-[#FD7E14] text-white shadow-xs ring-2 ring-[#FD7E14]/40'
+                        : 'bg-white text-slate-700 hover:bg-white hover:text-[#FD7E14] border border-[#E8E3D7]'
+                    }`}
+                  >
+                    <ChefHat className="w-3.5 h-3.5 text-amber-500" />
+                    <span>👨‍🍳 Kitchen Cook</span>
+                  </button>
+                  <button
+                    onClick={() => handleNavigate('staff', 'staff')}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                      currentRole === 'staff' || activeTab === 'staff'
+                        ? 'bg-[#0D9488] text-white shadow-xs ring-2 ring-[#0D9488]/40'
+                        : 'bg-white text-slate-700 hover:bg-white hover:text-[#0D9488] border border-[#E8E3D7]'
+                    }`}
+                  >
+                    <QrCode className="w-3.5 h-3.5 text-teal-500" />
+                    <span>🏷️ Canteen Staff</span>
+                  </button>
+                  <button
+                    onClick={() => handleNavigate('overview', 'admin')}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
+                      currentRole === 'admin'
+                        ? 'bg-[#6F42C1] text-white shadow-xs'
+                        : 'bg-white text-slate-700 hover:bg-white hover:text-[#6F42C1] border border-[#E8E3D7]'
+                    }`}
+                  >
+                    <Shield className="w-3.5 h-3.5" />
+                    <span>Campus Admin</span>
+                  </button>
+                </div>
               </div>
             </div>
-            {!currentUser && (
+          )}
+
+          {/* Guest Visitor Information Banner (No switcher buttons, purely clean visitor portal) */}
+          {currentRole === 'guest' && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2.5 bg-[#FAF7F0] border border-[#E8E3D7] rounded-2xl p-2.5 sm:px-4 shadow-2xs">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-xs font-bold text-slate-800">
+                  Guest Visitor Portal
+                </span>
+                <span className="text-xs text-slate-500 hidden md:inline">
+                  — Access to Canteen Menu & Orders, Live Token Queue, Campus Map, Lost & Found, and Issues.
+                </span>
+              </div>
               <button
                 onClick={() => setIsLoginOpen(true)}
                 className="text-xs font-bold text-[#B0003A] hover:underline flex items-center gap-1 ml-auto"
               >
-                <span>Login with Password</span>
+                <span>Login with Amrita University Account</span>
                 <ArrowRight className="w-3 h-3" />
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Universal "Go Back" Navigation Bar */}
@@ -521,11 +590,24 @@ export function App() {
                 onCancelMarkingIssue={handleCancelMarkingIssue}
                 focusedIssueOnMap={focusedIssueOnMap}
                 onClearFocusedIssue={() => setFocusedIssueOnMap(null)}
+                isMarkingLostFoundOnMap={isMarkingLostFoundOnMap}
+                onConfirmLostFoundLocation={handleConfirmLostFoundLocation}
+                onCancelMarkingLostFound={handleCancelMarkingLostFound}
+                focusedLostFoundOnMap={focusedLostFoundOnMap}
+                onClearFocusedLostFound={() => setFocusedLostFoundOnMap(null)}
                 onGoBack={handleGoBack}
               />
             )}
 
-            {activeTab === 'lost-found' && <LostAndFoundView onGoBack={handleGoBack} />}
+            {activeTab === 'lost-found' && (
+              <LostAndFoundView
+                onRedirectToMapForLostFound={handleRedirectToMapForLostFound}
+                lostFoundDraft={lostFoundDraft}
+                onClearLostFoundDraft={() => setLostFoundDraft(null)}
+                onViewItemOnMap={handleViewLostFoundOnMap}
+                onGoBack={handleGoBack}
+              />
+            )}
 
             {activeTab === 'issues' && (
               <CampusIssuesView

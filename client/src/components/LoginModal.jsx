@@ -32,7 +32,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     {
       role: 'cook',
       title: 'Kitchen Cook 👨‍🍳',
-      perk: 'Kitchen Display System (KDS), preparation queue, cooking stage controls (Cooking ➔ Ready), item stock & ingredient status',
+      perk: 'Food preparation controls (Cooking, Food Ready, Serving) & Kitchen Crowd Pace calibration',
       icon: ChefHat,
       activeColor: 'ring-2 ring-[#FD7E14] border-[#FD7E14] bg-[#FFF2E6] text-[#FD7E14] shadow-md scale-[1.02]',
       normalColor: 'border-[#FECB9F] bg-[#FFF2E6]/60 text-[#FD7E14] hover:bg-[#FFF2E6] hover:scale-[1.01]'
@@ -40,7 +40,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     {
       role: 'staff',
       title: 'Counter Staff 🏷️',
-      perk: 'Pickup token verification scanner, order handover & dispatch, ready pickups callboard, physical crowd level calibration',
+      perk: 'Edit menu & pricing, add food dishes, live stock inventory, crowd control & token pickup scanner',
       icon: QrCode,
       activeColor: 'ring-2 ring-[#0D9488] border-[#0D9488] bg-[#F0FDFA] text-[#0D9488] shadow-md scale-[1.02]',
       normalColor: 'border-[#99F6E4] bg-[#F0FDFA]/60 text-[#0D9488] hover:bg-[#F0FDFA] hover:scale-[1.01]'
