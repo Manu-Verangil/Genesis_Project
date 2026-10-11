@@ -21,8 +21,14 @@ import {
   hashPassword,
   validatePasswordStrength,
   verifyAccessToken,
-  requireRole
+  requireRole,
+  getSafeUsers,
+  addAuthUser,
+  removeAuthUser,
+  updateAuthUserPassword,
+  getVaultInspectionInfo
 } from "./services/authService.js";
+import { generatePredictiveAnalytics } from "./services/predictiveService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -329,6 +335,73 @@ app.post("/api/auth/guest", (req, res) => {
   res.json({ success: true, user: guestUser, accessToken, message: "Logged in as temporary guest" });
 });
 
+// ----------------- ADMIN USER MANAGEMENT & THEFT-PROOF VAULT APIS -----------------
+
+// Admin: List all registered accounts (passwords never exposed)
+app.get("/api/admin/users", (req, res) => {
+  try {
+    const users = getSafeUsers();
+    res.json({ success: true, data: users });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Admin: Add new user with salted bcrypt hashing and AES-256 vault encryption
+app.post("/api/admin/users", async (req, res) => {
+  try {
+    const { name, username, email, role, password } = req.body;
+    const createdUser = await addAuthUser({ name, username, email, role, password });
+    res.status(201).json({
+      success: true,
+      message: `User '${createdUser.username}' created with salted bcrypt hash and encrypted into AES-256 vault.`,
+      data: createdUser
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// Admin: Remove a user by username or ID
+app.delete("/api/admin/users/:idOrUsername", (req, res) => {
+  try {
+    const { idOrUsername } = req.params;
+    const result = removeAuthUser(idOrUsername);
+    res.json({
+      success: true,
+      message: `User '${result.removedUsername}' permanently deleted and purged from encrypted vault.`
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// Admin: Update / Reset user password
+app.put("/api/admin/users/:idOrUsername/password", async (req, res) => {
+  try {
+    const { idOrUsername } = req.params;
+    const { newPassword } = req.body;
+    const result = await updateAuthUserPassword(idOrUsername, newPassword);
+    res.json({
+      success: true,
+      message: result.message
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// Physical Theft Simulation & Disk Vault Inspector
+// Demonstrates that even if the physical file or hard drive is stolen, it is unreadable ciphertext
+app.get("/api/admin/vault/inspect", (req, res) => {
+  try {
+    const inspection = getVaultInspectionInfo();
+    res.json({ success: true, data: inspection });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // ----------------- PRIVACY-COMPLIANT STUDENT SPENDING TRACKER -----------------
 // STRICT PRIVACY COMPLIANCE: Records ONLY non-sensitive high-level spending metrics
 // (orderId, orderTotal, date, canteenId, itemsCount). ZERO banking/card/UPI credentials stored.
@@ -359,6 +432,17 @@ app.get("/api/student/spending", (req, res) => {
       studentName: currentUserSession.name,
     },
   });
+});
+
+// ----------------- CANTEEN DEMAND PREDICTION & FESTIVAL SPIKE WARNINGS -----------------
+app.get("/api/canteen/forecast", (req, res) => {
+  try {
+    const { canteenId = 'all' } = req.query;
+    const forecastData = generatePredictiveAnalytics(canteenId);
+    res.json({ success: true, data: forecastData });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // ----------------- CANTEENS & MENU -----------------
@@ -416,6 +500,17 @@ app.put("/api/canteens/:id/crowd", (req, res) => {
   else if (crowdLevel === "Rush Hour") canteen.avgWaitTimeMinutes = 25;
 
   res.json({ success: true, data: canteen });
+});
+
+// Canteen Demand Forecasting & Predictive Warning Engine (Past, Present, Future + Holiday/Fest Spikes)
+app.get("/api/canteen/forecast", (req, res) => {
+  try {
+    const { canteenId = "all" } = req.query;
+    const analytics = generatePredictiveAnalytics(canteenId);
+    res.json({ success: true, data: analytics });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Error generating forecast", error: err.message });
+  }
 });
 
 app.get("/api/menu", (req, res) => {

@@ -29,6 +29,12 @@ export const authDb = {
   refreshTokens: [] // { id, tokenHash, family, userId, expiresAt, isRevoked, createdAt }
 };
 
+import {
+  initializeEncryptedVault,
+  persistUsersToVault,
+  getRawVaultInspection
+} from './vaultService.js';
+
 // Password Strength Validator
 export const validatePasswordStrength = (password) => {
   if (!password || typeof password !== 'string') {
@@ -36,18 +42,6 @@ export const validatePasswordStrength = (password) => {
   }
   if (password.length < 8) {
     return { valid: false, message: 'Password must be at least 8 characters long' };
-  }
-  if (!/[A-Z]/.test(password)) {
-    return { valid: false, message: 'Password must contain at least one uppercase letter' };
-  }
-  if (!/[a-z]/.test(password)) {
-    return { valid: false, message: 'Password must contain at least one lowercase letter' };
-  }
-  if (!/[0-9]/.test(password)) {
-    return { valid: false, message: 'Password must contain at least one number' };
-  }
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    return { valid: false, message: 'Password must contain at least one special character' };
   }
   return { valid: true };
 };
@@ -72,6 +66,7 @@ export const verifyPassword = async (user, candidatePassword) => {
     // Transparently upgrade to bcrypt hash
     try {
       user.passwordHash = await hashPassword(candidatePassword);
+      persistUsersToVault(authDb.users);
     } catch (e) {}
     return true;
   }
@@ -79,46 +74,135 @@ export const verifyPassword = async (user, candidatePassword) => {
   return false;
 };
 
-// Load users from users.csv and initialize authDb
-export const initializeAuthUsers = () => {
+// Load users from encrypted AES-256 vault and initialize authDb
+export const initializeAuthUsers = async () => {
   try {
-    const csvPath = path.resolve(__dirname, '../../users.csv');
-    if (!fs.existsSync(csvPath)) return;
-    const content = fs.readFileSync(csvPath, 'utf-8');
-    const lines = content.split(/\r?\n/).filter((l) => l.trim().length > 0);
-    if (lines.length <= 1) return;
-
-    for (let i = 1; i < lines.length; i++) {
-      const parts = lines[i].split(',').map((p) => p.trim());
-      if (parts.length >= 6) {
-        const id = parts[0];
-        const name = parts[1];
-        const role = parts[2].toLowerCase();
-        const username = parts[3];
-        const email = parts[4].toLowerCase();
-        const rawPassword = parts[5];
-
-        // Avoid duplicate users
-        const exists = authDb.users.find((u) => u.id === id || u.username === username);
-        if (!exists) {
-          authDb.users.push({
-            id,
-            name,
-            role,
-            username,
-            email,
-            passwordHash: rawPassword, // will be verified and upgraded on first login
-            failedLoginAttempts: 0,
-            isLocked: false,
-            lockoutUntil: null,
-            createdAt: new Date().toISOString()
-          });
-        }
-      }
-    }
+    const vaultUsers = await initializeEncryptedVault(authDb.users);
+    authDb.users = vaultUsers;
+    console.log(`[AUTH] Initialized authDb with ${authDb.users.length} users sealed in AES-256-GCM vault.`);
   } catch (err) {
-    console.error('Error loading users into authDb:', err);
+    console.error('Error loading users into authDb from vault:', err);
   }
+};
+
+// Return safe users list without password hashes
+export const getSafeUsers = () => {
+  return authDb.users.map((u) => ({
+    id: u.id,
+    name: u.name,
+    username: u.username,
+    email: u.email,
+    role: u.role,
+    isLocked: !!u.isLocked,
+    createdAt: u.createdAt,
+    encryptionStatus: 'AES-256-GCM Vault Encrypted & Salted Bcrypt'
+  }));
+};
+
+// Admin: Add new user with bcrypt password hashing and AES-256 vault persistence
+export const addAuthUser = async ({ name, username, email, role = 'student', password }) => {
+  const cleanUsername = String(username).trim().toLowerCase();
+  const cleanEmail = String(email || `${cleanUsername}@campus.edu`).trim().toLowerCase();
+  const cleanName = String(name || cleanUsername).trim();
+  const cleanRole = String(role).trim().toLowerCase();
+
+  if (!cleanUsername || cleanUsername.length < 3) {
+    throw new Error('Username must be at least 3 characters long.');
+  }
+  if (!password || password.length < 6) {
+    throw new Error('Password must be at least 6 characters long.');
+  }
+  if (!['admin', 'staff', 'student'].includes(cleanRole)) {
+    throw new Error('Role must be admin, staff, or student.');
+  }
+
+  const existing = authDb.users.find(
+    (u) => u.username.toLowerCase() === cleanUsername || (u.email && u.email.toLowerCase() === cleanEmail)
+  );
+  if (existing) {
+    throw new Error(`User with username '${cleanUsername}' or email '${cleanEmail}' already exists.`);
+  }
+
+  const passwordHash = await hashPassword(password);
+  const newUser = {
+    id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    name: cleanName,
+    username: cleanUsername,
+    email: cleanEmail,
+    role: cleanRole,
+    passwordHash,
+    failedLoginAttempts: 0,
+    isLocked: false,
+    lockoutUntil: null,
+    createdAt: new Date().toISOString()
+  };
+
+  authDb.users.push(newUser);
+  persistUsersToVault(authDb.users);
+
+  return {
+    id: newUser.id,
+    name: newUser.name,
+    username: newUser.username,
+    email: newUser.email,
+    role: newUser.role,
+    createdAt: newUser.createdAt,
+    encryptionStatus: 'AES-256-GCM Vault Encrypted & Salted Bcrypt'
+  };
+};
+
+// Admin: Remove user by ID or username
+export const removeAuthUser = (idOrUsername) => {
+  const target = String(idOrUsername).trim().toLowerCase();
+  const index = authDb.users.findIndex(
+    (u) => (u.id && String(u.id).toLowerCase() === target) || (u.username && u.username.toLowerCase() === target)
+  );
+
+  if (index === -1) {
+    throw new Error(`User '${idOrUsername}' not found.`);
+  }
+
+  const userToRemove = authDb.users[index];
+  if (userToRemove.role === 'admin' && (userToRemove.username === 'SYS-ADMIN-SUPER' || userToRemove.username === 'admin')) {
+    const adminCount = authDb.users.filter((u) => u.role === 'admin').length;
+    if (adminCount <= 1) {
+      throw new Error('Cannot delete the root administrator account.');
+    }
+  }
+
+  const [removed] = authDb.users.splice(index, 1);
+  persistUsersToVault(authDb.users);
+
+  return { success: true, removedUsername: removed.username, removedName: removed.name };
+};
+
+// Admin: Update user password with bcrypt hashing and AES-256 vault persistence
+export const updateAuthUserPassword = async (idOrUsername, newPassword) => {
+  const target = String(idOrUsername).trim().toLowerCase();
+  if (!newPassword || newPassword.length < 6) {
+    throw new Error('New password must be at least 6 characters long.');
+  }
+
+  const user = authDb.users.find(
+    (u) => (u.id && String(u.id).toLowerCase() === target) || (u.username && u.username.toLowerCase() === target)
+  );
+
+  if (!user) {
+    throw new Error(`User '${idOrUsername}' not found.`);
+  }
+
+  user.passwordHash = await hashPassword(newPassword);
+  user.failedLoginAttempts = 0;
+  user.isLocked = false;
+  user.lockoutUntil = null;
+
+  persistUsersToVault(authDb.users);
+  return { success: true, message: `Password for '${user.username}' has been updated with salted bcrypt hash and encrypted in AES-256 vault.` };
+};
+
+// Inspect on-disk vault
+export const getVaultInspectionInfo = () => {
+  return getRawVaultInspection(authDb.users.length);
 };
 
 // Generate Access Token (15 mins) and Refresh Token (7 days)
