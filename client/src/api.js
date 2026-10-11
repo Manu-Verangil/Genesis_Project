@@ -313,7 +313,17 @@ export const api = {
   getCanteens: () =>
     safeCall(
       fetch(`${API_BASE}/canteens`).then(handleResponse),
-      (state) => state.canteens
+      (state) => {
+        return (state.canteens || []).map((c) => {
+          const activeCount = (state.orders || []).filter(
+            (o) => o.canteenId === c.id && ['serving', 'ready', 'cooking', 'received'].includes(o.status)
+          ).length;
+          return {
+            ...c,
+            activeOrdersCount: activeCount
+          };
+        });
+      }
     ),
 
   addCanteen: (canteenData) =>

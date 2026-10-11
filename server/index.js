@@ -445,9 +445,17 @@ app.get("/api/canteen/forecast", (req, res) => {
   }
 });
 
-// ----------------- CANTEENS & MENU -----------------
 app.get("/api/canteens", (req, res) => {
-  res.json({ success: true, data: db.canteens });
+  const dynamicCanteens = db.canteens.map((c) => {
+    const activeCount = db.orders.filter(
+      (o) => o.canteenId === c.id && ["serving", "ready", "cooking", "received"].includes(o.status)
+    ).length;
+    return {
+      ...c,
+      activeOrdersCount: activeCount
+    };
+  });
+  res.json({ success: true, data: dynamicCanteens });
 });
 
 app.post("/api/canteens", (req, res) => {

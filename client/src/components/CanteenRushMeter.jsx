@@ -11,6 +11,7 @@ import {
   Activity,
   CheckCircle2
 } from 'lucide-react';
+import { api } from '../api';
 
 // Timeline slots from 8:30 AM to 9:00 PM (Night)
 const BASE_TIME_SLOTS = [
@@ -32,27 +33,51 @@ const BASE_TIME_SLOTS = [
 export function CanteenRushMeter({
   selectedCanteenId,
   canteenName,
-  currentCanteen
+  currentCanteen,
+  onRefreshData
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Real-time automatic telemetry fluctuation tick
-  // Changes every 15-20 seconds to simulate dynamic crowd shifts in real time
-  const [telemetryTick, setTelemetryTick] = useState(0);
+  // Real-time live active orders count (reacts dynamically to orders created / completed)
+  const [liveOrdersCount, setLiveOrdersCount] = useState(currentCanteen?.activeOrdersCount ?? 4);
 
+  // Sync whenever canteen changes
   useEffect(() => {
-    // Clock updates every 15 seconds
-    const clockTimer = setInterval(() => setCurrentTime(new Date()), 15000);
-    // Automatic live crowd telemetry shift every 18 seconds
-    const telemetryTimer = setInterval(() => {
-      setTelemetryTick((prev) => prev + 1);
-    }, 18000);
+    if (typeof currentCanteen?.activeOrdersCount === 'number') {
+      setLiveOrdersCount(currentCanteen.activeOrdersCount);
+    }
+  }, [currentCanteen?.activeOrdersCount, selectedCanteenId]);
 
-    return () => {
-      clearInterval(clockTimer);
-      clearInterval(telemetryTimer);
+  // Live polling: updates order count every 3 seconds so placing or finishing orders reflects instantly!
+  useEffect(() => {
+    let isMounted = true;
+    const fetchActiveOrders = async () => {
+      try {
+        const res = await api.getOrders({ canteenId: selectedCanteenId });
+        if (res && res.success && Array.isArray(res.data) && isMounted) {
+          const activeOrders = res.data.filter((o) =>
+            ['serving', 'ready', 'cooking', 'received'].includes(o.status)
+          );
+          setLiveOrdersCount(activeOrders.length);
+        }
+      } catch (err) {
+        // Fallback silently
+      }
     };
+
+    fetchActiveOrders();
+    const interval = setInterval(fetchActiveOrders, 3000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [selectedCanteenId]);
+
+  // Clock updates
+  useEffect(() => {
+    const clockTimer = setInterval(() => setCurrentTime(new Date()), 15000);
+    return () => clearInterval(clockTimer);
   }, []);
 
   const currentHourDecimal = currentTime.getHours() + currentTime.getMinutes() / 60;
@@ -64,38 +89,20 @@ export function CanteenRushMeter({
   });
 
   const isC2 = selectedCanteenId === 'canteen-2';
-  const liveActiveOrders = currentCanteen?.activeOrdersCount || 3;
 
-  // Real-time dynamic multiplier that naturally fluctuates over time (e.g. rush clears, surges, drops)
-  // Generates smooth sinusoidal & pseudo-random live fluctuation around canteen baseline
-  const dynamicTelemetry = useMemo(() => {
-    // Baseline from canteen data
-    const baseCrowd = currentCanteen?.crowdLevel || 'Moderate';
-    let baseMult = 1.0;
-    if (baseCrowd === 'Low') baseMult = 0.65;
-    else if (baseCrowd === 'Busy') baseMult = 1.25;
-    else if (baseCrowd === 'Rush Hour') baseMult = 1.55;
+  // Dynamic multiplier driven directly by real-time kitchen order volume:
+  // 0–2 orders = Low load (0.65x)
+  // 3–4 orders = Moderate load (1.0x)
+  // 5–6 orders = Busy load (1.35x)
+  // 7+ orders = Rush Hour (1.7x)
+  const orderLoadMultiplier = useMemo(() => {
+    if (liveOrdersCount <= 2) return 0.65;
+    if (liveOrdersCount <= 4) return 1.0;
+    if (liveOrdersCount <= 6) return 1.35;
+    return 1.7;
+  }, [liveOrdersCount]);
 
-    // Organic fluctuation wave based on tick & current minute
-    // Cycles between -0.35 and +0.35 so peak can drop to moderate, moderate can surge to busy or drop to low!
-    const cycle = Math.sin((telemetryTick * 1.3) + (currentTime.getMinutes() * 0.4));
-    const noise = ((telemetryTick % 4) - 1.5) * 0.12;
-    const finalMult = Math.max(0.45, Math.min(1.85, baseMult + cycle * 0.38 + noise));
-
-    let detectedLevel = 'Moderate';
-    if (finalMult >= 1.45) detectedLevel = 'Rush Hour';
-    else if (finalMult >= 1.15) detectedLevel = 'Busy';
-    else if (finalMult >= 0.75) detectedLevel = 'Moderate';
-    else detectedLevel = 'Low';
-
-    return {
-      multiplier: finalMult,
-      detectedLevel,
-      cycleScore: Math.round(finalMult * 50)
-    };
-  }, [telemetryTick, currentCanteen?.crowdLevel, currentTime]);
-
-  // Compute live schedule with real-time automatic crowd fluctuations
+  // Compute live schedule dynamically linked to liveOrdersCount
   const schedule = useMemo(() => {
     // Base curves
     const baseCrowd = isC2
@@ -122,16 +129,16 @@ export function CanteenRushMeter({
       let slotMultiplier = 1.0;
 
       if (distanceToNow === 0) {
-        // Current active hour responds 100% to live telemetry fluctuation
-        slotMultiplier = dynamicTelemetry.multiplier;
+        // Current active hour responds directly to live order queue load
+        slotMultiplier = orderLoadMultiplier;
       } else if (distanceToNow === 1) {
-        // Surrounding hour responds 65% to current surge/drop
-        slotMultiplier = 1.0 + (dynamicTelemetry.multiplier - 1.0) * 0.65;
+        slotMultiplier = 1.0 + (orderLoadMultiplier - 1.0) * 0.65;
       } else if (distanceToNow === 2) {
-        slotMultiplier = 1.0 + (dynamicTelemetry.multiplier - 1.0) * 0.3;
+        slotMultiplier = 1.0 + (orderLoadMultiplier - 1.0) * 0.3;
       }
 
-      const activeOrdersEffect = distanceToNow === 0 ? Math.round((liveActiveOrders - 2) * 0.8) : 0;
+      // Each active order adds realistic prep queue time
+      const orderDelayBonus = distanceToNow === 0 ? Math.round(liveOrdersCount * 1.5) : 0;
 
       const computedCrowd = Math.min(
         98,
@@ -139,7 +146,7 @@ export function CanteenRushMeter({
       );
       const computedWait = Math.min(
         35,
-        Math.max(2, Math.round(baseWait[i] * slotMultiplier + activeOrdersEffect))
+        Math.max(2, Math.round(baseWait[i] * slotMultiplier + orderDelayBonus))
       );
 
       let level = 'Low';
@@ -157,7 +164,7 @@ export function CanteenRushMeter({
         level
       };
     });
-  }, [isC2, dynamicTelemetry, currentHourDecimal, liveActiveOrders]);
+  }, [isC2, orderLoadMultiplier, currentHourDecimal, liveOrdersCount]);
 
   // Current active slot
   const currentSlotIndex = useMemo(() => {
@@ -175,42 +182,42 @@ export function CanteenRushMeter({
 
   const activeSlot = schedule[currentSlotIndex] || schedule[0];
 
-  // Dynamic advice reacting in real time to the fluctuating detected level
+  // Dynamic advice reacting directly to live kitchen order load
   const contextualAdvice = useMemo(() => {
-    if (activeSlot.level === 'Critical' || activeSlot.level === 'Peak' || dynamicTelemetry.detectedLevel === 'Rush Hour') {
+    if (liveOrdersCount >= 7 || activeSlot.level === 'Critical' || activeSlot.level === 'Peak') {
       return {
-        badge: '🔥 Surge Active',
+        badge: `🔥 Kitchen Queue Surge (${liveOrdersCount} Active)`,
         badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
         icon: Flame,
-        title: `Sudden Queue Surge (~${activeSlot.waitMinutes} min wait)`,
-        text: `Foot traffic sensors detect an active rush spike at ${canteenName || 'canteen'}. Orders take ~${activeSlot.waitMinutes} mins to prepare. Pre-order your single-use token now to lock your kitchen order slot!`
+        title: `Heavy Kitchen Rush Active (~${activeSlot.waitMinutes} min queue)`,
+        text: `Kitchen currently has ${liveOrdersCount} active tickets in preparation. Estimated order delay is ~${activeSlot.waitMinutes} mins. Reserve your single-use digital token right now to lock your queue spot!`
       };
-    } else if (activeSlot.level === 'Busy' || dynamicTelemetry.detectedLevel === 'Busy') {
+    } else if (liveOrdersCount >= 5 || activeSlot.level === 'Busy') {
       return {
-        badge: '🟠 Active Kitchen Load',
+        badge: `🟠 Busy Kitchen (${liveOrdersCount} Active)`,
         badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
         icon: Zap,
-        title: `Moderate-High Movement (~${activeSlot.waitMinutes} min wait)`,
-        text: `Kitchen is active with steady orders (~${activeSlot.waitMinutes} min queue). Digital pickup tokens bypass the physical ordering line.`
+        title: `Moderate-High Load (~${activeSlot.waitMinutes} min queue)`,
+        text: `Kitchen has ${liveOrdersCount} orders currently cooking. Counter line is moving at a steady pace (~${activeSlot.waitMinutes} min wait).`
       };
-    } else if (activeSlot.level === 'Low' || dynamicTelemetry.detectedLevel === 'Low') {
+    } else if (liveOrdersCount <= 2) {
       return {
-        badge: '⚡ Rush Cleared / Low Wait',
+        badge: `⚡ Low Load (${liveOrdersCount} Active)`,
         badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
         icon: Sparkles,
-        title: `Queue Just Dropped to Low (~${activeSlot.waitMinutes} min wait)!`,
-        text: `Sensors indicate counter lines have cleared up! Current preparation turnaround is just ~${activeSlot.waitMinutes} mins. Best time to order with zero waiting.`
+        title: `Kitchen Queue Cleared (~${activeSlot.waitMinutes} min wait)!`,
+        text: `Only ${liveOrdersCount} orders currently in the kitchen! Food is being prepared immediately without any physical counter delays.`
       };
     } else {
       return {
-        badge: '🔵 Steady Flow',
+        badge: `🔵 Normal Flow (${liveOrdersCount} Active)`,
         badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
         icon: Clock,
         title: `Steady Flow (~${activeSlot.waitMinutes} min turnaround)`,
-        text: `Normal dining crowd at ${activeSlot.time}. Orders are being served predictably in ~${activeSlot.waitMinutes} mins.`
+        text: `Kitchen has ${liveOrdersCount} orders in active preparation. Orders are served predictably in ~${activeSlot.waitMinutes} mins.`
       };
     }
-  }, [activeSlot, dynamicTelemetry, canteenName]);
+  }, [liveOrdersCount, activeSlot]);
 
   const AdviceIcon = contextualAdvice.icon;
 
@@ -233,11 +240,11 @@ export function CanteenRushMeter({
 
   const getTelemetryBadgeColor = (level) => {
     switch (level) {
-      case 'Rush Hour':
       case 'Critical':
         return 'bg-rose-100 text-rose-800 border-rose-300';
-      case 'Busy':
       case 'Peak':
+        return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'Busy':
         return 'bg-amber-100 text-amber-800 border-amber-300';
       case 'Moderate':
         return 'bg-blue-100 text-blue-800 border-blue-300';
@@ -291,7 +298,7 @@ export function CanteenRushMeter({
 
       {isExpanded && (
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-4">
-          {/* Clean Real-Time Status Bar with Read-Only Telemetry Monitor (NO student toggle buttons) */}
+          {/* Dynamic Status Bar syncing Live Orders & Detected Rush */}
           <div className="flex items-center justify-between flex-wrap gap-2.5 bg-slate-50 p-2.5 rounded-2xl border border-[#E8E3D7] text-xs">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 font-semibold text-slate-800">
@@ -302,16 +309,19 @@ export function CanteenRushMeter({
                 <span>{todayFormatted} (Live Today)</span>
               </div>
               <span className="text-slate-300">|</span>
-              <span className="text-slate-500 text-[11px]">
-                Active Kitchen Orders: <b className="text-slate-900 font-mono">{liveActiveOrders}</b>
+              <span className="text-slate-500 text-[11px] flex items-center gap-1">
+                Active Kitchen Orders:{' '}
+                <span className="px-2 py-0.5 rounded-md bg-white border border-[#E8E3D7] font-bold text-slate-900 font-mono shadow-2xs transition-all duration-300">
+                  {liveOrdersCount}
+                </span>
               </span>
             </div>
 
-            {/* Read-Only Live IoT Sensor Telemetry Badge (Auto-updates dynamically) */}
+            {/* Read-Only Live IoT Sensor Telemetry Badge (Auto-updates with live order volume) */}
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-slate-500 font-medium hidden sm:inline flex items-center gap-1">
                 <Activity className="w-3.5 h-3.5 text-slate-400" />
-                Live Sensor Telemetry:
+                Live Kitchen Load:
               </span>
               <span
                 className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all duration-500 ${getTelemetryBadgeColor(
@@ -319,7 +329,7 @@ export function CanteenRushMeter({
                 )}`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                Detected: {activeSlot.level} Crowd
+                {activeSlot.level} Rush ({liveOrdersCount} Orders Active)
               </span>
             </div>
           </div>
@@ -405,7 +415,7 @@ export function CanteenRushMeter({
 
           {/* Bottom Card: Dynamic Contextual Advice & Legend */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-[#E8E3D7] transition-all duration-500">
-            {/* Dynamic Advice reacting automatically to sudden rush spikes or drops */}
+            {/* Dynamic Advice reacting automatically to live kitchen orders */}
             <div className="flex items-start sm:items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-white border border-[#E8E3D7] flex items-center justify-center text-[#B0003A] shrink-0 shadow-2xs mt-0.5 sm:mt-0">
                 <AdviceIcon className="w-4 h-4" />

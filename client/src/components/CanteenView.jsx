@@ -160,6 +160,7 @@ export function CanteenView({
 
         setCart([]);
         onOrderCreated(res.data);
+        if (onRefreshData) onRefreshData();
       } else {
         alert(res.message || 'Order failed');
       }
