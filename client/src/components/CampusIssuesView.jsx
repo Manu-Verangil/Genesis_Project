@@ -20,7 +20,12 @@ import {
 } from 'lucide-react';
 import { api } from '../api';
 
-export function CampusIssuesView() {
+export function CampusIssuesView({
+  onRedirectToMapForIssue,
+  issueDraft,
+  onClearIssueDraft,
+  onViewIssueOnMap
+}) {
   const [issues, setIssues] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
@@ -57,6 +62,21 @@ export function CampusIssuesView() {
   useEffect(() => {
     fetchIssues();
   }, []);
+
+  // Sync draft returning from Campus Map
+  useEffect(() => {
+    if (issueDraft) {
+      setForm((prev) => ({
+        ...prev,
+        ...issueDraft
+      }));
+      if (issueDraft.photoUrl) {
+        setImagePreview(issueDraft.photoUrl);
+      }
+      setIsReportModalOpen(true);
+      if (onClearIssueDraft) onClearIssueDraft();
+    }
+  }, [issueDraft]);
 
   const stages = [
     { num: 1, title: 'Report', desc: 'Choose category, describe problem & mark location' },
@@ -180,13 +200,27 @@ export function CampusIssuesView() {
             </p>
           </div>
 
-          <button
-            onClick={() => setIsReportModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] text-white font-bold text-xs transition shadow-md shadow-[#B0003A]/20 flex items-center justify-center gap-2 shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Raise A Campus Problem</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {onRedirectToMapForIssue && (
+              <button
+                type="button"
+                onClick={() => onRedirectToMapForIssue(form)}
+                className="px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-[#B0003A] border border-[#B0003A]/40 font-bold text-xs transition shadow-2xs flex items-center justify-center gap-1.5 shrink-0"
+                title="Mark location on Amrita Campus Map"
+              >
+                <MapPin className="w-4 h-4 text-[#B0003A]" />
+                <span>Mark on Campus Map</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setIsReportModalOpen(true)}
+              className="px-4 py-2.5 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] text-white font-bold text-xs transition shadow-md shadow-[#B0003A]/20 flex items-center justify-center gap-2 shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Raise A Campus Problem</span>
+            </button>
+          </div>
         </div>
 
         {/* 5-Stage Visual Workflow Stepper */}
@@ -308,7 +342,19 @@ export function CampusIssuesView() {
                       <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 mt-1.5">
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                          {issue.location}
+                          <span>{issue.location}</span>
+                          {onViewIssueOnMap && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onViewIssueOnMap(issue);
+                              }}
+                              className="ml-1 text-[10px] text-[#B0003A] hover:underline font-bold"
+                            >
+                              (Map)
+                            </button>
+                          )}
                         </span>
                         <span className="flex items-center gap-1">
                           <Building className="w-3.5 h-3.5 text-slate-400" />
@@ -510,17 +556,48 @@ export function CampusIssuesView() {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">
-                  Location Marker / Building & Room
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-slate-700 font-semibold text-xs flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-[#B0003A]" />
+                    <span>Location Marker / Building & Room</span>
+                  </label>
+                  {onRedirectToMapForIssue && (
+                    <button
+                      type="button"
+                      onClick={() => onRedirectToMapForIssue(form)}
+                      className="flex items-center gap-1 text-[11px] font-bold text-[#B0003A] hover:text-[#8F002E] bg-[#FFF0F4] hover:bg-[#FFE0E8] border border-[#F8C0CE] px-2.5 py-1 rounded-lg transition active:scale-95 shadow-2xs"
+                      title="Mark the exact spot on Amrita Campus Map"
+                    >
+                      <MapPin className="w-3 h-3" />
+                      <span>Mark on Campus Map</span>
+                    </button>
+                  )}
+                </div>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Hostel Block D Main Pathway / Academic Block B Room 204"
                   value={form.location}
-                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  onChange={(e) => setForm({ ...form, location: e.target.value, markedOnMap: false })}
                   className="w-full p-2.5 bg-white border border-[#E8E3D7] rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#B0003A] shadow-xs"
                 />
+                {form.markedOnMap && (
+                  <div className="mt-1.5 flex items-center justify-between p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 animate-fade-in">
+                    <span className="flex items-center gap-1.5 font-semibold">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Pinned on Campus Map: <strong>{form.location}</strong></span>
+                    </span>
+                    {onRedirectToMapForIssue && (
+                      <button
+                        type="button"
+                        onClick={() => onRedirectToMapForIssue(form)}
+                        className="text-[10px] font-bold text-[#B0003A] hover:underline shrink-0 ml-2"
+                      >
+                        Change spot
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>
