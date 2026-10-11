@@ -19,6 +19,7 @@ import {
 import confetti from 'canvas-confetti';
 import { api } from '../api';
 import { UpiPaymentModal } from './UpiPaymentModal';
+import { CanteenRushMeter } from './CanteenRushMeter';
 
 export function CanteenView({
   canteens,
@@ -253,6 +254,12 @@ export function CanteenView({
           )}
         </div>
       </div>
+
+      {/* Live Rush-Hour Peak Meter & Popular Times */}
+      <CanteenRushMeter
+        selectedCanteenId={selectedCanteenId}
+        canteenName={currentCanteen?.name}
+      />
 
       {/* Search & Category Filter Controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

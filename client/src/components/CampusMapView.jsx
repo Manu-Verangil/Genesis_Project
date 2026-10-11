@@ -26,7 +26,9 @@ import {
   X,
   Sparkles,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
 import { api } from '../api';
 import { initialData } from '../mockData';
@@ -85,7 +87,14 @@ const AMRITA_COMPOUND_PERIMETER = [
   [10.906455, 76.894972], [10.906129, 76.894420]
 ];
 
-export function CampusMapView({ onNavigateToCanteen }) {
+export function CampusMapView({
+  onNavigateToCanteen,
+  isMarkingIssueOnMap = false,
+  onConfirmIssueLocation,
+  onCancelMarkingIssue,
+  focusedIssueOnMap = null,
+  onClearFocusedIssue
+}) {
   const [locations, setLocations] = useState(initialData.campusLocations || CAMPUS_LANDMARKS);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -93,6 +102,9 @@ export function CampusMapView({ onNavigateToCanteen }) {
   const [activeLayer, setActiveLayer] = useState('street');
   const [userLocation, setUserLocation] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Issue Location Marking State
+  const [pinnedIssueLocation, setPinnedIssueLocation] = useState(null);
 
   // Routing State
   const [originId, setOriginId] = useState('loc-gate');
@@ -107,6 +119,8 @@ export function CampusMapView({ onNavigateToCanteen }) {
   const routeLayerRef = useRef(null);
   const perimeterLayerRef = useRef(null);
   const userMarkerRef = useRef(null);
+  const issueMarkerRef = useRef(null);
+  const focusedIssueMarkerRef = useRef(null);
 
   // Fetch campus locations from backend or fallback to CAMPUS_LANDMARKS
   useEffect(() => {
@@ -264,6 +278,16 @@ export function CampusMapView({ onNavigateToCanteen }) {
       });
 
       marker.on('click', () => {
+        if (isMarkingIssueOnMap) {
+          setPinnedIssueLocation({
+            name: `${loc.name} (${loc.building || loc.category})`,
+            lat,
+            lng,
+            nearestLandmark: loc.name
+          });
+          mapInstanceRef.current.flyTo([lat, lng], 17.5, { duration: 0.8 });
+          return;
+        }
         setSelectedLocation(loc);
         setDestinationId(loc.id);
         mapInstanceRef.current.flyTo([lat, lng], 17.5, { duration: 1 });
@@ -280,7 +304,7 @@ export function CampusMapView({ onNavigateToCanteen }) {
       marker.bindPopup(popupHtml);
       marker.addTo(markersLayerRef.current);
     });
-  }, [locations, selectedLocation, selectedCategory, searchQuery, originId, destinationId]);
+  }, [locations, selectedLocation, selectedCategory, searchQuery, originId, destinationId, isMarkingIssueOnMap]);
 
   // Route Calculation and Rendering
   const handleCalculateRoute = (srcId = originId, dstId = destinationId) => {
@@ -339,6 +363,164 @@ export function CampusMapView({ onNavigateToCanteen }) {
       }
     }
   };
+
+  // Map Click Listener to Mark Place of Issue
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (isMarkingIssueOnMap) {
+      const container = map.getContainer();
+      if (container) container.style.cursor = 'crosshair';
+
+      const handleMapClick = (e) => {
+        const { lat, lng } = e.latlng;
+
+        // Find nearest landmark to compute an intuitive location title
+        let nearest = null;
+        let minDist = Infinity;
+        (locations || CAMPUS_LANDMARKS).forEach((l) => {
+          const lLat = l.lat || l.coords?.[0] || l.coordinates?.lat;
+          const lLng = l.lng || l.coords?.[1] || l.coordinates?.lng;
+          if (lLat && lLng) {
+            const d = Math.hypot(lat - lLat, lng - lLng);
+            if (d < minDist) {
+              minDist = d;
+              nearest = l;
+            }
+          }
+        });
+
+        let locationLabel = '';
+        if (nearest && minDist < 0.0018) {
+          locationLabel = `Near ${nearest.name} (${nearest.building || nearest.category || 'Amrita Campus'})`;
+        } else {
+          locationLabel = `Amrita Campus Spot [${lat.toFixed(4)}, ${lng.toFixed(4)}]`;
+        }
+
+        setPinnedIssueLocation({
+          name: locationLabel,
+          lat,
+          lng,
+          nearestLandmark: nearest ? nearest.name : null
+        });
+      };
+
+      map.on('click', handleMapClick);
+
+      return () => {
+        if (container) container.style.cursor = '';
+        map.off('click', handleMapClick);
+      };
+    } else {
+      const container = map.getContainer();
+      if (container) container.style.cursor = '';
+    }
+  }, [isMarkingIssueOnMap, locations]);
+
+  // Render Pinned Issue Marker on Leaflet Map
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (issueMarkerRef.current) {
+      map.removeLayer(issueMarkerRef.current);
+      issueMarkerRef.current = null;
+    }
+
+    if (pinnedIssueLocation) {
+      const issueIcon = L.divIcon({
+        className: 'issue-pinned-marker',
+        html: `
+          <div class="relative flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-rose-600 text-white border-2 border-white shadow-2xl flex items-center justify-center animate-bounce ring-4 ring-rose-400/50">
+              <span class="text-base">📍</span>
+            </div>
+            <div class="mt-1 px-2.5 py-0.5 rounded-lg bg-slate-950 text-white text-[10px] font-extrabold border border-rose-500 whitespace-nowrap shadow-xl">
+              Place of Issue
+            </div>
+          </div>
+        `,
+        iconSize: [40, 54],
+        iconAnchor: [20, 46],
+        popupAnchor: [0, -46]
+      });
+
+      const marker = L.marker([pinnedIssueLocation.lat, pinnedIssueLocation.lng], {
+        icon: issueIcon,
+        zIndexOffset: 1500
+      }).addTo(map);
+
+      marker.bindPopup(`
+        <div style="font-family: inherit; font-size: 12px; color: #0f172a; padding: 2px;">
+          <div style="font-weight: 800; font-size: 13px; color: #dc2626; line-height: 1.2;">📍 Marked Place of Issue</div>
+          <div style="font-size: 11px; color: #334155; margin-top: 4px; font-weight: 600;">${pinnedIssueLocation.name}</div>
+          <div style="font-size: 10px; color: #64748b; margin-top: 3px;">Coordinates: ${pinnedIssueLocation.lat.toFixed(5)}, ${pinnedIssueLocation.lng.toFixed(5)}</div>
+        </div>
+      `).openPopup();
+
+      issueMarkerRef.current = marker;
+    }
+  }, [pinnedIssueLocation]);
+
+  // Fly to focused issue if navigating from Issue List
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !focusedIssueOnMap) return;
+
+    let targetCoords = null;
+    if (focusedIssueOnMap.lat && focusedIssueOnMap.lng) {
+      targetCoords = [focusedIssueOnMap.lat, focusedIssueOnMap.lng];
+    } else {
+      const match = (locations || CAMPUS_LANDMARKS).find((l) =>
+        focusedIssueOnMap.location?.toLowerCase().includes(l.name.toLowerCase()) ||
+        focusedIssueOnMap.location?.toLowerCase().includes((l.building || '').toLowerCase())
+      );
+      if (match) {
+        targetCoords = [
+          match.lat || match.coords?.[0] || match.coordinates?.lat,
+          match.lng || match.coords?.[1] || match.coordinates?.lng
+        ];
+      } else {
+        targetCoords = AMRITA_CAMPUS_CENTER;
+      }
+    }
+
+    if (targetCoords && targetCoords[0] && targetCoords[1]) {
+      map.flyTo(targetCoords, 18, { duration: 1.2 });
+
+      if (focusedIssueMarkerRef.current) {
+        map.removeLayer(focusedIssueMarkerRef.current);
+      }
+
+      const icon = L.divIcon({
+        className: 'focused-issue-marker',
+        html: `
+          <div class="relative flex flex-col items-center">
+            <div class="w-9 h-9 rounded-full bg-rose-600 text-white border-2 border-white shadow-xl flex items-center justify-center animate-pulse">
+              <span class="text-sm">⚠️</span>
+            </div>
+            <div class="mt-1 px-2 py-0.5 rounded-md bg-slate-950 text-white text-[10px] font-bold border border-rose-400 whitespace-nowrap shadow-md">
+              ${(focusedIssueOnMap.title || 'Campus Issue').slice(0, 20)}
+            </div>
+          </div>
+        `,
+        iconSize: [36, 48],
+        iconAnchor: [18, 40]
+      });
+
+      const marker = L.marker(targetCoords, { icon, zIndexOffset: 1200 }).addTo(map);
+      marker.bindPopup(`
+        <div style="font-size: 12px; color: #0f172a; padding: 2px;">
+          <strong style="color: #A41034;">⚠️ ${focusedIssueOnMap.title}</strong>
+          <p style="margin-top: 3px; font-size: 11px;">${focusedIssueOnMap.location}</p>
+          <span style="font-size: 10px; color: #64748b;">Status: ${focusedIssueOnMap.status || 'Reported'}</span>
+        </div>
+      `).openPopup();
+
+      focusedIssueMarkerRef.current = marker;
+    }
+  }, [focusedIssueOnMap, locations]);
 
   // Quick Shortcut Handler
   const handleShortcutSelect = (destKey) => {
@@ -465,6 +647,81 @@ export function CampusMapView({ onNavigateToCanteen }) {
 
   return (
     <div className="space-y-5 text-slate-800">
+
+      {/* Top Banner when marking issue on map */}
+      {isMarkingIssueOnMap && (
+        <div className="bg-gradient-to-r from-rose-700 via-[#A41034] to-red-800 text-white p-4 sm:p-5 rounded-3xl shadow-lg border border-rose-300/40 animate-in fade-in slide-in-from-top-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm shrink-0">
+                <MapPin className="w-6 h-6 text-amber-200 animate-bounce" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-sm sm:text-base flex items-center gap-2">
+                  <span>Mark Place of Issue on Campus Map</span>
+                  {pinnedIssueLocation && (
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-xs">
+                      Spot Marked
+                    </span>
+                  )}
+                </h3>
+                <p className="text-rose-100 text-xs mt-0.5">
+                  {pinnedIssueLocation
+                    ? `Marked: "${pinnedIssueLocation.name}". Click "Confirm Spot & Return" or tap another spot to change.`
+                    : 'Click anywhere on the map or tap any building marker to drop a pin at the location.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {pinnedIssueLocation && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onConfirmIssueLocation) {
+                      onConfirmIssueLocation({
+                        locationName: pinnedIssueLocation.name,
+                        lat: pinnedIssueLocation.lat,
+                        lng: pinnedIssueLocation.lng
+                      });
+                    }
+                  }}
+                  className="px-4 py-2 bg-white text-[#A41034] hover:bg-rose-50 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-1.5 active:scale-95"
+                >
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  <span>Confirm Spot & Return</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onCancelMarkingIssue}
+                className="px-3.5 py-2 bg-black/30 hover:bg-black/50 text-white rounded-xl font-semibold text-xs transition active:scale-95"
+              >
+                Cancel & Return
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Viewing focused issue alert banner */}
+      {focusedIssueOnMap && !isMarkingIssueOnMap && (
+        <div className="bg-slate-900 text-white p-3.5 rounded-2xl border border-slate-700 flex items-center justify-between shadow-md animate-in fade-in">
+          <div className="flex items-center gap-2.5 text-xs">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>
+              Viewing Campus Issue: <strong className="text-rose-300">{focusedIssueOnMap.title}</strong> at <em>{focusedIssueOnMap.location}</em>
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onClearFocusedIssue}
+            className="text-xs text-slate-300 hover:text-white px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg transition"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
       
       {/* Header & Search Bar */}
       <div className="bg-white border border-[#E8E3D7] rounded-3xl p-4 sm:p-6 shadow-sm">
@@ -793,6 +1050,79 @@ export function CampusMapView({ onNavigateToCanteen }) {
 
         {/* Right Column: Selected Destination Details Card */}
         <div className="space-y-4">
+          {/* Issue Marking Card if in marking mode */}
+          {isMarkingIssueOnMap && (
+            <div className="bg-white border-2 border-rose-500 rounded-3xl p-5 shadow-md">
+              <div className="flex items-center gap-2 pb-3 border-b border-[#E8E3D7]">
+                <div className="p-2 rounded-xl bg-rose-100 text-[#A41034]">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-sm text-slate-900">Place of Issue</h4>
+                  <p className="text-[11px] text-slate-500">Selected location for reporting</p>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {pinnedIssueLocation ? (
+                  <div className="p-3.5 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-2">
+                    <div className="flex items-start gap-2">
+                      <span className="text-base">📍</span>
+                      <div>
+                        <div className="font-bold text-xs text-slate-900">
+                          {pinnedIssueLocation.name}
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                          Coordinates: {pinnedIssueLocation.lat.toFixed(5)}, {pinnedIssueLocation.lng.toFixed(5)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onConfirmIssueLocation) {
+                          onConfirmIssueLocation({
+                            locationName: pinnedIssueLocation.name,
+                            lat: pinnedIssueLocation.lat,
+                            lng: pinnedIssueLocation.lng
+                          });
+                        }
+                      }}
+                      className="w-full py-2.5 px-4 bg-[#A41034] hover:bg-[#8F002E] text-white rounded-xl font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5 active:scale-95"
+                    >
+                      <CheckCircle className="w-4 h-4 text-emerald-300" />
+                      <span>Confirm & Return to Issue</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPinnedIssueLocation(null)}
+                      className="w-full py-1.5 text-center text-[11px] text-rose-600 hover:text-rose-800 font-semibold"
+                    >
+                      Clear Pin & Choose Another Spot
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-slate-50 border border-dashed border-slate-300 rounded-2xl text-center space-y-1">
+                    <p className="text-xs font-bold text-slate-700">No Spot Marked Yet</p>
+                    <p className="text-[11px] text-slate-500">
+                      Click anywhere on the interactive map or tap any building marker to set the location.
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={onCancelMarkingIssue}
+                  className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition"
+                >
+                  Cancel & Return to Form
+                </button>
+              </div>
+            </div>
+          )}
+
           {selectedLocation ? (
             <div className="bg-white border border-[#E8E3D7] rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between">
               <div>

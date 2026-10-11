@@ -33,6 +33,39 @@ export function App() {
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [receiptOrder, setReceiptOrder] = useState(null);
 
+  // Campus Issue Map Redirection & Pinning State
+  const [issueDraft, setIssueDraft] = useState(null);
+  const [isMarkingIssueOnMap, setIsMarkingIssueOnMap] = useState(false);
+  const [focusedIssueOnMap, setFocusedIssueOnMap] = useState(null);
+
+  const handleRedirectToMapForIssue = (currentDraft) => {
+    setIssueDraft(currentDraft);
+    setIsMarkingIssueOnMap(true);
+    setActiveTab('map');
+  };
+
+  const handleConfirmIssueLocation = (selectedLocInfo) => {
+    setIssueDraft((prev) => ({
+      ...(prev || {}),
+      location: selectedLocInfo.locationName,
+      lat: selectedLocInfo.lat,
+      lng: selectedLocInfo.lng,
+      markedOnMap: true
+    }));
+    setIsMarkingIssueOnMap(false);
+    setActiveTab('issues');
+  };
+
+  const handleCancelMarkingIssue = () => {
+    setIsMarkingIssueOnMap(false);
+    setActiveTab('issues');
+  };
+
+  const handleViewIssueOnMap = (issue) => {
+    setFocusedIssueOnMap(issue);
+    setActiveTab('map');
+  };
+
   const handleRoleRedirection = (role) => {
     if (role === 'faculty') {
       setCurrentRole('faculty');
@@ -330,12 +363,26 @@ export function App() {
             )}
 
             {activeTab === 'map' && (
-              <CampusMapView onNavigateToCanteen={handleNavigateToCanteen} />
+              <CampusMapView
+                onNavigateToCanteen={handleNavigateToCanteen}
+                isMarkingIssueOnMap={isMarkingIssueOnMap}
+                onConfirmIssueLocation={handleConfirmIssueLocation}
+                onCancelMarkingIssue={handleCancelMarkingIssue}
+                focusedIssueOnMap={focusedIssueOnMap}
+                onClearFocusedIssue={() => setFocusedIssueOnMap(null)}
+              />
             )}
 
             {activeTab === 'lost-found' && <LostAndFoundView />}
 
-            {activeTab === 'issues' && <CampusIssuesView />}
+            {activeTab === 'issues' && (
+              <CampusIssuesView
+                onRedirectToMapForIssue={handleRedirectToMapForIssue}
+                issueDraft={issueDraft}
+                onClearIssueDraft={() => setIssueDraft(null)}
+                onViewIssueOnMap={handleViewIssueOnMap}
+              />
+            )}
 
             {activeTab === 'spending' && <StudentSpendingWidget />}
           </div>
