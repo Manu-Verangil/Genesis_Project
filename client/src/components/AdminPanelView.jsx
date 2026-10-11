@@ -56,7 +56,9 @@ import {
   Zap,
   TrendingDown,
   Coffee,
-  Sliders
+  Sliders,
+  UserPlus,
+  GraduationCap
 } from 'lucide-react';
 import { api } from '../api';
 
