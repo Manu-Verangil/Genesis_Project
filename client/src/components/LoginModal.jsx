@@ -140,8 +140,9 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#8F002E]/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-white border border-[#E8E3D7] rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8 my-8 text-slate-800">
+    <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 bg-[#8F002E]/60 backdrop-blur-md animate-in fade-in">
+      <div className="min-h-full flex items-center justify-center py-6 sm:py-8">
+        <div className="relative w-full max-w-xl bg-white border border-[#E8E3D7] rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8 my-auto text-slate-800">
         
         {/* Shaded Amrita Emblem in Login Modal Background */}
         <img
@@ -152,7 +153,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
         />
 
         {/* Top Header Bar in Official Amrita Maroon */}
-        <div className="bg-[#B0003A] -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 p-6 mb-6 text-white flex items-center justify-between border-b border-[#8F002E]">
+        <div className="bg-[#B0003A] -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 p-5 sm:p-6 mb-6 text-white flex items-center justify-between border-b border-[#8F002E] sticky top-0 z-20 shadow-xs">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/25 p-0.5 shadow-sm flex items-center justify-center shrink-0">
               <Sparkles className="w-5 h-5 text-[#D4A017]" />
@@ -326,6 +327,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           </button>
         </form>
 
+        </div>
       </div>
     </div>
   );
