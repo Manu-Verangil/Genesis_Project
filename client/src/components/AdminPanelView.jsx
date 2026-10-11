@@ -158,6 +158,37 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
   const [adminLightboxImage, setAdminLightboxImage] = useState(null);
   const [expandedIssueHistoryId, setExpandedIssueHistoryId] = useState(null);
 
+  // Map Focus & Lost & Found Admin States
+  const [adminFocusedSpot, setAdminFocusedSpot] = useState(null);
+  const [lostFoundAdminFilter, setLostFoundAdminFilter] = useState('all'); // 'all', 'claims', 'found', 'lost'
+
+  const handleViewLocationOnMap = (entity, typeLabel = 'Reported Location') => {
+    let lat = entity.lat;
+    let lng = entity.lng;
+    if (!lat || !lng) {
+      const match = (mapLocations || []).find((l) =>
+        (entity.location || '').toLowerCase().includes(l.name.toLowerCase()) ||
+        (entity.location || '').toLowerCase().includes((l.building || '').toLowerCase())
+      );
+      if (match) {
+        lat = match.lat;
+        lng = match.lng;
+      } else {
+        lat = AMRITA_CAMPUS_CENTER[0];
+        lng = AMRITA_CAMPUS_CENTER[1];
+      }
+    }
+
+    setAdminFocusedSpot({
+      title: entity.title,
+      location: entity.location,
+      lat: Number(lat),
+      lng: Number(lng),
+      type: typeLabel
+    });
+    setActiveTab('map');
+  };
+
   // Menu & Canteen Admin States
   const [adminCanteenFilter, setAdminCanteenFilter] = useState('All');
   const [adminCategoryFilter, setAdminCategoryFilter] = useState('All');
@@ -932,7 +963,35 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
       marker.addTo(adminMarkersGroupRef.current);
     });
-  }, [activeTab, mapLocations, selectedMapCategory, searchMapQuery]);
+
+    if (adminFocusedSpot) {
+      adminMapInstanceRef.current.flyTo([adminFocusedSpot.lat, adminFocusedSpot.lng], 18, { duration: 1 });
+      const pinIcon = L.divIcon({
+        className: 'admin-focus-marker',
+        html: `
+          <div class="relative flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-rose-600 text-white border-2 border-white shadow-2xl flex items-center justify-center animate-bounce ring-4 ring-rose-400/50">
+              <span class="text-base">📍</span>
+            </div>
+            <div class="mt-1 px-2.5 py-0.5 rounded-lg bg-slate-950 text-white text-[10px] font-extrabold border border-rose-500 whitespace-nowrap shadow-xl">
+              ${adminFocusedSpot.type}
+            </div>
+          </div>
+        `,
+        iconSize: [40, 54],
+        iconAnchor: [20, 46]
+      });
+
+      L.marker([adminFocusedSpot.lat, adminFocusedSpot.lng], { icon: pinIcon, zIndexOffset: 2000 })
+        .addTo(adminMarkersGroupRef.current)
+        .bindPopup(`
+          <div style="font-size:12px; font-weight:bold; color:#A41034;">📍 ${adminFocusedSpot.title}</div>
+          <div style="font-size:11px; color:#334155; margin-top:3px;">${adminFocusedSpot.location}</div>
+          <div style="font-size:10px; color:#64748b; margin-top:2px;">Coordinates: ${Number(adminFocusedSpot.lat).toFixed(5)}, ${Number(adminFocusedSpot.lng).toFixed(5)}</div>
+        `)
+        .openPopup();
+    }
+  }, [activeTab, mapLocations, selectedMapCategory, searchMapQuery, adminFocusedSpot]);
 
   return (
     <div className="space-y-6">
@@ -1317,11 +1376,27 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-700">
                             <div className="p-2 rounded-lg bg-[#FAF7F0] border border-[#E8E3D7]">
-                              <span className="text-[10px] text-slate-500 block font-semibold mb-0.5">Location</span>
+                              <div className="flex items-center justify-between mb-0.5">
+                                <span className="text-[10px] text-slate-500 font-semibold">Location</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleViewLocationOnMap(iss, 'Campus Issue')}
+                                  className="text-[10px] text-[#B0003A] font-bold hover:underline flex items-center gap-0.5"
+                                  title="View on Amrita Campus Map"
+                                >
+                                  <Compass className="w-3 h-3" /> View on Map
+                                </button>
+                              </div>
                               <span className="flex items-center gap-1 font-medium text-slate-900">
                                 <MapPin className="w-3.5 h-3.5 text-[#B0003A] shrink-0" />
                                 <span className="truncate">{iss.location}</span>
                               </span>
+                              {(iss.markedOnMap || (iss.lat && iss.lng)) && (
+                                <div className="mt-1 flex items-center gap-1 text-[9px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                  <CheckCircle className="w-3 h-3 text-emerald-600" />
+                                  <span>Pinned from Map [{Number(iss.lat).toFixed(4)}, {Number(iss.lng).toFixed(4)}]</span>
+                                </div>
+                              )}
                             </div>
 
                             <div className="p-2 rounded-lg bg-[#FAF7F0] border border-[#E8E3D7]">
@@ -1515,88 +1590,184 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
       {/* TAB 3: REVIEW LOST & FOUND CLAIMS */}
       {activeTab === 'claims' && (
-        <div className="bg-white border border-[#E8E3D7] rounded-2xl p-5 shadow-sm">
-          <h4 className="font-extrabold text-base text-[#B0003A] mb-1">
-            Lost & Found Claim Verification
-          </h4>
-          <p className="text-xs text-slate-500 mb-4">
-            Verify student ownership proof and approve release of belongings
-          </p>
+        <div className="bg-white border border-[#E8E3D7] rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E8E3D7]">
+            <div>
+              <h4 className="font-extrabold text-base text-[#B0003A] flex items-center gap-2">
+                <Search className="w-5 h-5 text-[#B0003A]" />
+                <span>Lost & Found Items & Claim Verification</span>
+              </h4>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Review all student-reported items, inspect marked campus coordinates, and verify ownership claims
+              </p>
+            </div>
+
+            {/* Quick Filters */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { id: 'all', label: `All Items (${lostFoundItems.length})` },
+                { id: 'claims', label: `Pending Claims (${lostFoundItems.filter((i) => i.claims && i.claims.length > 0).length})` },
+                { id: 'found', label: `Found (${lostFoundItems.filter((i) => i.type === 'found').length})` },
+                { id: 'lost', label: `Lost (${lostFoundItems.filter((i) => i.type === 'lost').length})` }
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setLostFoundAdminFilter(f.id)}
+                  className={`px-3 py-1 rounded-xl text-xs font-semibold transition ${
+                    lostFoundAdminFilter === f.id
+                      ? 'bg-[#B0003A] text-white shadow-xs font-bold'
+                      : 'bg-[#FAF7F0] text-slate-700 hover:text-slate-900 border border-[#E8E3D7]'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="space-y-4">
             {lostFoundItems
-              .filter((i) => i.claims && i.claims.length > 0)
-              .map((item) => (
-                <div
-                  key={item.id}
-                  className="p-4 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] space-y-3 text-xs shadow-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={item.imageUrl}
-                        alt={item.title}
-                        className="w-12 h-12 rounded-lg object-cover border border-[#E8E3D7]"
-                      />
-                      <div>
-                        <h5 className="font-bold text-slate-900 text-sm">{item.title}</h5>
-                        <p className="text-[11px] text-slate-500">Found at: {item.location}</p>
-                      </div>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-slate-200 text-slate-700">
-                      {item.status}
-                    </span>
-                  </div>
-
-                  {/* Claims List */}
-                  <div className="space-y-2 pt-2 border-t border-[#E8E3D7]">
-                    {item.claims.map((c) => (
-                      <div
-                        key={c.id}
-                        className="p-3 rounded-lg bg-white border border-[#E8E3D7] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm"
-                      >
+              .filter((i) => {
+                if (lostFoundAdminFilter === 'claims') return i.claims && i.claims.length > 0;
+                if (lostFoundAdminFilter === 'found') return i.type === 'found';
+                if (lostFoundAdminFilter === 'lost') return i.type === 'lost';
+                return true;
+              })
+              .map((item) => {
+                const isLost = item.type === 'lost';
+                return (
+                  <div
+                    key={item.id}
+                    className="p-4 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] space-y-3 text-xs shadow-sm hover:border-slate-300 transition"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          className="w-14 h-14 rounded-xl object-cover border border-[#E8E3D7] shrink-0"
+                        />
                         <div>
-                          <div className="font-bold text-[#B0003A]">
-                            Claimant: {c.claimantName} (Roll: {c.claimantRoll}, Tel: {c.claimantPhone})
-                          </div>
-                          <p className="text-slate-600 text-[11px] mt-0.5">
-                            <strong className="text-slate-800">Submitted Proof:</strong> "{c.proofDetails}"
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {c.status === 'pending' ? (
-                            <>
-                              <button
-                                onClick={() => handleReviewClaim(item.id, c.id, 'approve')}
-                                className="px-3 py-1.5 rounded-lg bg-[#198754] hover:bg-[#146c43] text-white font-bold text-xs transition shadow-sm"
-                              >
-                                Approve & Hand Over
-                              </button>
-                              <button
-                                onClick={() => handleReviewClaim(item.id, c.id, 'reject')}
-                                className="px-3 py-1.5 rounded-lg bg-[#FFF0F4] hover:bg-[#FFF0F4] text-[#B0003A] border border-[#F8C0CE] font-bold text-xs transition"
-                              >
-                                Reject
-                              </button>
-                            </>
-                          ) : (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h5 className="font-bold text-slate-900 text-sm">{item.title}</h5>
                             <span
-                              className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${
-                                c.status === 'approved'
-                                  ? 'bg-[#E8F5E9] text-[#198754] border-[#A3D9B5]'
-                                  : 'bg-[#FFF0F4] text-[#B0003A] border-[#F8C0CE]'
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                                isLost
+                                  ? 'bg-[#FFF0F4] text-[#B0003A] border-[#F8C0CE]'
+                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               }`}
                             >
-                              Claim {c.status}
+                              {isLost ? 'Reported Lost' : 'Found (Claimable)'}
                             </span>
-                          )}
+                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-700 font-semibold">
+                              {item.category}
+                            </span>
+                          </div>
+
+                          {/* Location Section */}
+                          <div className="mt-1 flex items-center gap-2 flex-wrap text-[11px] text-slate-700">
+                            <span className="flex items-center gap-1 font-medium">
+                              <MapPin className="w-3.5 h-3.5 text-[#B0003A] shrink-0" />
+                              <strong>Location:</strong> {item.location}
+                            </span>
+                            {(item.markedOnMap || (item.lat && item.lng)) && (
+                              <span className="flex items-center gap-1 text-[9px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                <CheckCircle className="w-3 h-3 text-emerald-600" />
+                                <span>Pinned on Map [{Number(item.lat).toFixed(4)}, {Number(item.lng).toFixed(4)}]</span>
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleViewLocationOnMap(item, isLost ? 'Lost Item Spot' : 'Found Item Spot')}
+                              className="text-[10px] text-[#B0003A] font-bold hover:underline flex items-center gap-0.5 bg-[#FFF0F4] px-1.5 py-0.5 rounded border border-[#F8C0CE]"
+                              title="Inspect this location on Campus Map"
+                            >
+                              <Compass className="w-3 h-3" /> View on Campus Map
+                            </button>
+                          </div>
+
+                          <p className="text-[11px] text-slate-600 mt-1">{item.description}</p>
+                          <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
+                            <span>Reported by: <strong>{item.reportedBy || 'Student'}</strong></span>
+                            <span>•</span>
+                            <span>Contact: {item.contactInfo}</span>
+                            <span>•</span>
+                            <span>Date: {new Date(item.date).toLocaleDateString()}</span>
+                          </div>
                         </div>
                       </div>
-                    ))}
+
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase self-start sm:self-center ${
+                        item.status === 'verified_returned'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-slate-200 text-slate-700'
+                      }`}>
+                        {item.status}
+                      </span>
+                    </div>
+
+                    {/* Claims List */}
+                    {item.claims && item.claims.length > 0 && (
+                      <div className="space-y-2 pt-2 border-t border-[#E8E3D7]">
+                        <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+                          Ownership Verification Claims ({item.claims.length}):
+                        </span>
+                        {item.claims.map((c) => (
+                          <div
+                            key={c.id}
+                            className="p-3 rounded-lg bg-white border border-[#E8E3D7] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm"
+                          >
+                            <div>
+                              <div className="font-bold text-[#B0003A]">
+                                Claimant: {c.claimantName} (Roll: {c.claimantRoll}, Tel: {c.claimantPhone})
+                              </div>
+                              <p className="text-slate-600 text-[11px] mt-0.5">
+                                <strong className="text-slate-800">Submitted Proof:</strong> "{c.proofDetails}"
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              {c.status === 'pending' ? (
+                                <>
+                                  <button
+                                    onClick={() => handleReviewClaim(item.id, c.id, 'approve')}
+                                    className="px-3 py-1.5 rounded-lg bg-[#198754] hover:bg-[#146c43] text-white font-bold text-xs transition shadow-sm"
+                                  >
+                                    Approve & Hand Over
+                                  </button>
+                                  <button
+                                    onClick={() => handleReviewClaim(item.id, c.id, 'reject')}
+                                    className="px-3 py-1.5 rounded-lg bg-[#FFF0F4] hover:bg-[#FFF0F4] text-[#B0003A] border border-[#F8C0CE] font-bold text-xs transition"
+                                  >
+                                    Reject
+                                  </button>
+                                </>
+                              ) : (
+                                <span
+                                  className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${
+                                    c.status === 'approved'
+                                      ? 'bg-[#E8F5E9] text-[#198754] border-[#A3D9B5]'
+                                      : 'bg-[#FFF0F4] text-[#B0003A] border-[#F8C0CE]'
+                                  }`}
+                                >
+                                  Claim {c.status}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
+
+            {lostFoundItems.length === 0 && (
+              <div className="p-8 text-center text-slate-500 text-xs bg-[#FAF7F0] rounded-xl border border-[#E8E3D7]">
+                No lost and found items reported yet.
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -2140,6 +2311,25 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     Click pin to edit
                   </span>
                 </div>
+
+                {/* Admin Focused Spot Banner */}
+                {adminFocusedSpot && (
+                  <div className="mb-3 p-3 rounded-xl bg-gradient-to-r from-rose-700 via-[#A41034] to-red-800 text-white flex items-center justify-between text-xs shadow-md animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-amber-200 animate-bounce shrink-0" />
+                      <span>
+                        Inspecting {adminFocusedSpot.type}: <strong>{adminFocusedSpot.title}</strong> at <em>{adminFocusedSpot.location}</em> ({adminFocusedSpot.lat?.toFixed(4)}, {adminFocusedSpot.lng?.toFixed(4)})
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAdminFocusedSpot(null)}
+                      className="px-2.5 py-1 rounded-lg bg-black/30 hover:bg-black/50 text-white font-semibold text-[11px] transition shrink-0 ml-2"
+                    >
+                      Clear Pin
+                    </button>
+                  </div>
+                )}
 
                 {/* Leaflet Container */}
                 <div

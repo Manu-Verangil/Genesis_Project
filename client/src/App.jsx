@@ -38,6 +38,11 @@ export function App() {
   const [isMarkingIssueOnMap, setIsMarkingIssueOnMap] = useState(false);
   const [focusedIssueOnMap, setFocusedIssueOnMap] = useState(null);
 
+  // Lost & Found Map Redirection & Pinning State
+  const [lostFoundDraft, setLostFoundDraft] = useState(null);
+  const [isMarkingLostFoundOnMap, setIsMarkingLostFoundOnMap] = useState(false);
+  const [focusedLostFoundOnMap, setFocusedLostFoundOnMap] = useState(null);
+
   const handleRedirectToMapForIssue = (currentDraft) => {
     setIssueDraft(currentDraft);
     setIsMarkingIssueOnMap(true);
@@ -63,6 +68,34 @@ export function App() {
 
   const handleViewIssueOnMap = (issue) => {
     setFocusedIssueOnMap(issue);
+    setActiveTab('map');
+  };
+
+  const handleRedirectToMapForLostFound = (currentDraft) => {
+    setLostFoundDraft(currentDraft);
+    setIsMarkingLostFoundOnMap(true);
+    setActiveTab('map');
+  };
+
+  const handleConfirmLostFoundLocation = (selectedLocInfo) => {
+    setLostFoundDraft((prev) => ({
+      ...(prev || {}),
+      location: selectedLocInfo.locationName,
+      lat: selectedLocInfo.lat,
+      lng: selectedLocInfo.lng,
+      markedOnMap: true
+    }));
+    setIsMarkingLostFoundOnMap(false);
+    setActiveTab('lost-found');
+  };
+
+  const handleCancelMarkingLostFound = () => {
+    setIsMarkingLostFoundOnMap(false);
+    setActiveTab('lost-found');
+  };
+
+  const handleViewLostFoundOnMap = (item) => {
+    setFocusedLostFoundOnMap(item);
     setActiveTab('map');
   };
 
@@ -370,10 +403,22 @@ export function App() {
                 onCancelMarkingIssue={handleCancelMarkingIssue}
                 focusedIssueOnMap={focusedIssueOnMap}
                 onClearFocusedIssue={() => setFocusedIssueOnMap(null)}
+                isMarkingLostFoundOnMap={isMarkingLostFoundOnMap}
+                onConfirmLostFoundLocation={handleConfirmLostFoundLocation}
+                onCancelMarkingLostFound={handleCancelMarkingLostFound}
+                focusedLostFoundOnMap={focusedLostFoundOnMap}
+                onClearFocusedLostFound={() => setFocusedLostFoundOnMap(null)}
               />
             )}
 
-            {activeTab === 'lost-found' && <LostAndFoundView />}
+            {activeTab === 'lost-found' && (
+              <LostAndFoundView
+                onRedirectToMapForLostFound={handleRedirectToMapForLostFound}
+                lostFoundDraft={lostFoundDraft}
+                onClearLostFoundDraft={() => setLostFoundDraft(null)}
+                onViewItemOnMap={handleViewLostFoundOnMap}
+              />
+            )}
 
             {activeTab === 'issues' && (
               <CampusIssuesView

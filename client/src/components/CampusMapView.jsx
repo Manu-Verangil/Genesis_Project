@@ -93,8 +93,14 @@ export function CampusMapView({
   onConfirmIssueLocation,
   onCancelMarkingIssue,
   focusedIssueOnMap = null,
-  onClearFocusedIssue
+  onClearFocusedIssue,
+  isMarkingLostFoundOnMap = false,
+  onConfirmLostFoundLocation,
+  onCancelMarkingLostFound,
+  focusedLostFoundOnMap = null,
+  onClearFocusedLostFound
 }) {
+  const isAnyMarkingMode = isMarkingIssueOnMap || isMarkingLostFoundOnMap;
   const [locations, setLocations] = useState(initialData.campusLocations || CAMPUS_LANDMARKS);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -278,7 +284,7 @@ export function CampusMapView({
       });
 
       marker.on('click', () => {
-        if (isMarkingIssueOnMap) {
+        if (isAnyMarkingMode) {
           setPinnedIssueLocation({
             name: `${loc.name} (${loc.building || loc.category})`,
             lat,
@@ -304,7 +310,7 @@ export function CampusMapView({
       marker.bindPopup(popupHtml);
       marker.addTo(markersLayerRef.current);
     });
-  }, [locations, selectedLocation, selectedCategory, searchQuery, originId, destinationId, isMarkingIssueOnMap]);
+  }, [locations, selectedLocation, selectedCategory, searchQuery, originId, destinationId, isAnyMarkingMode]);
 
   // Route Calculation and Rendering
   const handleCalculateRoute = (srcId = originId, dstId = destinationId) => {
@@ -369,7 +375,7 @@ export function CampusMapView({
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    if (isMarkingIssueOnMap) {
+    if (isAnyMarkingMode) {
       const container = map.getContainer();
       if (container) container.style.cursor = 'crosshair';
 
@@ -416,7 +422,7 @@ export function CampusMapView({
       const container = map.getContainer();
       if (container) container.style.cursor = '';
     }
-  }, [isMarkingIssueOnMap, locations]);
+  }, [isAnyMarkingMode, locations]);
 
   // Render Pinned Issue Marker on Leaflet Map
   useEffect(() => {
@@ -521,6 +527,65 @@ export function CampusMapView({
       focusedIssueMarkerRef.current = marker;
     }
   }, [focusedIssueOnMap, locations]);
+
+  // Fly to focused lost & found item if navigating from Lost & Found
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !focusedLostFoundOnMap) return;
+
+    let targetCoords = null;
+    if (focusedLostFoundOnMap.lat && focusedLostFoundOnMap.lng) {
+      targetCoords = [focusedLostFoundOnMap.lat, focusedLostFoundOnMap.lng];
+    } else {
+      const match = (locations || CAMPUS_LANDMARKS).find((l) =>
+        focusedLostFoundOnMap.location?.toLowerCase().includes(l.name.toLowerCase()) ||
+        focusedLostFoundOnMap.location?.toLowerCase().includes((l.building || '').toLowerCase())
+      );
+      if (match) {
+        targetCoords = [
+          match.lat || match.coords?.[0] || match.coordinates?.lat,
+          match.lng || match.coords?.[1] || match.coordinates?.lng
+        ];
+      } else {
+        targetCoords = AMRITA_CAMPUS_CENTER;
+      }
+    }
+
+    if (targetCoords && targetCoords[0] && targetCoords[1]) {
+      map.flyTo(targetCoords, 18, { duration: 1.2 });
+
+      if (focusedIssueMarkerRef.current) {
+        map.removeLayer(focusedIssueMarkerRef.current);
+      }
+
+      const icon = L.divIcon({
+        className: 'focused-lf-marker',
+        html: `
+          <div class="relative flex flex-col items-center">
+            <div class="w-9 h-9 rounded-full bg-emerald-600 text-white border-2 border-white shadow-xl flex items-center justify-center animate-pulse">
+              <span class="text-sm">🔍</span>
+            </div>
+            <div class="mt-1 px-2 py-0.5 rounded-md bg-slate-950 text-white text-[10px] font-bold border border-emerald-400 whitespace-nowrap shadow-md">
+              ${(focusedLostFoundOnMap.title || 'Lost & Found').slice(0, 20)}
+            </div>
+          </div>
+        `,
+        iconSize: [36, 48],
+        iconAnchor: [18, 40]
+      });
+
+      const marker = L.marker(targetCoords, { icon, zIndexOffset: 1200 }).addTo(map);
+      marker.bindPopup(`
+        <div style="font-size: 12px; color: #0f172a; padding: 2px;">
+          <strong style="color: #059669;">🔍 ${focusedLostFoundOnMap.title}</strong>
+          <p style="margin-top: 3px; font-size: 11px;">${focusedLostFoundOnMap.location}</p>
+          <span style="font-size: 10px; color: #64748b;">Type: ${focusedLostFoundOnMap.type === 'lost' ? 'Reported Lost' : 'Found (Claimable)'}</span>
+        </div>
+      `).openPopup();
+
+      focusedIssueMarkerRef.current = marker;
+    }
+  }, [focusedLostFoundOnMap, locations]);
 
   // Quick Shortcut Handler
   const handleShortcutSelect = (destKey) => {
@@ -648,8 +713,8 @@ export function CampusMapView({
   return (
     <div className="space-y-5 text-slate-800">
 
-      {/* Top Banner when marking issue on map */}
-      {isMarkingIssueOnMap && (
+      {/* Top Banner when marking location on map */}
+      {isAnyMarkingMode && (
         <div className="bg-gradient-to-r from-rose-700 via-[#A41034] to-red-800 text-white p-4 sm:p-5 rounded-3xl shadow-lg border border-rose-300/40 animate-in fade-in slide-in-from-top-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -658,7 +723,11 @@ export function CampusMapView({
               </div>
               <div>
                 <h3 className="font-extrabold text-sm sm:text-base flex items-center gap-2">
-                  <span>Mark Place of Issue on Campus Map</span>
+                  <span>
+                    {isMarkingLostFoundOnMap
+                      ? 'Mark Place on Campus Map (Lost & Found)'
+                      : 'Mark Place of Issue on Campus Map'}
+                  </span>
                   {pinnedIssueLocation && (
                     <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-xs">
                       Spot Marked
@@ -668,6 +737,8 @@ export function CampusMapView({
                 <p className="text-rose-100 text-xs mt-0.5">
                   {pinnedIssueLocation
                     ? `Marked: "${pinnedIssueLocation.name}". Click "Confirm Spot & Return" or tap another spot to change.`
+                    : isMarkingLostFoundOnMap
+                    ? 'Click anywhere on the map or tap any building marker to drop a pin where the item was lost or found.'
                     : 'Click anywhere on the map or tap any building marker to drop a pin at the location.'}
                 </p>
               </div>
@@ -678,7 +749,13 @@ export function CampusMapView({
                 <button
                   type="button"
                   onClick={() => {
-                    if (onConfirmIssueLocation) {
+                    if (isMarkingLostFoundOnMap && onConfirmLostFoundLocation) {
+                      onConfirmLostFoundLocation({
+                        locationName: pinnedIssueLocation.name,
+                        lat: pinnedIssueLocation.lat,
+                        lng: pinnedIssueLocation.lng
+                      });
+                    } else if (onConfirmIssueLocation) {
                       onConfirmIssueLocation({
                         locationName: pinnedIssueLocation.name,
                         lat: pinnedIssueLocation.lat,
@@ -694,7 +771,7 @@ export function CampusMapView({
               )}
               <button
                 type="button"
-                onClick={onCancelMarkingIssue}
+                onClick={isMarkingLostFoundOnMap ? onCancelMarkingLostFound : onCancelMarkingIssue}
                 className="px-3.5 py-2 bg-black/30 hover:bg-black/50 text-white rounded-xl font-semibold text-xs transition active:scale-95"
               >
                 Cancel & Return
@@ -705,7 +782,7 @@ export function CampusMapView({
       )}
 
       {/* Viewing focused issue alert banner */}
-      {focusedIssueOnMap && !isMarkingIssueOnMap && (
+      {focusedIssueOnMap && !isAnyMarkingMode && (
         <div className="bg-slate-900 text-white p-3.5 rounded-2xl border border-slate-700 flex items-center justify-between shadow-md animate-in fade-in">
           <div className="flex items-center gap-2.5 text-xs">
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
@@ -716,6 +793,25 @@ export function CampusMapView({
           <button
             type="button"
             onClick={onClearFocusedIssue}
+            className="text-xs text-slate-300 hover:text-white px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg transition"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Viewing focused lost & found item alert banner */}
+      {focusedLostFoundOnMap && !isAnyMarkingMode && (
+        <div className="bg-slate-900 text-white p-3.5 rounded-2xl border border-slate-700 flex items-center justify-between shadow-md animate-in fade-in">
+          <div className="flex items-center gap-2.5 text-xs">
+            <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>
+              Viewing Lost & Found Item: <strong className="text-emerald-300">{focusedLostFoundOnMap.title}</strong> at <em>{focusedLostFoundOnMap.location}</em>
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onClearFocusedLostFound}
             className="text-xs text-slate-300 hover:text-white px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg transition"
           >
             Dismiss
@@ -1050,16 +1146,22 @@ export function CampusMapView({
 
         {/* Right Column: Selected Destination Details Card */}
         <div className="space-y-4">
-          {/* Issue Marking Card if in marking mode */}
-          {isMarkingIssueOnMap && (
+          {/* Location Marking Card if in marking mode */}
+          {isAnyMarkingMode && (
             <div className="bg-white border-2 border-rose-500 rounded-3xl p-5 shadow-md">
               <div className="flex items-center gap-2 pb-3 border-b border-[#E8E3D7]">
                 <div className="p-2 rounded-xl bg-rose-100 text-[#A41034]">
                   <MapPin className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-sm text-slate-900">Place of Issue</h4>
-                  <p className="text-[11px] text-slate-500">Selected location for reporting</p>
+                  <h4 className="font-extrabold text-sm text-slate-900">
+                    {isMarkingLostFoundOnMap ? 'Lost & Found Location' : 'Place of Issue'}
+                  </h4>
+                  <p className="text-[11px] text-slate-500">
+                    {isMarkingLostFoundOnMap
+                      ? 'Selected spot where item was lost or found'
+                      : 'Selected location for reporting'}
+                  </p>
                 </div>
               </div>
 
@@ -1081,7 +1183,13 @@ export function CampusMapView({
                     <button
                       type="button"
                       onClick={() => {
-                        if (onConfirmIssueLocation) {
+                        if (isMarkingLostFoundOnMap && onConfirmLostFoundLocation) {
+                          onConfirmLostFoundLocation({
+                            locationName: pinnedIssueLocation.name,
+                            lat: pinnedIssueLocation.lat,
+                            lng: pinnedIssueLocation.lng
+                          });
+                        } else if (onConfirmIssueLocation) {
                           onConfirmIssueLocation({
                             locationName: pinnedIssueLocation.name,
                             lat: pinnedIssueLocation.lat,
@@ -1092,7 +1200,11 @@ export function CampusMapView({
                       className="w-full py-2.5 px-4 bg-[#A41034] hover:bg-[#8F002E] text-white rounded-xl font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5 active:scale-95"
                     >
                       <CheckCircle className="w-4 h-4 text-emerald-300" />
-                      <span>Confirm & Return to Issue</span>
+                      <span>
+                        {isMarkingLostFoundOnMap
+                          ? 'Confirm & Return to Item Report'
+                          : 'Confirm & Return to Issue'}
+                      </span>
                     </button>
 
                     <button
@@ -1114,7 +1226,7 @@ export function CampusMapView({
 
                 <button
                   type="button"
-                  onClick={onCancelMarkingIssue}
+                  onClick={isMarkingLostFoundOnMap ? onCancelMarkingLostFound : onCancelMarkingIssue}
                   className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition"
                 >
                   Cancel & Return to Form
