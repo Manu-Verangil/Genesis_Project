@@ -72,6 +72,11 @@ export function Navbar({
                     ⚡ Priority VIP
                   </span>
                 )}
+                {currentRole === 'guest' && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/25 text-amber-200 border border-amber-300/40 shrink-0">
+                    Guest Visitor
+                  </span>
+                )}
               </div>
               <p className="text-[10px] sm:text-[11px] font-medium text-rose-100/90 leading-tight mt-0.5 truncate max-w-[230px] sm:max-w-md">
                 Amrita Vishwa Vidyapeetham, Coimbatore • Food, Navigation & Issues
@@ -81,8 +86,8 @@ export function Navbar({
 
           {/* Right Action Controls: Voice, Canteen Staff Switch, Wallet, Notifications, Auth User */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Direct Quick Link to Canteen Staff Dashboard */}
-            {currentRole !== 'staff' ? (
+            {/* Direct Quick Link to Canteen Staff Dashboard (Only for staff or admin accounts) */}
+            {(currentUser?.role === 'staff' || currentUser?.role === 'admin') && currentRole !== 'staff' && (
               <button
                 onClick={() => setCurrentRole('staff')}
                 title="Go to Canteen Staff & Kitchen Operations"
@@ -91,10 +96,11 @@ export function Navbar({
                 <ChefHat className="w-3.5 h-3.5 text-amber-300" />
                 <span className="hidden sm:inline">Canteen Staff</span>
               </button>
-            ) : (
+            )}
+            {currentRole === 'staff' && (
               <button
-                onClick={() => { setCurrentRole('student'); setActiveTab('canteen'); }}
-                title="Return to Student / Campus View"
+                onClick={() => { setCurrentRole(currentUser?.role === 'admin' ? 'admin' : (currentUser?.role === 'guest' ? 'guest' : 'student')); setActiveTab('canteen'); }}
+                title="Return to Campus View"
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-bold transition shadow-xs shrink-0"
               >
                 <Utensils className="w-3.5 h-3.5 text-rose-200" />
@@ -149,8 +155,12 @@ export function Navbar({
             {currentUser ? (
               <div className="flex items-center gap-1.5 pl-1 shrink-0">
                 <div className="hidden md:flex flex-col text-right">
-                  <span className="text-xs font-bold text-white leading-none">{currentUser.name}</span>
-                  <span className="text-[10px] font-mono text-amber-300 uppercase leading-tight">{currentUser.role} ({currentUser.username})</span>
+                  <span className="text-xs font-bold text-white leading-none">
+                    {currentUser.role === 'guest' ? 'Guest Visitor' : currentUser.name}
+                  </span>
+                  <span className="text-[10px] font-mono text-amber-300 uppercase leading-tight">
+                    {currentUser.role === 'guest' ? 'Visitor Session' : `${currentUser.role} (${currentUser.username})`}
+                  </span>
                 </div>
                 <button
                   onClick={onLogout}

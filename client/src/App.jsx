@@ -262,7 +262,9 @@ export function App() {
             <div className="flex items-center gap-2 shrink-0 border-t md:border-t-0 md:border-l border-[#E8E3D7] pt-3 md:pt-0 md:pl-4 text-xs relative z-10">
               <div className="text-center px-2">
                 <span className="block text-[10px] uppercase font-bold text-slate-400">Portal View</span>
-                <span className="font-extrabold text-[#B0003A] text-xs capitalize">{currentRole}</span>
+                <span className="font-extrabold text-[#B0003A] text-xs capitalize">
+                  {currentRole === 'guest' ? 'Guest Visitor' : currentRole}
+                </span>
               </div>
               <div className="h-6 w-px bg-[#E8E3D7]" />
               <div className="text-center px-2">
@@ -272,70 +274,99 @@ export function App() {
             </div>
           </div>
 
-          {/* Quick Portal Switcher (Instant 1-Click access to Canteen Staff Dashboard, Faculty VIP, Student, Admin) */}
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 bg-[#FFF0F4]/80 border border-[#F8C0CE] rounded-2xl p-2.5 sm:px-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-extrabold text-[#B0003A] uppercase tracking-wider flex items-center gap-1.5 shrink-0">
-                <Sparkles className="w-3.5 h-3.5 text-[#D4A017]" />
-                Switch Campus Dashboard:
-              </span>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <button
-                  onClick={() => { setCurrentRole('student'); setActiveTab('canteen'); }}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
-                    currentRole === 'student'
-                      ? 'bg-[#B0003A] text-white shadow-xs'
-                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#B0003A] border border-[#E8E3D7]'
-                  }`}
-                >
-                  <User className="w-3.5 h-3.5" />
-                  <span>Student</span>
-                </button>
-                <button
-                  onClick={() => { setCurrentRole('faculty'); setActiveTab('canteen'); }}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                    currentRole === 'faculty'
-                      ? 'bg-[#0D6EFD] text-white shadow-xs'
-                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#0D6EFD] border border-[#E8E3D7]'
-                  }`}
-                >
-                  <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
-                  <span>Faculty (VIP Priority ⚡)</span>
-                </button>
-                <button
-                  onClick={() => setCurrentRole('staff')}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                    currentRole === 'staff'
-                      ? 'bg-[#FD7E14] text-white shadow-xs ring-2 ring-[#FD7E14]/40'
-                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#FD7E14] border border-[#E8E3D7]'
-                  }`}
-                >
-                  <ChefHat className="w-3.5 h-3.5 text-amber-500" />
-                  <span>🍳 Canteen Staff Dashboard</span>
-                </button>
-                <button
-                  onClick={() => setCurrentRole('admin')}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
-                    currentRole === 'admin'
-                      ? 'bg-[#6F42C1] text-white shadow-xs'
-                      : 'bg-white text-slate-700 hover:bg-white hover:text-[#6F42C1] border border-[#E8E3D7]'
-                  }`}
-                >
-                  <Shield className="w-3.5 h-3.5" />
-                  <span>Campus Admin</span>
-                </button>
+          {/* Admin-Only Portal Switcher: Only administrators have privilege to preview other role dashboards */}
+          {currentUser && currentUser.role === 'admin' && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 bg-[#FFF0F4]/80 border border-[#F8C0CE] rounded-2xl p-2.5 sm:px-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-extrabold text-[#B0003A] uppercase tracking-wider flex items-center gap-1.5 shrink-0">
+                  <Sparkles className="w-3.5 h-3.5 text-[#D4A017]" />
+                  Admin Multi-Role Preview:
+                </span>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    onClick={() => { setCurrentRole('guest'); setActiveTab('canteen'); }}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
+                      currentRole === 'guest'
+                        ? 'bg-[#B0003A] text-white shadow-xs'
+                        : 'bg-white text-slate-700 hover:bg-white hover:text-[#B0003A] border border-[#E8E3D7]'
+                    }`}
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>Guest</span>
+                  </button>
+                  <button
+                    onClick={() => { setCurrentRole('student'); setActiveTab('canteen'); }}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
+                      currentRole === 'student'
+                        ? 'bg-[#B0003A] text-white shadow-xs'
+                        : 'bg-white text-slate-700 hover:bg-white hover:text-[#B0003A] border border-[#E8E3D7]'
+                    }`}
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>Student</span>
+                  </button>
+                  <button
+                    onClick={() => { setCurrentRole('faculty'); setActiveTab('canteen'); }}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                      currentRole === 'faculty'
+                        ? 'bg-[#0D6EFD] text-white shadow-xs'
+                        : 'bg-white text-slate-700 hover:bg-white hover:text-[#0D6EFD] border border-[#E8E3D7]'
+                    }`}
+                  >
+                    <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
+                    <span>Faculty (VIP Priority ⚡)</span>
+                  </button>
+                  <button
+                    onClick={() => setCurrentRole('staff')}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                      currentRole === 'staff'
+                        ? 'bg-[#FD7E14] text-white shadow-xs ring-2 ring-[#FD7E14]/40'
+                        : 'bg-white text-slate-700 hover:bg-white hover:text-[#FD7E14] border border-[#E8E3D7]'
+                    }`}
+                  >
+                    <ChefHat className="w-3.5 h-3.5 text-amber-500" />
+                    <span>🍳 Canteen Staff</span>
+                  </button>
+                  <button
+                    onClick={() => setCurrentRole('admin')}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
+                      currentRole === 'admin'
+                        ? 'bg-[#6F42C1] text-white shadow-xs'
+                        : 'bg-white text-slate-700 hover:bg-white hover:text-[#6F42C1] border border-[#E8E3D7]'
+                    }`}
+                  >
+                    <Shield className="w-3.5 h-3.5" />
+                    <span>Campus Admin</span>
+                  </button>
+                </div>
               </div>
             </div>
-            {!currentUser && (
+          )}
+
+          {/* Guest Visitor Information Banner (No switcher buttons, purely clean visitor portal) */}
+          {currentRole === 'guest' && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2.5 bg-[#FAF7F0] border border-[#E8E3D7] rounded-2xl p-2.5 sm:px-4 shadow-2xs">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-xs font-bold text-slate-800">
+                  Guest Visitor Portal
+                </span>
+                <span className="text-xs text-slate-500 hidden md:inline">
+                  — Access to Canteen Menu & Orders, Live Token Queue, Campus Map, Lost & Found, and Issues.
+                </span>
+              </div>
               <button
                 onClick={() => setIsLoginOpen(true)}
                 className="text-xs font-bold text-[#B0003A] hover:underline flex items-center gap-1 ml-auto"
               >
-                <span>Login with Password</span>
+                <span>Login with Amrita University Account</span>
                 <ArrowRight className="w-3 h-3" />
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Student, Faculty, or Guest View */}
