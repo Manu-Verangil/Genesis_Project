@@ -11,7 +11,8 @@ import {
   Activity,
   CheckCircle2,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Check
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -79,10 +80,9 @@ export function CanteenRushMeter({
   }, [selectedCanteenId]);
 
   // Real-time automatic telemetry fluctuation:
-  // Every 10 seconds, active kitchen orders dynamically fluctuate as meals finish cooking and new student tickets arrive!
+  // Fluctuates active orders every 10 seconds
   useEffect(() => {
-    // Dynamic sequence of shifts (-2 to +3)
-    const shiftSequence = [0, 1, 2, 1, -1, -2, -1, 0, 2, 3, 1, 0];
+    const shiftSequence = [0, 1, 2, 1, -1, -2, -1, 0, 2, 1, 0];
     let step = 0;
 
     const shiftTimer = setInterval(() => {
@@ -94,7 +94,7 @@ export function CanteenRushMeter({
         else setOrderChangeTrend(null);
         return nextOffset;
       });
-    }, 10000); // 10 seconds per shift
+    }, 10000);
 
     return () => clearInterval(shiftTimer);
   }, [selectedCanteenId]);
@@ -118,30 +118,8 @@ export function CanteenRushMeter({
 
   const isC2 = selectedCanteenId === 'canteen-2';
 
-  // Dynamic multiplier directly driven by liveOrdersCount:
-  // 1–2 orders = Low load (0.6x)
-  // 3–4 orders = Moderate load (0.95x)
-  // 5–6 orders = Busy load (1.3x)
-  // 7+ orders = Rush Hour / Critical (1.7x)
-  const orderLoadMultiplier = useMemo(() => {
-    if (liveOrdersCount <= 2) return 0.6;
-    if (liveOrdersCount <= 4) return 0.95;
-    if (liveOrdersCount <= 6) return 1.3;
-    return 1.7;
-  }, [liveOrdersCount]);
-
-  // Compute live schedule dynamically linked to liveOrdersCount
-  const schedule = useMemo(() => {
-    // Base curves
-    const baseCrowd = isC2
-      ? [20, 45, 30, 42, 70, 80, 35, 30, 86, 60, 42, 60, 25]
-      : [35, 58, 30, 50, 92, 95, 42, 25, 78, 38, 52, 84, 30];
-
-    const baseWait = isC2
-      ? [3, 6, 4, 6, 13, 16, 5, 4, 18, 9, 6, 11, 4]
-      : [6, 9, 4, 8, 20, 24, 7, 4, 13, 6, 8, 17, 5];
-
-    // Find current time slot
+  // Find index of current hour slot
+  const currentSlotIndex = useMemo(() => {
     let closestIdx = 0;
     let minDiff = 999;
     BASE_TIME_SLOTS.forEach((slot, idx) => {
@@ -151,28 +129,66 @@ export function CanteenRushMeter({
         closestIdx = idx;
       }
     });
+    return closestIdx;
+  }, [currentHourDecimal]);
+
+  // Load multiplier strictly for the current live slot:
+  // 1–2 orders = Low load (0.7x)
+  // 3–4 orders = Moderate load (1.0x)
+  // 5–6 orders = Busy load (1.25x)
+  // 7+ orders = Rush Hour / Critical (1.45x)
+  const currentSlotMultiplier = useMemo(() => {
+    if (liveOrdersCount <= 2) return 0.7;
+    if (liveOrdersCount <= 4) return 1.0;
+    if (liveOrdersCount <= 6) return 1.25;
+    return 1.45;
+  }, [liveOrdersCount]);
+
+  // Compute schedule where:
+  // 1. Past hours (< currentSlotIndex): COMPLETELY STAGNANT / FROZEN (Historical).
+  // 2. Current hour (= currentSlotIndex): DYNAMICALLY RESPONDS to liveOrdersCount.
+  // 3. Immediate next hour (= currentSlotIndex + 1): Mild spillover from current kitchen queue.
+  // 4. Far future hours (> currentSlotIndex + 1): COMPLETELY STAGNANT / FIXED FORECAST.
+  const schedule = useMemo(() => {
+    // Base standard historical/forecast curves
+    const baseCrowd = isC2
+      ? [20, 45, 30, 42, 70, 80, 35, 30, 86, 60, 42, 60, 25]
+      : [35, 58, 30, 50, 92, 95, 42, 25, 78, 38, 52, 84, 30];
+
+    const baseWait = isC2
+      ? [3, 6, 4, 6, 13, 16, 5, 4, 18, 9, 6, 11, 4]
+      : [6, 9, 4, 8, 19, 23, 7, 4, 13, 6, 8, 17, 5];
 
     return BASE_TIME_SLOTS.map((slot, i) => {
-      const distanceToNow = Math.abs(i - closestIdx);
-      let slotMultiplier = 1.0;
+      const isPast = i < currentSlotIndex;
+      const isNow = i === currentSlotIndex;
+      const isNext = i === currentSlotIndex + 1;
+      const isFuture = i > currentSlotIndex + 1;
 
-      if (distanceToNow === 0) {
-        slotMultiplier = orderLoadMultiplier;
-      } else if (distanceToNow === 1) {
-        slotMultiplier = 1.0 + (orderLoadMultiplier - 1.0) * 0.65;
-      } else if (distanceToNow === 2) {
-        slotMultiplier = 1.0 + (orderLoadMultiplier - 1.0) * 0.3;
+      let slotMultiplier = 1.0;
+      let orderDelayBonus = 0;
+
+      if (isPast || isFuture) {
+        // STRICTLY FROZEN: Past times are over; far future times stay at scheduled forecast!
+        slotMultiplier = 1.0;
+        orderDelayBonus = 0;
+      } else if (isNow) {
+        // PRESENT: Dynamically responds to active kitchen orders
+        slotMultiplier = currentSlotMultiplier;
+        orderDelayBonus = Math.round((liveOrdersCount - 3) * 1.2);
+      } else if (isNext) {
+        // IMMEDIATE NEXT: Minor spillover from current kitchen cooking backlog
+        slotMultiplier = 1.0 + (currentSlotMultiplier - 1.0) * 0.35;
+        orderDelayBonus = Math.round((liveOrdersCount - 3) * 0.5);
       }
 
-      // Live order queue bonus
-      const orderDelayBonus = distanceToNow === 0 ? Math.round(liveOrdersCount * 1.6) : 0;
-
+      // Compute crowd % and wait minutes (realistically bounded)
       const computedCrowd = Math.min(
         98,
         Math.max(12, Math.round(baseCrowd[i] * slotMultiplier))
       );
       const computedWait = Math.min(
-        35,
+        26, // Capped at realistic 26 mins max for campus canteens
         Math.max(2, Math.round(baseWait[i] * slotMultiplier + orderDelayBonus))
       );
 
@@ -188,28 +204,18 @@ export function CanteenRushMeter({
         label: slot.label,
         crowdPercent: computedCrowd,
         waitMinutes: computedWait,
-        level
+        level,
+        isPast,
+        isNow,
+        isNext,
+        isFuture
       };
     });
-  }, [isC2, orderLoadMultiplier, currentHourDecimal, liveOrdersCount]);
-
-  // Current active slot
-  const currentSlotIndex = useMemo(() => {
-    let closestIdx = 0;
-    let minDiff = 999;
-    schedule.forEach((slot, idx) => {
-      const diff = Math.abs(slot.hour24 - currentHourDecimal);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestIdx = idx;
-      }
-    });
-    return closestIdx;
-  }, [schedule, currentHourDecimal]);
+  }, [isC2, currentSlotIndex, currentSlotMultiplier, liveOrdersCount]);
 
   const activeSlot = schedule[currentSlotIndex] || schedule[0];
 
-  // Dynamic advice reacting directly to changing live orders
+  // Dynamic advice reacting directly to live active orders at current time
   const contextualAdvice = useMemo(() => {
     if (liveOrdersCount >= 7 || activeSlot.level === 'Critical' || activeSlot.level === 'Peak') {
       return {
@@ -248,9 +254,10 @@ export function CanteenRushMeter({
 
   const AdviceIcon = contextualAdvice.icon;
 
-  const getBarColor = (level, isNow) => {
-    if (isNow) return 'bg-[#B0003A] ring-2 ring-[#B0003A]/40 shadow-md';
-    switch (level) {
+  const getBarColor = (slot) => {
+    if (slot.isNow) return 'bg-[#B0003A] ring-2 ring-[#B0003A]/40 shadow-md';
+    if (slot.isPast) return 'bg-slate-300'; // Frozen, muted historical bar for past hours
+    switch (slot.level) {
       case 'Critical':
         return 'bg-rose-500 hover:bg-rose-600';
       case 'Peak':
@@ -370,21 +377,22 @@ export function CanteenRushMeter({
           {/* Hourly Visual Bars: Roomy padding-top (pt-9) so the "NOW" badge is NEVER cut off */}
           <div className="relative">
             <div className="flex items-end justify-between gap-1 sm:gap-2 overflow-x-auto pb-3 pt-9 px-2 scrollbar-none">
-              {schedule.map((slot, idx) => {
-                const isNow = idx === currentSlotIndex;
-                const barHeight = Math.max(24, Math.round((slot.crowdPercent / 100) * 78));
+              {schedule.map((slot) => {
+                const barHeight = Math.max(22, Math.round((slot.crowdPercent / 100) * 78));
 
                 return (
                   <div
                     key={slot.time}
                     className={`flex flex-col items-center flex-1 min-w-[56px] sm:min-w-[62px] group transition-all duration-500 relative ${
-                      isNow
+                      slot.isNow
                         ? 'scale-[1.03] z-20'
+                        : slot.isPast
+                        ? 'opacity-60'
                         : 'opacity-85 hover:opacity-100'
                     }`}
                   >
                     {/* The "NOW" floating badge - Generous spacing, full pill shape, drop shadow, never cut off */}
-                    {isNow && (
+                    {slot.isNow && (
                       <div className="absolute -top-7.5 left-1/2 -translate-x-1/2 whitespace-nowrap z-30 pointer-events-none">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#B0003A] text-white text-[10px] font-extrabold shadow-md border border-white">
                           <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
@@ -393,11 +401,13 @@ export function CanteenRushMeter({
                       </div>
                     )}
 
-                    {/* Wait time text above bar (e.g. ~4m, ~24m) */}
+                    {/* Wait time text above bar */}
                     <span
                       className={`text-[10px] font-bold mb-1.5 transition-all duration-500 ${
-                        isNow
+                        slot.isNow
                           ? 'text-[#B0003A] font-extrabold text-[11px]'
+                          : slot.isPast
+                          ? 'text-slate-400 line-through decoration-slate-300'
                           : 'text-slate-500 group-hover:text-slate-800'
                       }`}
                     >
@@ -409,8 +419,7 @@ export function CanteenRushMeter({
                       <div
                         style={{ height: `${barHeight}px` }}
                         className={`w-full rounded-t-md transition-all duration-700 ease-in-out ${getBarColor(
-                          slot.level,
-                          isNow
+                          slot
                         )}`}
                       />
                     </div>
@@ -418,27 +427,39 @@ export function CanteenRushMeter({
                     {/* Time Label */}
                     <span
                       className={`text-[10px] mt-2 whitespace-nowrap text-center ${
-                        isNow ? 'font-extrabold text-[#B0003A]' : 'font-medium text-slate-600'
+                        slot.isNow
+                          ? 'font-extrabold text-[#B0003A]'
+                          : slot.isPast
+                          ? 'font-medium text-slate-400'
+                          : 'font-medium text-slate-600'
                       }`}
                     >
                       {slot.time}
                     </span>
 
-                    {/* Status Subtitle */}
+                    {/* Status Subtitle: Past slots clearly show "Passed" / "Ended"; Future show Forecast; NOW shows dynamic Live level */}
                     <span
                       className={`text-[9px] truncate max-w-full text-center mt-0.5 transition-all duration-500 ${
-                        slot.level === 'Critical'
-                          ? 'text-rose-600 font-bold'
+                        slot.isNow
+                          ? slot.level === 'Critical'
+                            ? 'text-rose-600 font-extrabold'
+                            : slot.level === 'Peak'
+                            ? 'text-rose-500 font-bold'
+                            : slot.level === 'Busy'
+                            ? 'text-amber-600 font-bold'
+                            : 'text-blue-600 font-bold'
+                          : slot.isPast
+                          ? 'text-slate-400 italic font-medium'
+                          : slot.level === 'Critical'
+                          ? 'text-rose-500/80 font-semibold'
                           : slot.level === 'Peak'
-                          ? 'text-rose-500 font-semibold'
+                          ? 'text-rose-400/80 font-semibold'
                           : slot.level === 'Busy'
-                          ? 'text-amber-600 font-semibold'
-                          : slot.level === 'Moderate'
-                          ? 'text-blue-600 font-medium'
-                          : 'text-emerald-600 font-medium'
+                          ? 'text-amber-500/80 font-medium'
+                          : 'text-slate-500 font-normal'
                       }`}
                     >
-                      {slot.level}
+                      {slot.isPast ? 'Passed' : slot.level}
                     </span>
                   </div>
                 );
@@ -448,7 +469,7 @@ export function CanteenRushMeter({
 
           {/* Bottom Card: Dynamic Contextual Advice & Legend */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-[#E8E3D7] transition-all duration-500">
-            {/* Dynamic Advice reacting automatically to live orders */}
+            {/* Dynamic Advice reacting automatically to live orders at current hour */}
             <div className="flex items-start sm:items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-white border border-[#E8E3D7] flex items-center justify-center text-[#B0003A] shrink-0 shadow-2xs mt-0.5 sm:mt-0">
                 <AdviceIcon className="w-4 h-4" />
@@ -469,8 +490,12 @@ export function CanteenRushMeter({
             {/* Quick Color Legend */}
             <div className="flex items-center gap-2.5 text-[10px] text-slate-500 font-medium shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-200">
               <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-slate-300" />
+                Passed
+              </span>
+              <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                &lt;5m (Low)
+                &lt;5m
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-blue-400" />
