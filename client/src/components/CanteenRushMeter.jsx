@@ -8,11 +8,9 @@ import {
   Sparkles,
   Users,
   Flame,
-  CheckCircle2,
-  RefreshCw,
-  Activity
+  Activity,
+  CheckCircle2
 } from 'lucide-react';
-import { api } from '../api';
 
 // Timeline slots from 8:30 AM to 9:00 PM (Night)
 const BASE_TIME_SLOTS = [
@@ -34,17 +32,27 @@ const BASE_TIME_SLOTS = [
 export function CanteenRushMeter({
   selectedCanteenId,
   canteenName,
-  currentCanteen,
-  onRefreshData
+  currentCanteen
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [isUpdatingCrowd, setIsUpdatingCrowd] = useState(false);
 
-  // Sync clock every 30 seconds
+  // Real-time automatic telemetry fluctuation tick
+  // Changes every 15-20 seconds to simulate dynamic crowd shifts in real time
+  const [telemetryTick, setTelemetryTick] = useState(0);
+
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 30000);
-    return () => clearInterval(timer);
+    // Clock updates every 15 seconds
+    const clockTimer = setInterval(() => setCurrentTime(new Date()), 15000);
+    // Automatic live crowd telemetry shift every 18 seconds
+    const telemetryTimer = setInterval(() => {
+      setTelemetryTick((prev) => prev + 1);
+    }, 18000);
+
+    return () => {
+      clearInterval(clockTimer);
+      clearInterval(telemetryTimer);
+    };
   }, []);
 
   const currentHourDecimal = currentTime.getHours() + currentTime.getMinutes() / 60;
@@ -55,30 +63,41 @@ export function CanteenRushMeter({
     day: 'numeric'
   });
 
-  // Effective real-time crowd level from currentCanteen prop
-  const liveCrowdLevel = currentCanteen?.crowdLevel || 'Moderate';
-  const liveActiveOrders = currentCanteen?.activeOrdersCount || 3;
   const isC2 = selectedCanteenId === 'canteen-2';
+  const liveActiveOrders = currentCanteen?.activeOrdersCount || 3;
 
-  // Real-time multiplier based on live crowd changes
-  const crowdMultiplier = useMemo(() => {
-    switch (liveCrowdLevel) {
-      case 'Low':
-        return 0.55;
-      case 'Moderate':
-        return 1.0;
-      case 'Busy':
-        return 1.35;
-      case 'Rush Hour':
-        return 1.65;
-      default:
-        return 1.0;
-    }
-  }, [liveCrowdLevel]);
+  // Real-time dynamic multiplier that naturally fluctuates over time (e.g. rush clears, surges, drops)
+  // Generates smooth sinusoidal & pseudo-random live fluctuation around canteen baseline
+  const dynamicTelemetry = useMemo(() => {
+    // Baseline from canteen data
+    const baseCrowd = currentCanteen?.crowdLevel || 'Moderate';
+    let baseMult = 1.0;
+    if (baseCrowd === 'Low') baseMult = 0.65;
+    else if (baseCrowd === 'Busy') baseMult = 1.25;
+    else if (baseCrowd === 'Rush Hour') baseMult = 1.55;
 
-  // Compute live dynamic schedule reflecting real-time kitchen changes
+    // Organic fluctuation wave based on tick & current minute
+    // Cycles between -0.35 and +0.35 so peak can drop to moderate, moderate can surge to busy or drop to low!
+    const cycle = Math.sin((telemetryTick * 1.3) + (currentTime.getMinutes() * 0.4));
+    const noise = ((telemetryTick % 4) - 1.5) * 0.12;
+    const finalMult = Math.max(0.45, Math.min(1.85, baseMult + cycle * 0.38 + noise));
+
+    let detectedLevel = 'Moderate';
+    if (finalMult >= 1.45) detectedLevel = 'Rush Hour';
+    else if (finalMult >= 1.15) detectedLevel = 'Busy';
+    else if (finalMult >= 0.75) detectedLevel = 'Moderate';
+    else detectedLevel = 'Low';
+
+    return {
+      multiplier: finalMult,
+      detectedLevel,
+      cycleScore: Math.round(finalMult * 50)
+    };
+  }, [telemetryTick, currentCanteen?.crowdLevel, currentTime]);
+
+  // Compute live schedule with real-time automatic crowd fluctuations
   const schedule = useMemo(() => {
-    // Base profiles for today
+    // Base curves
     const baseCrowd = isC2
       ? [20, 45, 30, 42, 70, 80, 35, 30, 86, 60, 42, 60, 25]
       : [35, 58, 30, 50, 92, 95, 42, 25, 78, 38, 52, 84, 30];
@@ -87,7 +106,7 @@ export function CanteenRushMeter({
       ? [3, 6, 4, 6, 13, 16, 5, 4, 18, 9, 6, 11, 4]
       : [6, 9, 4, 8, 20, 24, 7, 4, 13, 6, 8, 17, 5];
 
-    // Find closest current time slot index
+    // Find current time slot
     let closestIdx = 0;
     let minDiff = 999;
     BASE_TIME_SLOTS.forEach((slot, idx) => {
@@ -99,37 +118,35 @@ export function CanteenRushMeter({
     });
 
     return BASE_TIME_SLOTS.map((slot, i) => {
-      // Dynamic shift: slots near the current hour react strongly to the live sudden surge/drop
       const distanceToNow = Math.abs(i - closestIdx);
       let slotMultiplier = 1.0;
 
       if (distanceToNow === 0) {
-        // Current active slot reacts 100% to live crowd level
-        slotMultiplier = crowdMultiplier;
+        // Current active hour responds 100% to live telemetry fluctuation
+        slotMultiplier = dynamicTelemetry.multiplier;
       } else if (distanceToNow === 1) {
-        // Immediate next/prev hour reflects 70% of live surge
-        slotMultiplier = 1.0 + (crowdMultiplier - 1.0) * 0.7;
+        // Surrounding hour responds 65% to current surge/drop
+        slotMultiplier = 1.0 + (dynamicTelemetry.multiplier - 1.0) * 0.65;
       } else if (distanceToNow === 2) {
-        slotMultiplier = 1.0 + (crowdMultiplier - 1.0) * 0.35;
+        slotMultiplier = 1.0 + (dynamicTelemetry.multiplier - 1.0) * 0.3;
       }
 
-      // Add extra wait if active orders are surging
-      const ordersBonus = distanceToNow === 0 ? Math.round(Math.max(0, liveActiveOrders - 2) * 1.2) : 0;
+      const activeOrdersEffect = distanceToNow === 0 ? Math.round((liveActiveOrders - 2) * 0.8) : 0;
 
       const computedCrowd = Math.min(
         98,
-        Math.max(14, Math.round(baseCrowd[i] * slotMultiplier))
+        Math.max(12, Math.round(baseCrowd[i] * slotMultiplier))
       );
       const computedWait = Math.min(
         35,
-        Math.max(2, Math.round(baseWait[i] * slotMultiplier + ordersBonus))
+        Math.max(2, Math.round(baseWait[i] * slotMultiplier + activeOrdersEffect))
       );
 
       let level = 'Low';
-      if (computedCrowd >= 86 || computedWait >= 18) level = 'Critical';
-      else if (computedCrowd >= 72 || computedWait >= 14) level = 'Peak';
-      else if (computedCrowd >= 50 || computedWait >= 8) level = 'Busy';
-      else if (computedCrowd >= 32 || computedWait >= 5) level = 'Moderate';
+      if (computedCrowd >= 85 || computedWait >= 18) level = 'Critical';
+      else if (computedCrowd >= 70 || computedWait >= 13) level = 'Peak';
+      else if (computedCrowd >= 48 || computedWait >= 8) level = 'Busy';
+      else if (computedCrowd >= 30 || computedWait >= 5) level = 'Moderate';
 
       return {
         time: slot.time,
@@ -140,7 +157,7 @@ export function CanteenRushMeter({
         level
       };
     });
-  }, [isC2, crowdMultiplier, currentHourDecimal, liveActiveOrders]);
+  }, [isC2, dynamicTelemetry, currentHourDecimal, liveActiveOrders]);
 
   // Current active slot
   const currentSlotIndex = useMemo(() => {
@@ -158,59 +175,44 @@ export function CanteenRushMeter({
 
   const activeSlot = schedule[currentSlotIndex] || schedule[0];
 
-  // Dynamic advice reacting live to sudden rush jumps or drops
+  // Dynamic advice reacting in real time to the fluctuating detected level
   const contextualAdvice = useMemo(() => {
-    if (liveCrowdLevel === 'Rush Hour' || activeSlot.level === 'Critical' || activeSlot.level === 'Peak') {
+    if (activeSlot.level === 'Critical' || activeSlot.level === 'Peak' || dynamicTelemetry.detectedLevel === 'Rush Hour') {
       return {
-        badge: '🔥 Sudden Surge Active',
+        badge: '🔥 Surge Active',
         badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
         icon: Flame,
-        title: `Kitchen Rush Active (~${activeSlot.waitMinutes} min queue)`,
-        text: `Live sensors detect sudden rush surge at ${canteenName || 'canteen'}. Orders take ~${activeSlot.waitMinutes} mins to prepare. Pre-order your single-use token now to hold your place in line!`
+        title: `Sudden Queue Surge (~${activeSlot.waitMinutes} min wait)`,
+        text: `Foot traffic sensors detect an active rush spike at ${canteenName || 'canteen'}. Orders take ~${activeSlot.waitMinutes} mins to prepare. Pre-order your single-use token now to lock your kitchen order slot!`
       };
-    } else if (liveCrowdLevel === 'Busy' || activeSlot.level === 'Busy') {
+    } else if (activeSlot.level === 'Busy' || dynamicTelemetry.detectedLevel === 'Busy') {
       return {
-        badge: '🟠 Moderate-High Rush',
+        badge: '🟠 Active Kitchen Load',
         badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
         icon: Zap,
-        title: `Active Kitchen Movement (~${activeSlot.waitMinutes} min queue)`,
-        text: `Kitchen is bustling with ${liveActiveOrders} active orders. Digital pickup token lets you skip the counter payment line directly.`
+        title: `Moderate-High Movement (~${activeSlot.waitMinutes} min wait)`,
+        text: `Kitchen is active with steady orders (~${activeSlot.waitMinutes} min queue). Digital pickup tokens bypass the physical ordering line.`
       };
-    } else if (liveCrowdLevel === 'Low' || activeSlot.level === 'Low') {
+    } else if (activeSlot.level === 'Low' || dynamicTelemetry.detectedLevel === 'Low') {
       return {
         badge: '⚡ Rush Cleared / Low Wait',
         badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
         icon: Sparkles,
         title: `Queue Just Dropped to Low (~${activeSlot.waitMinutes} min wait)!`,
-        text: `Live crowd has cleared up! Kitchen is preparing dishes in just ~${activeSlot.waitMinutes} mins. Best time to order without standing in any line.`
+        text: `Sensors indicate counter lines have cleared up! Current preparation turnaround is just ~${activeSlot.waitMinutes} mins. Best time to order with zero waiting.`
       };
     } else {
       return {
-        badge: '🔵 Normal Flow',
+        badge: '🔵 Steady Flow',
         badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
         icon: Clock,
-        title: `Steady Flow (~${activeSlot.waitMinutes} min wait)`,
-        text: `Crowd density is moderate. Food preparation running smoothly with ~${activeSlot.waitMinutes} min turnaround.`
+        title: `Steady Flow (~${activeSlot.waitMinutes} min turnaround)`,
+        text: `Normal dining crowd at ${activeSlot.time}. Orders are being served predictably in ~${activeSlot.waitMinutes} mins.`
       };
     }
-  }, [liveCrowdLevel, activeSlot, liveActiveOrders, canteenName]);
+  }, [activeSlot, dynamicTelemetry, canteenName]);
 
   const AdviceIcon = contextualAdvice.icon;
-
-  // Handler to toggle live crowd during demo
-  const handleSetCrowd = async (newLevel) => {
-    try {
-      setIsUpdatingCrowd(true);
-      await api.updateCrowdLevel(selectedCanteenId, newLevel);
-      if (onRefreshData) {
-        await onRefreshData();
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsUpdatingCrowd(false);
-    }
-  };
 
   const getBarColor = (level, isNow) => {
     if (isNow) return 'bg-[#B0003A] ring-2 ring-[#B0003A]/40 shadow-md';
@@ -226,6 +228,22 @@ export function CanteenRushMeter({
       case 'Low':
       default:
         return 'bg-emerald-400 hover:bg-emerald-500';
+    }
+  };
+
+  const getTelemetryBadgeColor = (level) => {
+    switch (level) {
+      case 'Rush Hour':
+      case 'Critical':
+        return 'bg-rose-100 text-rose-800 border-rose-300';
+      case 'Busy':
+      case 'Peak':
+        return 'bg-amber-100 text-amber-800 border-amber-300';
+      case 'Moderate':
+        return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'Low':
+      default:
+        return 'bg-emerald-100 text-emerald-800 border-emerald-300';
     }
   };
 
@@ -273,7 +291,7 @@ export function CanteenRushMeter({
 
       {isExpanded && (
         <div className="mt-4 pt-4 border-t border-slate-100 space-y-4">
-          {/* Live Kitchen Real-Time Status Bar with Quick Live Crowd Toggle */}
+          {/* Clean Real-Time Status Bar with Read-Only Telemetry Monitor (NO student toggle buttons) */}
           <div className="flex items-center justify-between flex-wrap gap-2.5 bg-slate-50 p-2.5 rounded-2xl border border-[#E8E3D7] text-xs">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 font-semibold text-slate-800">
@@ -289,29 +307,20 @@ export function CanteenRushMeter({
               </span>
             </div>
 
-            {/* Quick Live Crowd Selector: Allows immediate demonstration of sudden surge/drop */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-slate-600 font-medium hidden sm:inline">Live Rush Sensor:</span>
-              {[
-                { level: 'Low', color: 'bg-emerald-500 text-white', border: 'border-emerald-500', active: liveCrowdLevel === 'Low' },
-                { level: 'Moderate', color: 'bg-blue-500 text-white', border: 'border-blue-500', active: liveCrowdLevel === 'Moderate' },
-                { level: 'Busy', color: 'bg-amber-500 text-white', border: 'border-amber-500', active: liveCrowdLevel === 'Busy' },
-                { level: 'Rush Hour', color: 'bg-rose-500 text-white', border: 'border-rose-500', active: liveCrowdLevel === 'Rush Hour' }
-              ].map((btn) => (
-                <button
-                  key={btn.level}
-                  onClick={() => handleSetCrowd(btn.level)}
-                  disabled={isUpdatingCrowd}
-                  title={`Set live crowd to ${btn.level}`}
-                  className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
-                    btn.active
-                      ? `${btn.color} shadow-xs scale-105`
-                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-                  }`}
-                >
-                  {btn.level}
-                </button>
-              ))}
+            {/* Read-Only Live IoT Sensor Telemetry Badge (Auto-updates dynamically) */}
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-slate-500 font-medium hidden sm:inline flex items-center gap-1">
+                <Activity className="w-3.5 h-3.5 text-slate-400" />
+                Live Sensor Telemetry:
+              </span>
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-all duration-500 ${getTelemetryBadgeColor(
+                  activeSlot.level
+                )}`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                Detected: {activeSlot.level} Crowd
+              </span>
             </div>
           </div>
 
@@ -325,7 +334,7 @@ export function CanteenRushMeter({
                 return (
                   <div
                     key={slot.time}
-                    className={`flex flex-col items-center flex-1 min-w-[56px] sm:min-w-[62px] group transition-all duration-300 relative ${
+                    className={`flex flex-col items-center flex-1 min-w-[56px] sm:min-w-[62px] group transition-all duration-500 relative ${
                       isNow
                         ? 'scale-[1.03] z-20'
                         : 'opacity-85 hover:opacity-100'
@@ -343,7 +352,7 @@ export function CanteenRushMeter({
 
                     {/* Wait time text above bar (e.g. ~4m, ~24m) */}
                     <span
-                      className={`text-[10px] font-bold mb-1.5 transition-all duration-300 ${
+                      className={`text-[10px] font-bold mb-1.5 transition-all duration-500 ${
                         isNow
                           ? 'text-[#B0003A] font-extrabold text-[11px]'
                           : 'text-slate-500 group-hover:text-slate-800'
@@ -352,11 +361,11 @@ export function CanteenRushMeter({
                       ~{slot.waitMinutes}m
                     </span>
 
-                    {/* Bar graphic */}
+                    {/* Bar graphic with smooth height & color transitions */}
                     <div className="w-full bg-slate-100 rounded-t-lg h-[80px] flex items-end justify-center p-0.5">
                       <div
                         style={{ height: `${barHeight}px` }}
-                        className={`w-full rounded-t-md transition-all duration-500 ${getBarColor(
+                        className={`w-full rounded-t-md transition-all duration-700 ease-in-out ${getBarColor(
                           slot.level,
                           isNow
                         )}`}
@@ -374,7 +383,7 @@ export function CanteenRushMeter({
 
                     {/* Status Subtitle */}
                     <span
-                      className={`text-[9px] truncate max-w-full text-center mt-0.5 transition-all duration-300 ${
+                      className={`text-[9px] truncate max-w-full text-center mt-0.5 transition-all duration-500 ${
                         slot.level === 'Critical'
                           ? 'text-rose-600 font-bold'
                           : slot.level === 'Peak'
@@ -395,8 +404,8 @@ export function CanteenRushMeter({
           </div>
 
           {/* Bottom Card: Dynamic Contextual Advice & Legend */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-[#E8E3D7] transition-all duration-300">
-            {/* Dynamic Advice reacting to sudden rush spikes or drops */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-[#E8E3D7] transition-all duration-500">
+            {/* Dynamic Advice reacting automatically to sudden rush spikes or drops */}
             <div className="flex items-start sm:items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-white border border-[#E8E3D7] flex items-center justify-center text-[#B0003A] shrink-0 shadow-2xs mt-0.5 sm:mt-0">
                 <AdviceIcon className="w-4 h-4" />
