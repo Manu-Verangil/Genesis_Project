@@ -16,9 +16,9 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const demoAccounts = [
     { role: 'cook', label: 'Kitchen Cook', user: 'canteen.cook', pass: 'Cook@Kitchen102', desc: 'Ramesh Babu (Chef KDS Terminal)' },
     { role: 'staff', label: 'Counter Staff', user: 'canteen.staff', pass: 'Staff@Counter101', desc: 'Murugan K (Token Station)' },
-    { role: 'faculty', label: 'Faculty VIP', user: 'cb.fac.cse301', pass: 'Faculty@Pass301', desc: 'Dr. Balakrishnan P (VIP Queue)' },
+    { role: 'faculty', label: 'Faculty', user: 'cb.fac.cse301', pass: 'Faculty@Pass301', desc: 'Dr. Balakrishnan P (Priority Queue)' },
     { role: 'student', label: 'Student', user: 'cb.ps.i5das23101', pass: 'Student@Pass101', desc: 'Aarav Sharma (Menu & Wallet)' },
-    { role: 'admin', label: 'Root Admin', user: 'SYS-ADMIN-SUPER', pass: 'Admin@SecureRoot01', desc: 'Security Vault & AI Forecast' }
+    { role: 'admin', label: 'Root Admin', user: 'SYS-ADMIN-SUPER', pass: 'Admin@SecureRoot01', desc: 'Security Vault & Governance' }
   ];
 
   const fillDemo = (acc) => {
@@ -31,7 +31,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const rolePerks = [
     {
       role: 'cook',
-      title: 'Kitchen Cook 👨‍🍳',
+      title: 'Kitchen Cook',
       perk: 'Food preparation controls (Cooking, Food Ready, Serving) & Kitchen Crowd Pace calibration',
       icon: ChefHat,
       activeColor: 'ring-2 ring-[#FD7E14] border-[#FD7E14] bg-[#FFF2E6] text-[#FD7E14] shadow-md scale-[1.02]',
@@ -39,7 +39,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     },
     {
       role: 'staff',
-      title: 'Counter Staff 🏷️',
+      title: 'Counter Staff',
       perk: 'Edit menu & pricing, add food dishes, live stock inventory, crowd control & token pickup scanner',
       icon: QrCode,
       activeColor: 'ring-2 ring-[#0D9488] border-[#0D9488] bg-[#F0FDFA] text-[#0D9488] shadow-md scale-[1.02]',
@@ -47,8 +47,8 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     },
     {
       role: 'faculty',
-      title: 'Faculty Portal ⚡',
-      perk: 'VIP Priority Queue tokens, fast-track preparation & express counter pickup',
+      title: 'Faculty Portal',
+      perk: 'Priority Queue tokens, fast-track preparation & express counter pickup',
       icon: GraduationCap,
       activeColor: 'ring-2 ring-[#0D6EFD] border-[#0D6EFD] bg-[#EBF3FF] text-[#0D6EFD] shadow-md scale-[1.02]',
       normalColor: 'border-[#B6D4FE] bg-[#EBF3FF]/60 text-[#0D6EFD] hover:bg-[#EBF3FF] hover:scale-[1.01]'
@@ -72,7 +72,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     {
       role: 'guest',
       title: 'Guest Visitor',
-      perk: 'Instant 1-click access to browse canteens, map & lost belongings with throw-away session',
+      perk: 'Instant 1-click access to browse canteens, live queue, map & lost belongings',
       icon: UserCheck,
       activeColor: 'ring-2 ring-[#198754] border-[#198754] bg-[#E8F5E9] text-[#198754] shadow-md scale-[1.02]',
       normalColor: 'border-[#A3D9B5] bg-[#E8F5E9]/60 text-[#198754] hover:bg-[#E8F5E9] hover:scale-[1.01]'
@@ -90,6 +90,15 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     } else if (item.role === 'staff') {
       setIdentifier('canteen.staff');
       setPassword('Staff@Counter101');
+    } else if (item.role === 'student') {
+      setIdentifier('cb.ps.i5das23101');
+      setPassword('Student@Pass101');
+    } else if (item.role === 'faculty') {
+      setIdentifier('cb.fac.cse301');
+      setPassword('Faculty@Pass301');
+    } else if (item.role === 'admin') {
+      setIdentifier('SYS-ADMIN-SUPER');
+      setPassword('Admin@SecureRoot01');
     }
   };
 

@@ -47,6 +47,26 @@ export function App() {
   const [focusedLostFoundOnMap, setFocusedLostFoundOnMap] = useState(null);
 
   const handleNavigate = (newTab, newRole = null) => {
+    const userRole = currentUser?.role || 'guest';
+
+    // Strict Role-Based Access Control (RBAC) Hierarchy:
+    if ((newTab === 'cook' || newRole === 'cook') && !['cook', 'admin'].includes(userRole)) {
+      console.warn(`[RBAC] Access denied: role "${userRole}" cannot access Kitchen Cook terminal.`);
+      return;
+    }
+    if ((newTab === 'staff' || newRole === 'staff') && !['staff', 'admin'].includes(userRole)) {
+      console.warn(`[RBAC] Access denied: role "${userRole}" cannot access Counter Staff station.`);
+      return;
+    }
+    if ((newTab === 'overview' || newRole === 'admin') && userRole !== 'admin') {
+      console.warn(`[RBAC] Access denied: role "${userRole}" cannot access Campus Admin portal.`);
+      return;
+    }
+    if (newTab === 'spending' && userRole !== 'student' && userRole !== 'admin') {
+      console.warn(`[RBAC] Access denied: Spending tracker is restricted to students.`);
+      return;
+    }
+
     const targetRole = newRole !== null ? newRole : currentRole;
     if (newTab === activeTab && targetRole === currentRole) return;
 
@@ -337,10 +357,10 @@ export function App() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
             <div>
               <h2 className="text-base sm:text-lg font-extrabold text-[#B0003A] tracking-tight">
-                {currentRole === 'faculty' && 'Smart Campus Hub — Faculty Portal & VIP Priority Services ⚡'}
+                {currentRole === 'faculty' && 'Smart Campus Hub — Faculty Portal & Priority Services'}
                 {currentRole === 'student' && 'Smart Campus Hub — Student & Campus Community'}
-                {currentRole === 'cook' && 'Smart Campus Hub — Kitchen Cook & Food Preparation KDS 👨‍🍳'}
-                {currentRole === 'staff' && 'Smart Campus Hub — Counter Staff & Token Verification Station 🏷️'}
+                {currentRole === 'cook' && 'Smart Campus Hub — Kitchen Cook & Food Preparation KDS'}
+                {currentRole === 'staff' && 'Smart Campus Hub — Counter Staff & Token Verification Station'}
                 {currentRole === 'admin' && 'Smart Campus Hub — Central Administration & Campus Analytics'}
                 {currentRole === 'guest' && 'Smart Campus Hub — Guest Visitor Access'}
               </h2>
@@ -381,7 +401,7 @@ export function App() {
               <div className="text-center px-2">
                 <span className="block text-[10px] uppercase font-bold text-slate-400">Portal View</span>
                 <span className="font-extrabold text-[#B0003A] text-xs capitalize">
-                  {currentRole === 'cook' ? 'Kitchen Cook 👨‍🍳' : currentRole === 'staff' ? 'Counter Staff 🏷️' : (currentRole === 'guest' ? 'Guest Visitor' : currentRole)}
+                  {currentRole === 'cook' ? 'Kitchen Cook' : currentRole === 'staff' ? 'Counter Staff' : (currentRole === 'guest' ? 'Guest Visitor' : currentRole)}
                 </span>
               </div>
               <div className="h-6 w-px bg-[#E8E3D7]" />
@@ -426,36 +446,36 @@ export function App() {
                   </button>
                   <button
                     onClick={() => handleNavigate('canteen', 'faculty')}
-                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
                       currentRole === 'faculty'
                         ? 'bg-[#0D6EFD] text-white shadow-xs'
                         : 'bg-white text-slate-700 hover:bg-white hover:text-[#0D6EFD] border border-[#E8E3D7]'
                     }`}
                   >
                     <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
-                    <span>Faculty (VIP Priority ⚡)</span>
+                    <span>Faculty (Priority)</span>
                   </button>
                   <button
                     onClick={() => handleNavigate('cook', 'cook')}
-                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
                       currentRole === 'cook' || activeTab === 'cook'
                         ? 'bg-[#FD7E14] text-white shadow-xs ring-2 ring-[#FD7E14]/40'
                         : 'bg-white text-slate-700 hover:bg-white hover:text-[#FD7E14] border border-[#E8E3D7]'
                     }`}
                   >
                     <ChefHat className="w-3.5 h-3.5 text-amber-500" />
-                    <span>👨‍🍳 Kitchen Cook</span>
+                    <span>Kitchen Cook</span>
                   </button>
                   <button
                     onClick={() => handleNavigate('staff', 'staff')}
-                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
                       currentRole === 'staff' || activeTab === 'staff'
                         ? 'bg-[#0D9488] text-white shadow-xs ring-2 ring-[#0D9488]/40'
                         : 'bg-white text-slate-700 hover:bg-white hover:text-[#0D9488] border border-[#E8E3D7]'
                     }`}
                   >
                     <QrCode className="w-3.5 h-3.5 text-teal-500" />
-                    <span>🏷️ Canteen Staff</span>
+                    <span>Counter Staff</span>
                   </button>
                   <button
                     onClick={() => handleNavigate('overview', 'admin')}
@@ -623,8 +643,8 @@ export function App() {
           </div>
         )}
 
-        {/* Kitchen Cook View (KDS & Preparation Queue & Ingredients) */}
-        {(currentRole === 'cook' || activeTab === 'cook') && currentRole !== 'admin' && (
+        {/* Kitchen Cook View (KDS & Preparation Queue & Ingredients) - Strictly Cook or Admin */}
+        {(currentRole === 'cook' || activeTab === 'cook') && (currentUser?.role === 'cook' || currentUser?.role === 'admin') && (
           <StaffPanelView
             currentRole="cook"
             canteens={canteens}
@@ -635,8 +655,8 @@ export function App() {
           />
         )}
 
-        {/* Counter Staff View (Token Verification Station & Ready Order Dispatch) */}
-        {(currentRole === 'staff' || activeTab === 'staff') && currentRole !== 'admin' && activeTab !== 'cook' && (
+        {/* Counter Staff View (Token Verification Station & Ready Order Dispatch) - Strictly Staff or Admin */}
+        {(currentRole === 'staff' || activeTab === 'staff') && (currentUser?.role === 'staff' || currentUser?.role === 'admin') && activeTab !== 'cook' && (
           <StaffPanelView
             currentRole="staff"
             canteens={canteens}
@@ -647,8 +667,8 @@ export function App() {
           />
         )}
 
-        {/* Campus Admin View */}
-        {currentRole === 'admin' && activeTab !== 'cook' && activeTab !== 'staff' && (
+        {/* Campus Admin View - Strictly Admin */}
+        {currentRole === 'admin' && currentUser?.role === 'admin' && activeTab !== 'cook' && activeTab !== 'staff' && (
           <AdminPanelView
             canteens={canteens}
             onDataUpdated={fetchGlobalData}

@@ -40,30 +40,38 @@ export function Navbar({
 }) {
   const [showNotifications, setShowNotifications] = useState(false);
 
+  const isCookUser = currentUser?.role === 'cook' || currentUser?.role === 'admin';
+  const isStaffUser = currentUser?.role === 'staff' || currentUser?.role === 'admin';
+  const isStudentUser = currentUser?.role === 'student' || currentUser?.role === 'admin';
+
   const navItems = [
     { id: 'canteen', label: 'Canteen Menu', icon: Utensils },
     {
       id: 'queue',
-      label: currentRole === 'faculty' ? '⚡ Faculty Priority Queue' : 'Live Queue & Token',
+      label: currentRole === 'faculty' ? 'Faculty Priority Queue' : 'Live Queue & Token',
       icon: Clock,
       badge: currentRole === 'faculty' ? 'C1-FAC-042' : 'C1-047'
     },
-    {
-      id: 'cook',
-      label: 'Kitchen Cook (KDS)',
-      icon: ChefHat,
-      badge: currentRole === 'cook' ? 'Active' : 'Chef KDS'
-    },
-    {
-      id: 'staff',
-      label: 'Counter Staff',
-      icon: QrCode,
-      badge: currentRole === 'staff' ? 'Active' : 'Dispatch'
-    },
+    ...(isCookUser
+      ? [{
+          id: 'cook',
+          label: 'Kitchen Cook (KDS)',
+          icon: ChefHat,
+          badge: currentRole === 'cook' ? 'Active' : 'Chef KDS'
+        }]
+      : []),
+    ...(isStaffUser
+      ? [{
+          id: 'staff',
+          label: 'Counter Staff',
+          icon: QrCode,
+          badge: currentRole === 'staff' ? 'Active' : 'Dispatch'
+        }]
+      : []),
     { id: 'map', label: 'Campus Map', icon: MapPin },
     { id: 'lost-found', label: 'Lost & Found', icon: Search },
     { id: 'issues', label: 'Campus Issues', icon: AlertTriangle },
-    ...(currentUser && currentUser.role === 'student'
+    ...(isStudentUser
       ? [{ id: 'spending', label: 'Spending Tracker', icon: Wallet }]
       : [])
   ];
@@ -97,8 +105,8 @@ export function Navbar({
                   Amrita Ettimadai
                 </span>
                 {currentRole === 'faculty' && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500 text-white border border-blue-400 shrink-0 shadow-xs animate-pulse">
-                    ⚡ Priority VIP
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500 text-white border border-blue-400 shrink-0 shadow-xs">
+                    Faculty
                   </span>
                 )}
                 {currentRole === 'guest' && (
@@ -113,9 +121,9 @@ export function Navbar({
             </div>
           </div>
 
-          {/* Right Action Controls: Voice, Cook/Staff Switches, Wallet, Notifications, Auth User */}
+          {/* Right Action Controls: Voice, Staff Switches (Strictly role-guarded), Wallet, Notifications, Auth User */}
           <div className="flex items-center gap-2 shrink-0">
-            {currentRole === 'cook' ? (
+            {currentUser?.role === 'cook' && (
               <button
                 onClick={() => {
                   if (onNavigate) {
@@ -131,7 +139,9 @@ export function Navbar({
                 <ChefHat className="w-3.5 h-3.5 text-amber-300" />
                 <span className="hidden sm:inline">Cook Station (Exit)</span>
               </button>
-            ) : currentRole === 'staff' ? (
+            )}
+
+            {currentUser?.role === 'staff' && (
               <button
                 onClick={() => {
                   if (onNavigate) {
@@ -147,37 +157,31 @@ export function Navbar({
                 <QrCode className="w-3.5 h-3.5 text-teal-300" />
                 <span className="hidden sm:inline">Counter Station (Exit)</span>
               </button>
-            ) : (
+            )}
+
+            {currentUser?.role === 'admin' && (
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => {
-                    if (onNavigate) {
-                      onNavigate('cook', 'cook');
-                    } else {
-                      setCurrentRole('cook');
-                      setActiveTab('cook');
-                    }
+                    if (onNavigate) onNavigate('cook', 'cook');
+                    else { setCurrentRole('cook'); setActiveTab('cook'); }
                   }}
-                  title="Switch to Kitchen Cook Portal"
+                  title="Admin Switch to Kitchen Cook Portal"
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/25 hover:bg-amber-500/40 border border-amber-300/40 text-amber-200 text-xs font-bold transition shadow-xs shrink-0"
                 >
                   <ChefHat className="w-3.5 h-3.5 text-amber-300" />
-                  <span className="hidden sm:inline">Cook 👨‍🍳</span>
+                  <span className="hidden sm:inline">Cook</span>
                 </button>
                 <button
                   onClick={() => {
-                    if (onNavigate) {
-                      onNavigate('staff', 'staff');
-                    } else {
-                      setCurrentRole('staff');
-                      setActiveTab('staff');
-                    }
+                    if (onNavigate) onNavigate('staff', 'staff');
+                    else { setCurrentRole('staff'); setActiveTab('staff'); }
                   }}
-                  title="Switch to Counter Staff Portal"
+                  title="Admin Switch to Counter Staff Portal"
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-teal-500/25 hover:bg-teal-500/40 border border-teal-300/40 text-teal-200 text-xs font-bold transition shadow-xs shrink-0"
                 >
                   <QrCode className="w-3.5 h-3.5 text-teal-300" />
-                  <span className="hidden sm:inline">Staff 🏷️</span>
+                  <span className="hidden sm:inline">Staff</span>
                 </button>
               </div>
             )}
@@ -282,12 +286,14 @@ export function Navbar({
                     key={item.id}
                     onClick={() => {
                       if (item.id === 'cook') {
+                        if (!isCookUser) return;
                         if (onNavigate) onNavigate('cook', 'cook');
                         else {
                           setCurrentRole('cook');
                           setActiveTab('cook');
                         }
                       } else if (item.id === 'staff') {
+                        if (!isStaffUser) return;
                         if (onNavigate) onNavigate('staff', 'staff');
                         else {
                           setCurrentRole('staff');
