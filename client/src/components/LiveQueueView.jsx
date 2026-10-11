@@ -10,12 +10,13 @@ import {
   RefreshCw,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
   ShieldCheck,
   Zap
 } from 'lucide-react';
 import { api } from '../api';
 
-export function LiveQueueView({ canteens, selectedCanteenId, setSelectedCanteenId, currentUser, currentRole, onNavigateToMenu }) {
+export function LiveQueueView({ canteens, selectedCanteenId, setSelectedCanteenId, currentUser, currentRole, onNavigateToMenu, onGoBack }) {
   const [queueData, setQueueData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -70,6 +71,18 @@ export function LiveQueueView({ canteens, selectedCanteenId, setSelectedCanteenI
           </div>
 
           <div className="flex items-center gap-2">
+            {onGoBack && (
+              <button
+                type="button"
+                onClick={onGoBack}
+                title="Go Back"
+                className="px-3 py-2 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] text-slate-700 border border-[#E8E3D7] font-bold text-xs transition shadow-2xs flex items-center justify-center gap-1.5 shrink-0"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Go Back</span>
+              </button>
+            )}
+
             <span className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
               <span className="w-2 h-2 rounded-full bg-[#198754] animate-pulse" />
               Live Feed Active

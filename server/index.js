@@ -203,12 +203,21 @@ app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
   }
 
   // Role verification (if expectedRole specified by the portal)
-  if (expectedRole && matchedUser.role.toLowerCase() !== expectedRole.toLowerCase()) {
-    console.warn(`[SECURITY AUDIT] Role mismatch: ${matchedUser.username} (${matchedUser.role}) tried logging into ${expectedRole} portal from IP: ${ip}`);
-    return res.status(403).json({
-      success: false,
-      message: `Access denied: Your account role (${matchedUser.role}) is not authorized for this portal.`
-    });
+  if (expectedRole) {
+    const reqRole = expectedRole.toLowerCase();
+    const userRole = (matchedUser.role || '').toLowerCase();
+    const matches =
+      reqRole === userRole ||
+      (reqRole === 'cook' && ['cook', 'chef'].includes(userRole)) ||
+      (reqRole === 'staff' && ['staff', 'counter', 'counter_staff'].includes(userRole));
+
+    if (!matches) {
+      console.warn(`[SECURITY AUDIT] Role mismatch: ${matchedUser.username} (${matchedUser.role}) tried logging into ${expectedRole} portal from IP: ${ip}`);
+      return res.status(403).json({
+        success: false,
+        message: `Access denied: Your account role (${matchedUser.role}) is not authorized for this portal.`
+      });
+    }
   }
 
   // Reset failure count on success

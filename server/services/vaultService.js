@@ -124,7 +124,20 @@ export async function initializeEncryptedVault(existingUsers = []) {
         const rawPassword = parts[5];
 
         const existing = loaded.find((u) => u.username.toLowerCase() === username.toLowerCase());
-        if (!existing) {
+        if (existing) {
+          if (existing.role !== role) {
+            existing.role = role;
+            hasUpdates = true;
+          }
+          if (existing.name !== name) {
+            existing.name = name;
+            hasUpdates = true;
+          }
+          if (rawPassword && !rawPassword.startsWith('$2')) {
+            existing.passwordHash = await bcrypt.hash(rawPassword, 12);
+            hasUpdates = true;
+          }
+        } else {
           // New user found in CSV — hash password with 12 bcrypt rounds
           const passwordHash = rawPassword.startsWith('$2')
             ? rawPassword

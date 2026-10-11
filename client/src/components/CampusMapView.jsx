@@ -28,7 +28,8 @@ import {
   ChevronDown,
   ChevronUp,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  ArrowLeft
 } from 'lucide-react';
 import { api } from '../api';
 import { initialData } from '../mockData';
@@ -52,9 +53,9 @@ const TILE_LAYERS = {
     attribution: 'Tiles &copy; Esri &mdash; Aerial Imagery'
   },
   dark: {
-    name: 'Dark Mode Map',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
+    name: 'Topographic Map',
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap (CC-BY-SA)'
   }
 };
 
@@ -93,7 +94,8 @@ export function CampusMapView({
   onConfirmIssueLocation,
   onCancelMarkingIssue,
   focusedIssueOnMap = null,
-  onClearFocusedIssue
+  onClearFocusedIssue,
+  onGoBack
 }) {
   const [locations, setLocations] = useState(initialData.campusLocations || CAMPUS_LANDMARKS);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -726,20 +728,33 @@ export function CampusMapView({
       {/* Header & Search Bar */}
       <div className="bg-white border border-[#E8E3D7] rounded-3xl p-4 sm:p-6 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
-                <Compass className="w-5 h-5 text-[#A41034]" />
-                <span>Amrita Vishwa Vidyapeetham — Ettimadai Campus Map</span>
-              </h3>
-              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[#FFF0F4] text-[#A41034] border border-[#F8C0CE] flex items-center gap-1 font-bold">
-                <Lock className="w-3 h-3 text-[#A41034]" />
-                Point-to-Point Walking Routing
-              </span>
+          <div className="flex items-start gap-3">
+            {onGoBack && (
+              <button
+                type="button"
+                onClick={onGoBack}
+                title="Go Back"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-[#FFF0F4] hover:bg-[#FCE3E9] text-[#B0003A] border border-[#F8C0CE] text-xs font-extrabold transition shadow-2xs active:scale-95 shrink-0 mt-0.5"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Go Back</span>
+              </button>
+            )}
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
+                  <Compass className="w-5 h-5 text-[#A41034]" />
+                  <span>Amrita Vishwa Vidyapeetham — Ettimadai Campus Map</span>
+                </h3>
+                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[#FFF0F4] text-[#A41034] border border-[#F8C0CE] flex items-center gap-1 font-bold">
+                  <Lock className="w-3 h-3 text-[#A41034]" />
+                  Point-to-Point Walking Routing
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Interactive pedestrian navigation with real walking distances in meters and estimated walking times across the 400-acre campus.
+              </p>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Interactive pedestrian navigation with real walking distances in meters and estimated walking times across the 400-acre campus.
-            </p>
           </div>
 
           <div className="relative w-full sm:w-80">

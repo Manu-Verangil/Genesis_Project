@@ -20,10 +20,10 @@ id,name,role,username,email,password
 19,Nikhil Shenoy,student,cb.en.u4cse23119,nikhil.s@campus.edu,Student@Pass119
 20,Divya Reddy,student,cb.en.u4cse23120,divya.r@campus.edu,Student@Pass120
 21,Murugan K,staff,CANTEEN1-COUNTER-01,murugan.k@campus.edu,Staff@C1Pass101
-22,Ramesh Babu,staff,CANTEEN1-CHEF-02,ramesh.b@campus.edu,Staff@C1Pass102
+22,Ramesh Babu,cook,CANTEEN1-CHEF-02,ramesh.b@campus.edu,Cook@Kitchen102
 23,Selvi M,staff,CANTEEN1-OPS-03,selvi.m@campus.edu,Staff@C1Pass103
 24,Ganesh Moorthy,staff,CANTEEN2-COUNTER-01,ganesh.m@campus.edu,Staff@C2Pass201
-25,Parvathi S,staff,CANTEEN2-CHEF-02,parvathi.s@campus.edu,Staff@C2Pass202
+25,Parvathi S,cook,CANTEEN2-CHEF-02,parvathi.s@campus.edu,Cook@Kitchen202
 26,Velu Samy,staff,CANTEEN2-OPS-03,velu.s@campus.edu,Staff@C2Pass203
 27,Dr. Rajesh Kumar,admin,SYS-ADMIN-SUPER,rajesh.k@campus.edu,Admin@SecureRoot01
 28,Sunita Varma,admin,CAMPUS-OPS-DIRECTOR,sunita.v@campus.edu,Admin@SecureLead02
@@ -35,3 +35,5 @@ id,name,role,username,email,password
 34,Dr. Geetha Mohan,faculty,cb.fac.mec304,geetha.m@campus.edu,Faculty@Pass304
 35,Dr. Sivaramakrishnan V,faculty,cb.fac.math305,sivaram.v@campus.edu,Faculty@Pass305
 36,Dr. Lakshmi Priya,faculty,cb.fac.biotech306,lakshmi.p@campus.edu,Faculty@Pass306
+37,Ramesh Babu (Kitchen Cook),cook,canteen.cook,cook.c1@campus.edu,Cook@Kitchen102
+38,Murugan K (Counter Staff),staff,canteen.staff,staff.c1@campus.edu,Staff@Counter101

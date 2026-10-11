@@ -21,6 +21,7 @@ import {
   Package,
   Layers,
   ArrowRight,
+  ArrowLeft,
   TrendingUp,
   SlidersHorizontal,
   Edit2,
@@ -32,18 +33,29 @@ import {
   Upload,
   Link,
   Image as ImageIcon,
-  Zap
+  Zap,
+  Trash2
 } from 'lucide-react';
 import { api } from '../api';
 
-export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteenId, onDataUpdated }) {
+export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteenId, onDataUpdated, currentRole = 'staff', onGoBack }) {
+  const isCook = currentRole === 'cook';
   const [orders, setOrders] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [tokenInput, setTokenInput] = useState('');
   const [verificationResult, setVerificationResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'verify', 'stock'
+  const [activeTab, setActiveTab] = useState(isCook ? 'orders' : 'stock');
+
+  useEffect(() => {
+    setActiveTab(isCook ? 'orders' : 'stock');
+    if (!isCook) {
+      setOrderStatusFilter('ready');
+    } else {
+      setOrderStatusFilter('all');
+    }
+  }, [currentRole, isCook]);
 
   // Queue sub-filters
   const [orderStatusFilter, setOrderStatusFilter] = useState('all'); // 'all', 'cooking', 'ready', 'serving'
@@ -378,21 +390,31 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       <div className="bg-white border border-[#E8E3D7] rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#FFF0F4] border border-[#F8C0CE] text-[#B0003A] flex items-center justify-center shrink-0 shadow-sm">
-              <ChefHat className="w-6 h-6" />
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
+              isCook
+                ? 'bg-[#FFF2E6] border border-[#FECB9F] text-[#FD7E14]'
+                : 'bg-[#F0FDFA] border border-[#99F6E4] text-[#0D9488]'
+            }`}>
+              {isCook ? <ChefHat className="w-6 h-6" /> : <QrCode className="w-6 h-6 text-[#0D9488]" />}
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2.5">
                 <h2 className="text-lg sm:text-xl font-extrabold text-[#B0003A] tracking-tight">
-                  Canteen Kitchen & Counter Operations
+                  {isCook ? 'Kitchen Cook Portal & Food Preparation KDS' : 'Counter Staff & Order Token Station'}
                 </h2>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FFF0F4] border border-[#F8C0CE] text-[#B0003A] text-[11px] font-bold tracking-wide">
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide border ${
+                  isCook
+                    ? 'bg-[#FFF2E6] border-[#FECB9F] text-[#FD7E14]'
+                    : 'bg-[#F0FDFA] border-[#99F6E4] text-[#0D9488]'
+                }`}>
                   <span className="w-2 h-2 rounded-full bg-[#198754] animate-pulse" />
-                  <span>LIVE KDS TERMINAL</span>
+                  <span>{isCook ? 'KITCHEN KDS TERMINAL' : 'COUNTER DISPATCH ACTIVE'}</span>
                 </div>
               </div>
               <p className="text-xs text-slate-500 mt-1 max-w-xl leading-relaxed font-medium">
-                Real-time kitchen order dispatch, single-use token verification window, live stock quantities, and instant menu item management.
+                {isCook
+                  ? 'Real-time kitchen order tickets, preparation timers, cooking stage controls (Cooking ➔ Ready), and ingredient stock availability.'
+                  : 'Customer pickup token verification scanner, order handover & dispatch, ready pickups callboard, and physical rush calibrator.'}
               </p>
             </div>
           </div>
@@ -423,6 +445,18 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                 );
               })}
             </div>
+
+            {onGoBack && (
+              <button
+                type="button"
+                onClick={onGoBack}
+                title="Return to Campus Hub"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition shadow-xs active:scale-95 shrink-0"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Go Back</span>
+              </button>
+            )}
 
             <button
               onClick={() => fetchStaffData(true)}
@@ -554,62 +588,109 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
       ========================================================================= */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E3D7] pb-3">
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
-              activeTab === 'orders'
-                ? 'bg-[#B0003A] text-white shadow-sm font-extrabold'
-                : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
-            }`}
-          >
-            <Clock className="w-4 h-4" />
-            <span>Active Kitchen Queue</span>
-            <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                activeTab === 'orders' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
-              }`}
-            >
-              {activeOrders.length}
-            </span>
-          </button>
+          {isCook ? (
+            <>
+              <button
+                onClick={() => setActiveTab('orders')}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
+                  activeTab === 'orders'
+                    ? 'bg-[#B0003A] text-white shadow-sm font-extrabold'
+                    : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
+                }`}
+              >
+                <Clock className="w-4 h-4" />
+                <span>🍳 Kitchen Cooking Queue (KDS)</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                    activeTab === 'orders' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
+                  }`}
+                >
+                  {activeOrders.length}
+                </span>
+              </button>
 
-          <button
-            onClick={() => setActiveTab('verify')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
-              activeTab === 'verify'
-                ? 'bg-[#B0003A] text-white shadow-sm font-extrabold'
-                : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
-            }`}
-          >
-            <QrCode className="w-4 h-4" />
-            <span>Pickup Token Scanner</span>
-            <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                activeTab === 'verify' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
-              }`}
-            >
-              Verify
-            </span>
-          </button>
+              <button
+                onClick={() => setActiveTab('stock')}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
+                  activeTab === 'stock'
+                    ? 'bg-[#B0003A] text-white shadow-sm font-extrabold'
+                    : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
+                }`}
+              >
+                <Package className="w-4 h-4" />
+                <span>📦 Kitchen Ingredients & Stock</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                    activeTab === 'stock' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
+                  }`}
+                >
+                  {menuItems.length}
+                </span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setActiveTab('verify')}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
+                  activeTab === 'verify'
+                    ? 'bg-[#0D9488] text-white shadow-sm font-extrabold'
+                    : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
+                }`}
+              >
+                <QrCode className="w-4 h-4" />
+                <span>🏷️ Pickup Token Scanner & Dispatch</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                    activeTab === 'verify' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
+                  }`}
+                >
+                  Verify
+                </span>
+              </button>
 
-          <button
-            onClick={() => setActiveTab('stock')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
-              activeTab === 'stock'
-                ? 'bg-[#B0003A] text-white shadow-sm font-extrabold'
-                : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
-            }`}
-          >
-            <Package className="w-4 h-4" />
-            <span>Menu & Live Stock Management</span>
-            <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                activeTab === 'stock' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
-              }`}
-            >
-              {menuItems.length}
-            </span>
-          </button>
+              <button
+                onClick={() => {
+                  setActiveTab('orders');
+                  setOrderStatusFilter('ready');
+                }}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
+                  activeTab === 'orders'
+                    ? 'bg-[#0D9488] text-white shadow-sm font-extrabold'
+                    : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
+                }`}
+              >
+                <Bell className="w-4 h-4" />
+                <span>🛎️ Ready for Pickup Callboard</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                    activeTab === 'orders' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
+                  }`}
+                >
+                  {stats.ready + stats.serving}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('stock')}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 ${
+                  activeTab === 'stock'
+                    ? 'bg-[#0D9488] text-white shadow-sm font-extrabold'
+                    : 'bg-white text-slate-700 hover:bg-[#FAF7F0] border border-[#E8E3D7]'
+                }`}
+              >
+                <Package className="w-4 h-4" />
+                <span>📋 Counter Items & Snacks</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                    activeTab === 'stock' ? 'bg-white/20 text-white' : 'bg-[#FAF7F0] text-slate-700'
+                  }`}
+                >
+                  {menuItems.length}
+                </span>
+              </button>
+            </>
+          )}
         </div>
 
         <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-slate-500 font-medium">
@@ -754,46 +835,85 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                   </div>
 
                   <div className="mt-5 pt-3.5 border-t border-[#E8E3D7]/60 flex items-center gap-2">
-                    {isCooking && (
-                      <button
-                        onClick={() => handleUpdateStatus(order.id, 'ready')}
-                        className="flex-1 py-2.5 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
-                      >
-                        <Bell className="w-4 h-4" />
-                        <span>Mark Ready For Pickup</span>
-                      </button>
-                    )}
-
-                    {isReady && (
+                    {isCook ? (
+                      /* COOK ACTIONS */
                       <>
-                        <button
-                          onClick={() => handleUpdateStatus(order.id, 'serving')}
-                          className="flex-1 py-2.5 rounded-xl bg-[#198754] hover:bg-[#146c43] active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                          <span>Hand Over / Serving</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setTokenInput(order.token);
-                            setActiveTab('verify');
-                          }}
-                          className="p-2.5 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] text-slate-700 border border-[#E8E3D7] transition"
-                          title="Verify token at pickup scanner"
-                        >
-                          <QrCode className="w-4 h-4" />
-                        </button>
-                      </>
-                    )}
+                        {order.status === 'received' && (
+                          <button
+                            onClick={() => handleUpdateStatus(order.id, 'cooking')}
+                            className="flex-1 py-2.5 rounded-xl bg-[#FD7E14] hover:bg-[#e46a07] active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+                          >
+                            <Flame className="w-4 h-4" />
+                            <span>Start Cooking 🍳</span>
+                          </button>
+                        )}
 
-                    {isServing && (
-                      <button
-                        onClick={() => handleUpdateStatus(order.id, 'collected')}
-                        className="flex-1 py-2.5 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] active:scale-98 text-slate-800 font-bold text-xs border border-[#E8E3D7] transition flex items-center justify-center gap-1.5 shadow-sm"
-                      >
-                        <CheckCheck className="w-4 h-4 text-[#198754]" />
-                        <span>Complete & Collected</span>
-                      </button>
+                        {isCooking && (
+                          <button
+                            onClick={() => handleUpdateStatus(order.id, 'ready')}
+                            className="flex-1 py-2.5 rounded-xl bg-[#198754] hover:bg-[#146c43] active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+                          >
+                            <Bell className="w-4 h-4" />
+                            <span>Mark Ready & Plated 🛎️</span>
+                          </button>
+                        )}
+
+                        {(isReady || isServing) && (
+                          <div className="flex-1 py-2 rounded-xl bg-[#E8F5E9] border border-[#A3D9B5] text-[#198754] text-xs font-bold text-center flex items-center justify-center gap-1.5">
+                            <CheckCircle className="w-4 h-4" />
+                            <span>Plated • Awaiting Counter Dispatch</span>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      /* COUNTER STAFF ACTIONS */
+                      <>
+                        {order.status === 'received' && (
+                          <div className="flex-1 py-2 rounded-xl bg-[#FAF7F0] border border-[#E8E3D7] text-slate-500 text-xs font-semibold text-center flex items-center justify-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Waiting for Kitchen to Cook</span>
+                          </div>
+                        )}
+
+                        {isCooking && (
+                          <div className="flex-1 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold text-center flex items-center justify-center gap-1.5">
+                            <Flame className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                            <span>Kitchen is Cooking Dish...</span>
+                          </div>
+                        )}
+
+                        {isReady && (
+                          <>
+                            <button
+                              onClick={() => handleUpdateStatus(order.id, 'serving')}
+                              className="flex-1 py-2.5 rounded-xl bg-[#0D9488] hover:bg-[#0f766e] active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                              <span>Hand Over / Call Token 🏷️</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setTokenInput(order.token);
+                                setActiveTab('verify');
+                              }}
+                              className="p-2.5 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] text-slate-700 border border-[#E8E3D7] transition"
+                              title="Verify token at pickup scanner"
+                            >
+                              <QrCode className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+
+                        {isServing && (
+                          <button
+                            onClick={() => handleUpdateStatus(order.id, 'collected')}
+                            className="flex-1 py-2.5 rounded-xl bg-[#198754] hover:bg-[#146c43] active:scale-98 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+                          >
+                            <CheckCheck className="w-4 h-4" />
+                            <span>Complete Handover ✅</span>
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

@@ -58,7 +58,8 @@ import {
   Coffee,
   Sliders,
   UserPlus,
-  GraduationCap
+  GraduationCap,
+  ArrowLeft
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -103,7 +104,7 @@ const AMRITA_GPS_PRESETS = [
   { label: 'Main Entrance Gate', lat: 10.8980, lng: 76.9003 }
 ];
 
-export function AdminPanelView({ canteens, onDataUpdated }) {
+export function AdminPanelView({ canteens, onDataUpdated, onGoBack }) {
   const [stats, setStats] = useState(null);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'issues', 'claims', 'menu', 'map', 'users'
   const [issues, setIssues] = useState([]);
@@ -856,8 +857,8 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; CARTO &copy; OpenStreetMap contributors',
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 19
     }).addTo(map);
 
@@ -938,21 +939,35 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
     <div className="space-y-6">
       {/* Admin Header */}
       <div className="bg-white border border-[#E8E3D7] rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-[#FFF0F4] text-[#B0003A] border border-[#F8C0CE] shadow-sm">
-            <Shield className="w-6 h-6" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-xl bg-[#FFF0F4] text-[#B0003A] border border-[#F8C0CE] shadow-sm shrink-0">
+              <Shield className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-lg text-[#B0003A] flex items-center gap-2">
+                <span>Campus Central Administration & Analytics</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#FFF0F4] text-[#B0003A] border border-[#F8C0CE] font-bold">
+                  Administration
+                </span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Unified governance of food menus, map hubs, lost-and-found claims, and issue resolutions
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-extrabold text-lg text-[#B0003A] flex items-center gap-2">
-              <span>Campus Central Administration & Analytics</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#FFF0F4] text-[#B0003A] border border-[#F8C0CE] font-bold">
-                Administration
-              </span>
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Unified governance of food menus, map hubs, lost-and-found claims, and issue resolutions
-            </p>
-          </div>
+
+          {onGoBack && (
+            <button
+              type="button"
+              onClick={onGoBack}
+              title="Return to Student Campus Hub"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#B0003A] hover:bg-[#8F002E] text-white text-xs font-bold transition shadow-sm active:scale-95 shrink-0 self-start sm:self-center"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Go Back to Campus Hub</span>
+            </button>
+          )}
         </div>
 
         {/* Quick KPI stats cards */}
@@ -2818,7 +2833,9 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     className="w-full p-2.5 bg-[#FAF7F0] border border-slate-300 rounded-xl text-slate-900 text-xs focus:outline-none focus:border-[#B0003A]"
                   >
                     <option value="student">Student (Canteen & Complaints)</option>
-                    <option value="staff">Staff (Kitchen Counter & Orders)</option>
+                    <option value="cook">Kitchen Cook (Food Preparation & KDS)</option>
+                    <option value="staff">Counter Staff (Token Station & Pickup)</option>
+                    <option value="faculty">Faculty (VIP Priority Services)</option>
                     <option value="admin">Administrator (Full Campus Governance)</option>
                   </select>
                 </div>
@@ -2906,7 +2923,9 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                   >
                     <option value="All">All Roles</option>
                     <option value="admin">Admins</option>
-                    <option value="staff">Staff</option>
+                    <option value="cook">Cooks (Kitchen KDS)</option>
+                    <option value="staff">Counter Staff</option>
+                    <option value="faculty">Faculty</option>
                     <option value="student">Students</option>
                   </select>
                 </div>
@@ -2929,8 +2948,12 @@ export function AdminPanelView({ canteens, onDataUpdated }) {
                     const roleBadgeClass =
                       u.role === 'admin'
                         ? 'bg-[#FFF0F4] text-[#B0003A] border-[#F8C0CE]'
+                        : u.role === 'cook'
+                        ? 'bg-orange-50 text-orange-700 border-orange-200'
                         : u.role === 'staff'
-                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                        ? 'bg-teal-50 text-teal-700 border-teal-200'
+                        : u.role === 'faculty'
+                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
                         : 'bg-blue-50 text-blue-700 border-blue-200';
 
                     return (

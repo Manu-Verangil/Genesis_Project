@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, ShieldCheck, ShoppingBag, Calendar, TrendingUp, RefreshCw, AlertCircle } from 'lucide-react';
+import { Wallet, ShieldCheck, ShoppingBag, Calendar, TrendingUp, RefreshCw, AlertCircle, ArrowLeft } from 'lucide-react';
 import { api } from '../api';
 
-export function StudentSpendingWidget() {
+export function StudentSpendingWidget({ onGoBack }) {
   const [spendingData, setSpendingData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,13 +44,26 @@ export function StudentSpendingWidget() {
             </p>
           </div>
         </div>
-        <button
-          onClick={fetchSpending}
-          className="px-3 py-1.5 rounded-xl bg-[#198754] hover:bg-[#146c43] text-white font-semibold text-[11px] transition flex items-center justify-center gap-1.5 shrink-0 shadow-xs"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span>Refresh Analytics</span>
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {onGoBack && (
+            <button
+              type="button"
+              onClick={onGoBack}
+              title="Go Back"
+              className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-[#A3D9B5] font-semibold text-[11px] transition flex items-center justify-center gap-1.5 shrink-0 shadow-2xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Go Back</span>
+            </button>
+          )}
+          <button
+            onClick={fetchSpending}
+            className="px-3 py-1.5 rounded-xl bg-[#198754] hover:bg-[#146c43] text-white font-semibold text-[11px] transition flex items-center justify-center gap-1.5 shrink-0 shadow-xs"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh Analytics</span>
+          </button>
+        </div>
       </div>
 
       {/* Analytics Cards */}

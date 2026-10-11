@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, User, ChefHat, Lock, AlertCircle, Sparkles, ArrowRight, X, UserCheck, Check, GraduationCap, Zap, Key } from 'lucide-react';
+import { Shield, User, ChefHat, Lock, AlertCircle, Sparkles, ArrowRight, X, UserCheck, Check, GraduationCap, Zap, Key, QrCode } from 'lucide-react';
 import { api } from '../api';
 
 export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
@@ -14,9 +14,10 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   if (!isOpen) return null;
 
   const demoAccounts = [
-    { role: 'faculty', label: 'Faculty VIP', user: 'cb.fac.cse301', pass: 'Faculty@Pass301', desc: 'Dr. Balakrishnan P (Priority Queue)' },
-    { role: 'student', label: 'Student', user: 'cb.ps.i5das23101', pass: 'Student@Pass101', desc: 'Aarav Sharma (Canteen & Token)' },
-    { role: 'staff', label: 'Canteen Staff', user: 'CANTEEN1-COUNTER-01', pass: 'Staff@C1Pass101', desc: 'Kitchen KDS & Token Dispatcher' },
+    { role: 'cook', label: 'Kitchen Cook', user: 'canteen.cook', pass: 'Cook@Kitchen102', desc: 'Ramesh Babu (Chef KDS Terminal)' },
+    { role: 'staff', label: 'Counter Staff', user: 'canteen.staff', pass: 'Staff@Counter101', desc: 'Murugan K (Token Station)' },
+    { role: 'faculty', label: 'Faculty VIP', user: 'cb.fac.cse301', pass: 'Faculty@Pass301', desc: 'Dr. Balakrishnan P (VIP Queue)' },
+    { role: 'student', label: 'Student', user: 'cb.ps.i5das23101', pass: 'Student@Pass101', desc: 'Aarav Sharma (Menu & Wallet)' },
     { role: 'admin', label: 'Root Admin', user: 'SYS-ADMIN-SUPER', pass: 'Admin@SecureRoot01', desc: 'Security Vault & AI Forecast' }
   ];
 
@@ -28,6 +29,22 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   };
 
   const rolePerks = [
+    {
+      role: 'cook',
+      title: 'Kitchen Cook 👨‍🍳',
+      perk: 'Kitchen Display System (KDS), preparation queue, cooking stage controls (Cooking ➔ Ready), item stock & ingredient status',
+      icon: ChefHat,
+      activeColor: 'ring-2 ring-[#FD7E14] border-[#FD7E14] bg-[#FFF2E6] text-[#FD7E14] shadow-md scale-[1.02]',
+      normalColor: 'border-[#FECB9F] bg-[#FFF2E6]/60 text-[#FD7E14] hover:bg-[#FFF2E6] hover:scale-[1.01]'
+    },
+    {
+      role: 'staff',
+      title: 'Counter Staff 🏷️',
+      perk: 'Pickup token verification scanner, order handover & dispatch, ready pickups callboard, physical crowd level calibration',
+      icon: QrCode,
+      activeColor: 'ring-2 ring-[#0D9488] border-[#0D9488] bg-[#F0FDFA] text-[#0D9488] shadow-md scale-[1.02]',
+      normalColor: 'border-[#99F6E4] bg-[#F0FDFA]/60 text-[#0D9488] hover:bg-[#F0FDFA] hover:scale-[1.01]'
+    },
     {
       role: 'faculty',
       title: 'Faculty Portal ⚡',
@@ -43,14 +60,6 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
       icon: User,
       activeColor: 'ring-2 ring-[#B0003A] border-[#B0003A] bg-[#FFF0F4] text-[#B0003A] shadow-md scale-[1.02]',
       normalColor: 'border-[#F8C0CE] bg-[#FFF0F4]/60 text-[#B0003A] hover:bg-[#FFF0F4] hover:scale-[1.01]'
-    },
-    {
-      role: 'staff',
-      title: 'Kitchen & Staff',
-      perk: 'Kitchen Display System (KDS), order status progress controls & live stock toggling',
-      icon: ChefHat,
-      activeColor: 'ring-2 ring-[#FD7E14] border-[#FD7E14] bg-[#FFF2E6] text-[#FD7E14] shadow-md scale-[1.02]',
-      normalColor: 'border-[#FECB9F] bg-[#FFF2E6]/60 text-[#FD7E14] hover:bg-[#FFF2E6] hover:scale-[1.01]'
     },
     {
       role: 'admin',
@@ -75,6 +84,12 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     setErrorMessage('');
     if (item.role === 'guest') {
       handleGuestLogin();
+    } else if (item.role === 'cook') {
+      setIdentifier('canteen.cook');
+      setPassword('Cook@Kitchen102');
+    } else if (item.role === 'staff') {
+      setIdentifier('canteen.staff');
+      setPassword('Staff@Counter101');
     }
   };
 
@@ -210,10 +225,10 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }) {
             <Key className="w-3.5 h-3.5 text-[#D4A017]" />
             <span>Quick 1-Click Test Credentials (Click to autofill)</span>
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3">
             {demoAccounts.map((acc) => (
               <button
-                key={acc.role}
+                key={acc.user}
                 type="button"
                 onClick={() => fillDemo(acc)}
                 className={`p-2 rounded-xl border text-left transition group shadow-xs ${

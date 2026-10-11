@@ -112,8 +112,8 @@ export const addAuthUser = async ({ name, username, email, role = 'student', pas
   if (!password || password.length < 6) {
     throw new Error('Password must be at least 6 characters long.');
   }
-  if (!['admin', 'staff', 'student'].includes(cleanRole)) {
-    throw new Error('Role must be admin, staff, or student.');
+  if (!['admin', 'staff', 'cook', 'student', 'faculty'].includes(cleanRole)) {
+    throw new Error('Role must be admin, staff, cook, student, or faculty.');
   }
 
   const existing = authDb.users.find(

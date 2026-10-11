@@ -13,6 +13,7 @@ import {
   X,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
   Filter,
   Camera,
   Image as ImageIcon,
@@ -24,7 +25,8 @@ export function CampusIssuesView({
   onRedirectToMapForIssue,
   issueDraft,
   onClearIssueDraft,
-  onViewIssueOnMap
+  onViewIssueOnMap,
+  onGoBack
 }) {
   const [issues, setIssues] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -201,6 +203,18 @@ export function CampusIssuesView({
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            {onGoBack && (
+              <button
+                type="button"
+                onClick={onGoBack}
+                title="Return to previous screen"
+                className="px-3.5 py-2.5 rounded-xl bg-[#FAF7F0] hover:bg-[#E8E3D7] text-slate-700 border border-[#E8E3D7] font-bold text-xs transition shadow-2xs flex items-center justify-center gap-1.5 shrink-0"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Go Back</span>
+              </button>
+            )}
+
             {onRedirectToMapForIssue && (
               <button
                 type="button"
