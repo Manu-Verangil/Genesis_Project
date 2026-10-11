@@ -183,6 +183,20 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
     }
   };
 
+  // Delete menu item (Staff only)
+  const handleDeleteItem = async (item) => {
+    if (!window.confirm(`Are you sure you want to remove "${item.name}" from the menu?`)) return;
+    try {
+      const res = await api.deleteMenuItem(item.id);
+      if (res && res.success) {
+        setMenuItems((prev) => prev.filter((m) => m.id !== item.id));
+        if (onDataUpdated) onDataUpdated();
+      }
+    } catch (err) {
+      alert('Error deleting item: ' + err.message);
+    }
+  };
+
   // Update crowd level
   const handleUpdateCrowd = async (level) => {
     try {
@@ -400,7 +414,7 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
             <div>
               <div className="flex flex-wrap items-center gap-2.5">
                 <h2 className="text-lg sm:text-xl font-extrabold text-[#B0003A] tracking-tight">
-                  {isCook ? 'Kitchen Cook Portal & Food Preparation KDS' : 'Counter Staff & Order Token Station'}
+                  {isCook ? 'Kitchen Cook Portal — Food Preparation (KDS) 👨‍🍳' : 'Counter Staff Portal — Menu Management & Dispatch 🏷️'}
                 </h2>
                 <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide border ${
                   isCook
@@ -408,13 +422,13 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
                     : 'bg-[#F0FDFA] border-[#99F6E4] text-[#0D9488]'
                 }`}>
                   <span className="w-2 h-2 rounded-full bg-[#198754] animate-pulse" />
-                  <span>{isCook ? 'KITCHEN KDS TERMINAL' : 'COUNTER DISPATCH ACTIVE'}</span>
+                  <span>{isCook ? 'KITCHEN COOK TERMINAL' : 'COUNTER STAFF STATION'}</span>
                 </div>
               </div>
               <p className="text-xs text-slate-500 mt-1 max-w-xl leading-relaxed font-medium">
                 {isCook
-                  ? 'Real-time kitchen order tickets, preparation timers, cooking stage controls (Cooking ➔ Ready), and ingredient stock availability.'
-                  : 'Customer pickup token verification scanner, order handover & dispatch, ready pickups callboard, and physical rush calibrator.'}
+                  ? 'Real-time food preparation stage controls (Cooking ➔ Food Ready ➔ Serving) and kitchen crowd pace calibration.'
+                  : 'Edit canteen menu & dish pricing, manage live stock inventory, verify pickup tokens, and dispatch ready orders.'}
               </p>
             </div>
           </div>
@@ -472,13 +486,19 @@ export function StaffPanelView({ canteens, selectedCanteenId, setSelectedCanteen
         {/* Real-Time Crowd Flow Calibrator */}
         <div className="mt-5 pt-4 border-t border-[#E8E3D7]/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-[#FFF0F4] border border-[#F8C0CE] text-[#B0003A]">
+            <div className={`p-1.5 rounded-lg border ${
+              isCook ? 'bg-[#FFF2E6] border-[#FECB9F] text-[#FD7E14]' : 'bg-[#FFF0F4] border-[#F8C0CE] text-[#B0003A]'
+            }`}>
               <Users className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-800">Current Counter Crowd Level</span>
+              <span className="text-xs font-bold text-slate-800">
+                {isCook ? 'Kitchen Rush / Crowd Flow Control' : 'Counter Crowd Level Calibrator'}
+              </span>
               <p className="text-[11px] text-slate-500 font-medium">
-                Calibrates dynamic rush multipliers for student wait-time ETA predictions
+                {isCook
+                  ? 'Set kitchen rush pace (Low, Moderate, Busy, Rush Hour) to dynamically calibrate student wait-time ETA'
+                  : 'Calibrates dynamic rush multipliers for student wait-time ETA predictions'}
               </p>
             </div>
           </div>
